@@ -1,0 +1,257 @@
+---
+title: "TP CARHYCE"
+author: "Louis Manière"
+date: "2024-06-05"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Librairies nécessaires
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+```
+
+## Lecture des données
+
+Source : [IED CARHYCE](https://analytics.huma-num.fr/ied_carhyce/)
+
+```{r}
+getwd()
+carhyce_brute <- read.csv("data/Operations_CARHYCE_2024-06-25.csv", sep=";",dec=",",header=TRUE, encoding = "utf-8")
+carhyce_brute
+```
+
+### Préparation des données
+
+## Caractéristiques du jeux de données
+
+```{r}
+names(carhyce_brute) #noms des variables
+class(carhyce_brute) #nature du tableau, dans ce cas c'est un data.frame
+dim(carhyce_brute)   #dimension du jeu de donnees
+str(carhyce_brute)   #nature des variables
+```
+
+## Préparation des noms de colonnes
+
+```{r}
+carhyce <- carhyce_brute %>% 
+  # modification des noms des colonnes (en minuscule, remplacement des points par des underscores, remplacement des accents)
+  rename_all(tolower) %>%
+  rename_all(~gsub("\\.", "_", .)) %>% 
+  rename_all(~gsub("é", "e", .)) %>%
+  rename_all(~gsub("è", "e", .)) %>% 
+  # dans les noms de colonnes suppression underscore en double/triple
+  rename_all(~gsub("___", "_", .)) %>% 
+  rename_all(~gsub("__", "_", .)) %>% 
+  # dans les noms de colonnes suppression des underscores en début et fin de nom
+  rename_all(~gsub("^_", "", .)) %>% 
+  rename_all(~gsub("_$", "", .)) %>% 
+  # Sélection des colonnes à conserver
+  select(identifiant_operation, code_station, localisation_station_de_mesure, date_realisation, cours_d_eau, debit_mesure_m3_s, largeur_plein_bord_evaluee_m, largeur_mouillee_evaluee_m, pente_ligne_d_eau, continuite_ripisylve_rive_gauche, continuite_ripisylve_rive_droite, d16_mm, d50_mm, d84_mm, surface_mouillee_q1_m2, largeur_mouillee_q1_m, profondeur_maximum_qb_m, profondeur_moyenne_qb_m, rayon_hydraulique_qb, rapport_largeur_profondeur_qb, force_tractrice_qb_n_m2, debit_plein_bord_m3_s, vitesse_moyenne_qb_m_s, ligne_energie_qb_m, nombre_de_froude_qb, puissance_specifique_qb_w_m2, nombre_de_mouille, score_ripisylve, x_fines, x_graviers_cailloux, x_blocs_rochers, surface_bv_km2, coefficient_de_sinuosite)
+```
+
+## Analyse des relations entre les débit de plein bord, la surface du bassin versant et la pente de la ligne d'eau
+
+### Distribution des données
+
+Synthèse des données
+
+```{r}
+print("Débit de plein bord")
+summary(carhyce$debit_plein_bord_m3_s)
+print("Pente de la ligne d'eau")
+summary(carhyce$pente_ligne_d_eau)
+print("Surface du bassin versant")
+summary(carhyce$surface_bv_km2)
+```
+
+Histogramme de fréquence
+
+```{r}
+par(mfrow = c(2, 2))  # 2 rows and 2 column
+
+hist(carhyce$debit_plein_bord_m3_s, main = "Débits de plein bord", xlab = "Débit de plein bord (m3/s)", col = "lightblue")
+hist(carhyce$pente_ligne_d_eau, main = "Pentes de la ligne d'eau", xlab = "Pente de la ligne d'eau", col = "lightblue")
+hist(carhyce$surface_bv_km2, main = "Surfaces du bassin versant", xlab = "Surface du bassin versant (km2)", col = "lightblue")
+```
+
+### Filtre des données pour retirer les plus grands bassins versants
+
+Calcul des paramètres de distribution des valeurs de bassin vervant
+
+```{r}
+print("Ecart type")
+sd(carhyce$surface_bv_km2, na.rm = TRUE)
+print("99 percentile")
+quantile(carhyce$surface_bv_km2, 0.95, na.rm = TRUE)
+```
+
+Filtrage des données
+
+```{r}
+carhyce_bv <- carhyce %>% filter(surface_bv_km2 < quantile(carhyce$surface_bv_km2, 0.95, na.rm = TRUE))
+```
+
+Histogramme de fréquence
+
+```{r}
+par(mfrow = c(2, 2))  # 2 rows and 2 column
+
+hist(carhyce_bv$debit_plein_bord_m3_s, main = "Débits de plein bord", xlab = "Débit de plein bord (m3/s)", col = "lightblue")
+hist(carhyce_bv$pente_ligne_d_eau, main = "Pentes de la ligne d'eau", xlab = "Pente de la ligne d'eau", col = "lightblue")
+hist(carhyce_bv$surface_bv_km2, main = "Surfaces du bassin versant", xlab = "Surface du bassin versant (km2)", col = "lightblue")
+```
+
+Valeurs abberrantes de débit ?
+
+```{r}
+carhyce_bv %>% 
+  filter(debit_plein_bord_m3_s > 1000) %>% 
+  select(debit_plein_bord_m3_s, surface_bv_km2, profondeur_maximum_qb_m, largeur_plein_bord_evaluee_m) %>% 
+  # tri des vavleurs de débit de plein bord
+  arrange(surface_bv_km2)
+```
+
+Filtre des débits les plus élevés
+
+```{r}
+print("Ecart type")
+sd(carhyce_bv$debit_plein_bord_m3_s, na.rm = TRUE)
+print("99 percentile")
+quantile(carhyce_bv$debit_plein_bord_m3_s, 0.99, na.rm = TRUE)
+```
+
+Filtrage des données pour retirer les débits les plus élevés
+
+```{r}
+carhyce_bv_q <- carhyce_bv %>% filter(debit_plein_bord_m3_s < quantile(carhyce_bv$debit_plein_bord_m3_s, 0.95, na.rm = TRUE))
+```
+
+Histogramme de fréquence
+
+```{r}
+par(mfrow = c(2, 2))  # 2 rows and 2 column
+
+hist(carhyce_bv_q$debit_plein_bord_m3_s, main = "Débits de plein bord", xlab = "Débit de plein bord (m3/s)", col = "lightblue")
+hist(carhyce_bv_q$pente_ligne_d_eau, main = "Pentes de la ligne d'eau", xlab = "Pente de la ligne d'eau", col = "lightblue")
+hist(carhyce_bv_q$surface_bv_km2, main = "Surfaces du bassin versant", xlab = "Surface du bassin versant (km2)", col = "lightblue")
+```
+
+Valeurs abberrantes de pente ?
+
+```{r}
+carhyce_bv_q_p <- carhyce_bv_q %>% filter(pente_ligne_d_eau < quantile(carhyce_bv_q$pente_ligne_d_eau, 0.95, na.rm = TRUE))
+```
+
+Histogramme de fréquence
+
+```{r}
+par(mfrow = c(2, 2))  # 2 rows and 2 column
+
+hist(carhyce_bv_q_p$debit_plein_bord_m3_s, main = "Débits de plein bord", xlab = "Débit de plein bord (m3/s)", col = "lightblue")
+hist(carhyce_bv_q_p$pente_ligne_d_eau, main = "Pentes de la ligne d'eau", xlab = "Pente de la ligne d'eau", col = "lightblue")
+hist(carhyce_bv_q_p$surface_bv_km2, main = "Surfaces du bassin versant", xlab = "Surface du bassin versant (km2)", col = "lightblue")
+```
+
+Filtrage des bassins versant de moins de 100 km2
+
+```{r}
+carhyce_bv100_q_p_s <- carhyce_bv_q_p %>% filter(surface_bv_km2 < 100)
+```
+
+Histogramme de fréquence
+
+```{r}
+par(mfrow = c(2, 2))  # 2 rows and 2 column
+
+hist(carhyce_bv100_q_p_s$debit_plein_bord_m3_s, main = "Débits de plein bord", xlab = "Débit de plein bord (m3/s)", col = "lightblue")
+hist(carhyce_bv100_q_p_s$pente_ligne_d_eau, main = "Pentes de la ligne d'eau", xlab = "Pente de la ligne d'eau", col = "lightblue")
+hist(carhyce_bv100_q_p_s$surface_bv_km2, main = "Surfaces du bassin versant", xlab = "Surface du bassin versant (km2)", col = "lightblue")
+```
+
+Boxplot
+
+```{r}
+par(mfrow=c(2,2))
+
+boxplot(carhyce_bv100_q_p_s$debit_plein_bord_m3_s, main = "Boxplot des débits de plein bord", col = "lightblue")
+points(1,mean(carhyce_bv100_q_p_s$debit_plein_bord_m3_s,na.rm=T),pch=16,col="red")
+boxplot(carhyce_bv100_q_p_s$pente_ligne_d_eau, main = "Boxplot des pentes de la ligne d'eau", col = "lightblue")
+points(1,mean(carhyce_bv100_q_p_s$pente_ligne_d_eau,na.rm=T),pch=16,col="red")
+boxplot(carhyce_bv100_q_p_s$surface_bv_km2, main = "Boxplot des surfaces du bassin versant", col = "lightblue")
+points(1,mean(carhyce_bv100_q_p_s$surface_bv_km2,na.rm=T),pch=16,col="red")
+```
+
+Nuage de point des variables quantitatives
+
+```{r}
+ggplot(carhyce_bv100_q_p_s, aes(x = surface_bv_km2, y = debit_plein_bord_m3_s)) +
+  geom_point() +
+  labs(title = "Débit de plein bord en fonction de la surface du bassin versant",
+       x = "Surface du bassin versant (km2)",
+       y = "Débit de plein bord (m3/s)")
+```
+
+```{r}
+ggplot(carhyce_bv100_q_p_s, aes(x = pente_ligne_d_eau, y = debit_plein_bord_m3_s)) +
+  geom_point() +
+  labs(title = "Débit de plein bord en fonction de la pente de la ligne d'eau",
+       x = "Pente de la ligne d'eau",
+       y = "Débit de plein bord (m3/s)")
+```
+
+```{r}
+ggplot(carhyce_bv100_q_p_s, aes(x = surface_bv_km2, y = pente_ligne_d_eau)) +
+  geom_point() +
+  labs(title = "Pente de la ligne d'eau en fonction de la surface du bassin versant",
+       x = "Surface du bassin versant (km2)",
+       y = "Pente de la ligne d'eau")
+```
+
+```{r}
+
+```
+
+```{r}
+carhyce_bv100_q_p_s <- carhyce_bv_q_p %>% filter(d50_mm < 1000)
+
+ggplot(carhyce_bv100_q_p_s, aes(x = ligne_energie_qb_m, y = pente_ligne_d_eau)) +
+  geom_point() +
+  labs(title = "Pente de la ligne d'eau en fonction de la surface du bassin versant",
+       x = "Surface du bassin versant (km2)",
+       y = "Pente de la ligne d'eau")
+```
+
+```{r}
+names(carhyce_bv100_q_p_s)
+```
+
+### Nuage de point des variables quantitatives
+
+```{r}
+pairs(carhyce_bv100_q_p_s[,c(7,8,9,15,16,17,18)])
+```
+
+```{r}
+# pairs pour les variables quantitatives
+pairs(carhyce_bv100_q_p_s[,c(7,9,12,13,14,15,21,22,26,32)])
+```
+
+### Visualisation de la matrice de corrélation
+
+```{r}
+corrplot::corrplot(cor(carhyce_bv100_q_p_s[,c(7,8,9,15,16,17,18)], use="pairwise.complete.obs"), method = "circle", type = "full")
+```
+
+```{r}
+corrplot::corrplot(cor(carhyce_bv100_q_p_s[,c(7,9,12,13,14,15,21,22,26,32)], use="pairwise.complete.obs"), method = "circle", type = "full")
+```

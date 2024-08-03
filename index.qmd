@@ -1,0 +1,1612 @@
+---
+title: "Statistiques et data mining - Master Hydrosystèmes et Bassins Versants"
+author: "Louis Manière"
+institute: "Université de Tours"
+date: "2024-07-22"
+format: 
+  revealjs:
+    navigation-mode: vertical
+    theme: custom.scss
+    logo: "./img/universite-tours-logo.png"
+    footer: "Master 1 Hydrosystèmes et Bassins Versants 2024-2025"
+    css: custom.css
+    slide-number: true
+    show-slide-number: all
+    smaller: false
+    chalkboard: true
+    margin: 0.2
+    width: 1150
+    df-print: kable
+editor: visual
+---
+
+# Introduction
+
+## Les statistiques {.smaller}
+
+L'ensemble des méthodes qui ont pour objet la collecte, le traitement et l'interprétation de données d'observation relatives à un groupe d'individus ou d'unités.
+
+-   Statistique descriptive : Décrire, résumer, visualiser des données.
+-   Statistique inférentielle (Inférence statistique) : induire des caractéristiques sur une population à partir d'un échantillon (relation, distribution).
+
+## Population ou échantillon ?
+
+- **Population** : ensemble des individus ou unités statistiques sur lesquels on veut faire des observations.
+- **Echantillon** : sous-ensemble de la population, choisi de manière aléatoire ou non, qui permet de faire des observations.
+
+Sélection de tous les bruns de la salle, population ou échantillon ?
+
+![](./img/population_echantillon.png){fig-align="center"}
+
+## Le data mining
+
+L'exploration et l'analyse de base de données pour le résumer, détecter des règles, des tendances, des associations ou des structures particulières. L'exploration des bases de données existantes en géosciences peut être utilisée pour détecter des nouvelles tendances ou comportements dans des milieux ou bien préparer une étude avant de une campagne de mesure.
+
+## Objectifs du cours
+
+-   La description de jeux de données, c'est à dire le synthétiser ou d'explorer son potentiel et ses limites. Il s'agit de mettre en évidence les informations que peuvent contenir le jeu de données.
+
+-   La prédiction de nouvelles informations, soit l'extrapolation de nouvelles données à partir des associations ou relations mises en évidence dans les données. Ces informations peuvent être qualitatives (classement ou scoring) ou quantitative (prédiction).
+
+## Objectifs du cours
+
+Acquérir des outils de description et d'analyse de données et une démarche critique sur les données et les résultats obtenus.
+
+## R et RStudio
+
+::: columns
+::: {.column width="50%"}
+\
+
+Un outil très complet gratuit et open source. Permet de reproduire facilement les analyses et assure une reproductibilité des résultats.
+:::
+
+::: {.column width="50%"}
+![](./img/Rscary.png){width="100%"} [^1]
+:::
+:::
+
+[^1]: Artwork by @allison_horst.
+
+## Ressources
+
+## Plan du cours
+
+Introduction
+
+Statistiques descriptives univariées
+
+Statistiques descriptives bivariées
+
+Statistiques descriptives multivariées
+
+Statistiques inférentielles
+
+Approche data mining et ses application
+
+## Données utilisées
+
+Données hydromorphologiques issus du protocole CARHYCE. [IED CARHYCE](https://analytics.huma-num.fr/ied_carhyce/)
+
+## Importons les pakages et le jeu de données
+
+\
+
+```{r, echo=TRUE, collapse=FALSE, results='hide'}
+# install all necessary packages
+# install.packages(c("ggplot2", "dplyr", "tidyr", "tibble", "janitor", "skimr", "dataMaid", "plotly", "e1071", "gmodels", "ggpmisc", "nortest", "FactoMineR", "factoextra", "gtsummary", "explor"))
+```
+
+\
+
+```{r, echo=TRUE, collapse=FALSE, results='hide'}
+library(ggplot2) # Graphics
+library(dplyr) # Data manipulation
+library(tidyr) # Data cleaning
+library(tibble) # Table visualisation
+library(janitor) # Column names cleaning
+library(skimr) # Data summary
+library(dataMaid) # Data report
+library(plotly) # Interactive plots
+library(e1071) # Skewness
+library(gmodels) # Contingency tables
+library(ggpmisc) # Regression line
+library(nortest) # Normality tests
+library(FactoMineR) # Factorial analysis
+library(factoextra) # Factorial analysis
+library(gtsummary) # Regression summary
+library(explor) # Data exploration
+library(boot) # Bootstrap
+```
+
+\
+
+```{r, echo=TRUE, collapse=FALSE, results='hide'}
+# import dataset
+carhyce_brute <- read.csv("data/Operations_CARHYCE_2024-06-25.csv", sep=";",dec=",",header=TRUE, encoding = "utf-8")
+```
+
+## Explorons le jeu de données
+
+```{r, echo=TRUE, collapse=FALSE}
+print(as_tibble(head(carhyce_brute)))
+```
+
+## Dimensions et variables
+
+```{r, echo=TRUE, collapse=FALSE, results='hide'}
+# names(carhyce_brute) # variable names
+# class(carhyce_brute) # table type (data.frame)
+# dim(carhyce_brute)   # table dimension
+# str(carhyce_brute)   # variable type
+```
+
+\
+
+```{r, echo=TRUE, collapse=FALSE}
+print(str(carhyce_brute))
+```
+
+## Les données quantitatives
+
+![](./img/datatype_quantitative.png){width="60%" fig-align="center"} [^2]
+
+[^2]: Artwork by @allison_horst.
+
+## Les données quantitatives
+
+![](./img/datatype_qualitative.png){width="80%" fig-align="center"} [^3]
+
+[^3]: Artwork by @allison_horst.
+
+## Nettoyage des colonnes
+
+```{r, echo=TRUE, collapse=FALSE}
+# clean column names with janitor
+carhyce <- carhyce_brute %>% # %>% = pipe operator from dplyr
+  clean_names() # clean column  names
+
+print(names(carhyce))
+```
+
+# Statistiques univariées
+
+## nettoyage des lignes et sélection des variables
+
+```{r, echo=TRUE, collapse=FALSE}
+carhyce_stat <- carhyce %>% 
+  group_by(code_station) %>% # group by station
+  filter(date_realisation == max(date_realisation)) %>% # select the last date by group
+  ungroup() %>%  # ungroup data
+  select(surface_bv_km2, 
+         continuite_ripisylve_rive_gauche,
+         continuite_ripisylve_rive_droite,
+         classe_ripisylve,
+         nom_her_ou_dom_dominant,
+         debit_plein_bord_m3_s,
+         largeur_mouillee_qb_m) # select columns
+print(head(carhyce_stat))
+```
+
+## Synthèse analyses univariées
+
+![](./img/datatype_summary.png){width="100%" fig-align="center"}
+
+## Distribution des bassins versants des stations
+
+```{r, echo=TRUE, collapse=FALSE}
+summary(carhyce_stat$surface_bv_km2)
+```
+
+::: columns
+::: {.column width="50%"}
+```{r, echo=TRUE, collapse=FALSE}
+# Histogram
+hist(carhyce_stat$surface_bv_km2, main = "Surfaces de bassins versants", xlab = "Surface de bassins versants (km2)", col = "lightblue")
+```
+:::
+
+::: {.column width="50%"}
+```{r, echo=TRUE, collapse=FALSE}
+# Boxplot
+boxplot(carhyce_stat$surface_bv_km2, main = "Surfaces de bassins versants", ylab = "Surface de bassins versants (km2)", col = "lightblue")
+points(1,mean(carhyce_stat$surface_bv_km2,na.rm=T),pch=16,col="red")
+```
+:::
+:::
+
+## La discrétisation de variables quantitatives
+
+- **Règle de Sturges** : méthode de détermination du nombre de classes à utiliser dans un histogramme : avoir un nombre de classes qui soit à la fois suffisamment grand pour capturer la structure de la distribution des données, mais pas trop grand pour ne pas perdre de sensibilité dans la visualisation.
+
+- Peut parfois sous-estimer le nombre de classes nécessaires, surtout pour des échantillons de taille réduite ou pour des distributions non normales.
+
+- En pratique, il est souvent recommandé de tester plusieurs nombres de classes et de choisir celui qui offre la meilleure représentation visuelle des données tout en préservant leur structure.
+
+## Changement de discrétisation et outliers
+
+```{r, echo=TRUE, collapse=FALSE}
+# print decile values
+print(quantile(carhyce_stat$surface_bv_km2, probs = seq(0, 1, 0.1), na.rm = TRUE))
+```
+
+```{r, echo=TRUE, collapse=FALSE, warning=FALSE, fig.align='center', fig.height=4}
+# plotly interactive histogram with 1000 breaks
+plot_ly(x = carhyce_stat$surface_bv_km2, type = "histogram", nbinsx = 1000)
+```
+
+## Retrait des valeurs extrêmes
+
+```{r, echo=TRUE, collapse=FALSE}
+# keep the data below the 90th percentile
+carhyce_stat <- carhyce_stat %>% 
+  filter(surface_bv_km2 < quantile(carhyce_stat$surface_bv_km2, 0.90, na.rm = TRUE))
+```
+
+::: columns
+::: {.column width="50%"}
+```{r, echo=TRUE, collapse=FALSE}
+# Histogram with normal curve
+h <- hist(carhyce_stat$surface_bv_km2, col = "lightblue", main = "Surface des bassins versants", xlab = "Surface de bassins versants (km2)") 
+xfit <- seq(min(carhyce_stat$surface_bv_km2),
+            max(carhyce_stat$surface_bv_km2), length = 40) 
+yfit <- dnorm(xfit, mean = mean(carhyce_stat$surface_bv_km2), sd = sd(carhyce_stat$surface_bv_km2)) 
+yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat$surface_bv_km2) 
+lines(xfit, yfit, col = "red", lwd = 2)
+```
+
+
+:::
+
+::: {.column width="50%"}
+```{r, echo=TRUE, collapse=FALSE}
+# Boxplot
+boxplot(carhyce_stat$surface_bv_km2, main = "Surfaces de bassins versants", ylab = "Surface de bassins versants (km2)", col = "lightblue", range = 0)
+points(1,mean(carhyce_stat$surface_bv_km2,na.rm=T),pch=16,col="red")
+```
+:::
+:::
+
+## Loi normale ou loi de Gauss {.smaller}
+
+-  Distribution symétrique centrée sur la moyenne et dont la forme est déterminée par l'écart-type.
+
+Définie par une fonction de probabilité :
+
+- Environ 68% des valeurs sont comprises entre $\mu - \sigma$ et $\mu + \sigma$.
+- 95% des valeurs sont comprises entre $\mu - 2\sigma$ et $\mu + 2\sigma$.
+
+- Très utilisées dans les tests statistiques ou la description de phénomènes aléatoires.
+
+```{r, echo=FALSE, collapse=FALSE, fig.align='center'}
+# several density plots on the same graph with dnorm
+x <- seq(-4, 4, length=100)
+hx <- dnorm(x)
+hx2 <- dnorm(x, mean=-0.5, sd=0.7)
+hx3 <- dnorm(x, mean=0.5, sd=0.5)
+plot(x, hx, type="l", lwd=2, col="black", xlab="x", ylab="Density", main="Density of normal distribution", ylim=c(0,0.8), xlim=c(-5,5))
+lines(x, hx2, lwd=2, col="red")
+lines(x, hx3, lwd=2, col="blue")
+```
+
+## Coefficient d'assymétrie de Fisher
+
+```{r, echo=TRUE, collapse=FALSE}
+# skewness
+e1071::skewness(carhyce_stat$surface_bv_km2, na.rm = TRUE, type = 1) # type 1 = Fisher
+```
+
+![](./img/skewness.png){width="100%" fig-align="center"}
+
+## Coefficient d'aplatissement de Fisher
+
+```{r, echo=TRUE, collapse=FALSE}
+# kurtosis
+e1071::kurtosis(carhyce_stat$surface_bv_km2, na.rm = TRUE, type = 1) # type 1 = Fisher
+```
+
+![](./img/kurtosis.png){width="100%" fig-align="center"}
+
+## Distribution normale? - QQ-plot
+
+
+```{r, echo=TRUE, collapse=FALSE, fig.height=4}
+# QQ-plot
+qqnorm(carhyce_stat$surface_bv_km2, 
+       main = "Normal Q-Q Plot - Surface des bassins versants")
+qqline(carhyce_stat$surface_bv_km2)
+```
+
+## Test de normalité
+
+::: panel-tabset
+
+### Shapiro-Wilk
+```{r, echo=TRUE, collapse=FALSE}
+shapiro.test(carhyce_stat$surface_bv_km2)
+```
+
+### Anderson-Darling
+```{r, echo=TRUE, collapse=FALSE}
+ad.test(carhyce_stat$surface_bv_km2)
+```
+
+### Kolmogorov-Smirnov
+```{r, echo=TRUE, collapse=FALSE}
+ks.test(carhyce_stat$surface_bv_km2, "pnorm", mean = mean(carhyce_stat$surface_bv_km2), sd = sd(carhyce_stat$surface_bv_km2))
+```
+:::
+
+- $H_0$ : la variable suit une distribution normale.
+- $H_1$ : la variable ne suit pas une distribution normale.
+
+- On peut rejeter $H_0$ et valider $H_1$ avec une probabilité de se tromper de $2.2 \times 10^{-16} \times 100$%.
+
+- p-value $<$ 0.05 => la distribution ne suit pas une loi normale.
+
+
+## Test de normalité - précaution / utilisation
+
+- Les tests de normalité sont sensibles à la taille de l'échantillon : 
+    - Pour un échantillon de taille réduite, les tests de normalité peuvent être biaisés.
+    - Pour un échantillon de taille importante, les tests de normalité peuvent être trop sensibles.
+
+- Souvent utilisé au prélable d'autres tests statistiques dit paramétriques : 
+  - Shapiro-Wilk => meilleur pour de petits échantillons (<2000).
+  - Kolmogorov-Smirnov => grands échantillons (>2000).
+  - Anderson-Darling => grands échantillons (>2000).
+
+## Distribution des classes de ripisylve
+
+```{r, echo=TRUE, collapse=FALSE}
+# Table
+print(table(carhyce_stat$classe_ripisylve))
+```
+
+```{r, echo=TRUE, collapse=FALSE}
+# Create a frequency table
+freq_table <- carhyce_stat %>%
+  group_by(classe_ripisylve) %>%
+  summarise(count = n()) %>%
+  mutate(freq_percent = count / sum(count) * 100,
+         cum_freq = cumsum(count),
+         cum_freq_percent = cumsum(freq_percent))
+print(freq_table)
+```
+
+## Diagramme en secteur
+
+```{r, echo=TRUE, collapse=FALSE}
+# Pie chart
+pie(table(carhyce_stat$classe_ripisylve), main = "Répartition des classes de ripisylve")
+```
+
+## Cheat code exploration de données
+
+```{r, echo=TRUE, collapse=FALSE}
+print(skim(carhyce_stat$surface_bv_km2))
+```
+
+```{r, echo=TRUE, collapse=FALSE, results='hide'}
+# makeDataReport(carhyce_stat)
+```
+
+# Statistiques bivariées
+
+## Une relation de dépendance entre deux variables ?
+
+-   Dans quel sens est la relation de causalité ?
+-   Y a-t-il d'autres variables qui peuvent expliquer cette relation ? (Effet cigogne)
+-   La mesure des phénomènes est-elle fiable ?
+-   L'échantillon est-il représentatif de la population ?
+
+## Reprenons nos données
+
+```{r, echo=TRUE, collapse=FALSE}
+carhyce_stat <- carhyce %>% 
+  # select the last date for each station
+  group_by(code_station) %>% # group by station
+  filter(date_realisation == max(date_realisation)) %>% # select the last date by group
+  ungroup() %>%  # ungroup data
+  filter(surface_bv_km2 < quantile(carhyce$surface_bv_km2, 0.90, na.rm = TRUE)) %>% # keep surface_bv_km2 data below the 90th percentile
+  filter(debit_plein_bord_m3_s < quantile(carhyce$debit_plein_bord_m3_s, 0.95, na.rm = TRUE)) %>%
+  filter(largeur_mouillee_qb_m < quantile(carhyce$largeur_mouillee_qb_m, 0.975, na.rm = TRUE)) %>%
+  filter(vitesse_moyenne_qb_m_s < quantile(carhyce$vitesse_moyenne_qb_m_s, 0.975, na.rm = TRUE)) %>%
+  filter(d50_mm < quantile(carhyce$d50_mm, 0.99, na.rm = TRUE)) %>%
+  # select columns
+  select(surface_bv_km2, 
+         continuite_ripisylve_rive_gauche,
+         continuite_ripisylve_rive_droite,
+         debit_plein_bord_m3_s,
+         largeur_mouillee_qb_m,
+         vitesse_moyenne_qb_m_s,
+         d50_mm) # select columns
+print(head(carhyce_stat))
+```
+
+## Tableau de contingence (qualitatives vs qualitatives)
+
+::: panel-tabset
+### Rbase
+
+```{r, echo=TRUE, collapse=FALSE}
+# Rbase method contingency table
+tab <- table(carhyce_stat$continuite_ripisylve_rive_gauche, carhyce_stat$continuite_ripisylve_rive_droite)
+tab_mag <- addmargins(tab) # margins (effectifs marginaux)
+print(tab_mag)
+```
+
+### gmodels effectifs
+
+```{r, echo=TRUE, collapse=FALSE, results='hide'}
+contingency_table <- CrossTable(carhyce_stat$continuite_ripisylve_rive_gauche, 
+                                 carhyce_stat$continuite_ripisylve_rive_droite, 
+                                 prop.chisq = FALSE, prop.t = FALSE, prop.r = FALSE, prop.c = FALSE)
+```
+
+```{r, echo=TRUE, collapse=FALSE}
+print(contingency_table$t)
+```
+:::
+
+## Effectif partiels
+
+::: panel-tabset
+### total
+
+[Fréquences partielles sur effectif total]{style="font-size: 0.7em;"}
+
+```{r, echo=TRUE, collapse=FALSE}
+# x = rive gauche, y = rive droite
+print(contingency_table$prop.tbl) # or prop.table(x, y)
+```
+
+### ligne
+
+[Fréquence partielle sur effectif marginal (fréquence conditionnelle)]{style="font-size: 0.7em;"}
+
+```{r, echo=TRUE, collapse=FALSE}
+# x = rive gauche, y = rive droite
+print(contingency_table$prop.row) # or prop.table(x, y, margin = 1)
+```
+
+### colonne
+
+[Fréquence partielle sur effectif marginal (fréquence conditionnelle)]{style="font-size: 0.7em;"}
+
+```{r, echo=TRUE, collapse=FALSE}
+# x = rive gauche, y = rive droite (ou fréquence conditionnelle)
+print(contingency_table$prop.col) # or prop.table(x, y, margin = 2)
+```
+:::
+
+## Diagramme en barre et mosaique
+
+::: panel-tabset
+### Groupé
+
+```{r, echo=TRUE, collapse=FALSE, fig.height=4}
+ggplot(carhyce_stat, aes(x=factor(continuite_ripisylve_rive_gauche), fill=factor(continuite_ripisylve_rive_droite))) +
+  geom_bar(position = "dodge") +
+  labs(x = "Ripisylve rive gauche", y = "Effectif", fill = "Ripisylve rive droite") +
+  theme_minimal()
+```
+
+### Empilé
+
+```{r, echo=TRUE, collapse=FALSE, fig.height=4}
+ggplot(carhyce_stat, aes(x=factor(continuite_ripisylve_rive_gauche), fill=factor(continuite_ripisylve_rive_droite))) +
+  geom_bar(position = "stack") +
+  labs(x = "Ripisylve rive gauche", y = "Effectif", fill = "Ripisylve rive droite") +
+  theme_minimal()
+```
+
+### Mosaique
+
+```{r, echo=TRUE, collapse=FALSE}
+mosaicplot(table(carhyce_stat$continuite_ripisylve_rive_gauche, carhyce_stat$continuite_ripisylve_rive_droite), xlab = "Rive gauche", ylab = "Rive droite", main = "")
+```
+:::
+
+## Test du Chi2 - Théorie
+
+Démontrer un lien de dépendance statistiquement significatif entre deux variables qualitatives.
+
+Deux hypothèses :
+
+-   $H_0$ : les variables sont indépendantes
+-   $H_1$ : les variables sont dépendantes
+
+Si $H_0$ est rejetée, $H_1$ est validée. Si $H_0$ n'est pas rejetée, $H_1$ n'est pas validée mais on a rien démontrer concernant $H_0$. Si $H_0$ est rejeté, on ne peut pas montrer qu'il y a un lien, mais pas qu'un lien n'existe pas.
+
+## Test du Chi2 - précaution et application
+
+- Attention :
+    - Le test du Chi2 ne marche pas pour les petits effectifs : 80% des effectifs doivent dépasser 5 individus.
+    - Le test du Chi2 ne dit rien sur le sens de la relation.
+
+### Application R
+```{r, echo=TRUE, collapse=FALSE}
+chi2_ripisylve <- chisq.test(table(carhyce_stat$continuite_ripisylve_rive_gauche, carhyce_stat$continuite_ripisylve_rive_droite))
+```
+
+## Test du Chi2 - effectif calculé sous $H_0$
+
+[Effectifs observés]{style="font-size: 0.7em;"}
+
+```{r, echo=TRUE, collapse=FALSE}
+print(chi2_ripisylve$observed[,1:4])
+```
+
+[Effectif calculé sous $H_0$]{style="font-size: 0.7em;"}
+
+```{r, echo=TRUE, collapse=FALSE}
+print(round(chi2_ripisylve$expected[,1:4], 0))
+```
+
+## Test du Chi2 - interprétation
+
+```{r, echo=TRUE, collapse=FALSE}
+print(chi2_ripisylve)
+```
+
+-   La p-value représente la probabilité d'obtenir un résultat aussi extrême que celui observé, dans les conditions de $H_0$.
+
+-   Cette situation est très improbable. On peut rejeter $H_0$ et valider $H_1$ avec une probabilité de se tromper de $2.2 \times 10^{-16} \times 100$%.
+
+## Tableau de contingence (qualitatives vs quantitatives)
+
+[Discrétiser la variable quantitative.]{style="font-size: 0.7em;"}
+
+```{r, echo=TRUE, collapse=FALSE}
+bins <- nclass.Sturges(carhyce_stat$largeur_mouillee_qb_m) # set breaks with Sturges
+carhyce_stat$largeur_mouillee_qb_m_sturges <- cut(carhyce_stat$largeur_mouillee_qb_m, breaks = bins, include.lowest = TRUE, right = FALSE) # new column with breaks
+tab <- table(carhyce_stat$continuite_ripisylve_rive_gauche, carhyce_stat$largeur_mouillee_qb_m_sturges) # contingency table
+addmargins(tab) # with margins (effectifs marginaux)
+```
+
+## Tableau de contingence (qualitatives vs quantitatives)
+
+[Calculer des indicateurs par modalité.]{style="font-size: 0.7em;"}
+
+::: panel-tabset
+### Tableau
+
+```{r, echo=TRUE, collapse=FALSE}
+summary_table <- carhyce_stat %>%
+  group_by(continuite_ripisylve_rive_gauche) %>% 
+  dplyr::summarize(
+    Mean = mean(largeur_mouillee_qb_m, na.rm = TRUE),
+    Median = median(largeur_mouillee_qb_m, na.rm = TRUE),
+    StdDev = sd(largeur_mouillee_qb_m, na.rm = TRUE)
+  )
+print(summary_table)
+```
+
+### Boxplot
+
+```{r, echo=TRUE, collapse=FALSE, fig.height=3.5}
+ggplot(carhyce_stat, aes(x = factor(continuite_ripisylve_rive_gauche), y = largeur_mouillee_qb_m, fill = factor(continuite_ripisylve_rive_gauche))) +
+  geom_boxplot() +
+  labs(x = "Ripisylve rive gauche", y = "Largeur mouillée (m)", fill = "Ripisylve rive gauche") +
+  theme_minimal()
+```
+:::
+
+## Quantitatif vs quantitatif
+
+```{r, echo=TRUE, collapse=FALSE}
+plot <- ggplot(carhyce_stat, aes(x = debit_plein_bord_m3_s, y = largeur_mouillee_qb_m)) +
+  geom_point() +
+  labs(x = "Débit de plein bord (m3/s)", y = "Largeur mouillée plein bord (m)") +
+  theme_minimal()
+plot
+```
+
+## Régression ?
+
+::: panel-tabset
+### Linéaire
+
+```{r, echo=TRUE, collapse=FALSE}
+plot + geom_smooth(method="lm", col="red")
+```
+
+
+### Polynomiale
+
+```{r, echo=TRUE, collapse=FALSE}
+plot + geom_smooth(method="lm", col="red", formula = y ~ poly(x, 2))
+```
+
+### Logarithmique
+
+```{r, echo=TRUE, collapse=FALSE}
+plot + geom_smooth(method="lm", col="red", formula = y ~ log(x) + x)
+```
+:::
+
+## Covariance {.smaller}
+
+**Evalue dans quelle mesure les variations de deux variables sont simultanées ou non.**
+
+- "+" = les écarts entre les valeurs et leur moyenne ont tendance a être de même signe.
+- "=" les écarts entre les valeurs et leur moyenne ont tendance a être de signe opposé.
+- "0" les écarts entre les $Xi$ et leur moyenne et les écarts entre les $Yi$ et leur moyenne n'ont aucun lien entre eux.
+
+**Attention** : 
+
+- Sa dimension est le produit des dimensions des variables (e.g. euros et années), elle est donc difficile à interpréter.
+
+- Davantage un outil qui permet d'effectuer d'autres calculs comme la corrélation de Person qu'un indicateur utilisé pour l'interprétation.
+
+## Coefficient de corrélation linéaire de Pearson {.smaller}
+
+**Evalue le degré de dépendance linéaire entre deux variables quantitatives. Le résultat dépend de la qualité de l'ajustement affine obtenu par une régression linéaire.**
+
+**Intensité :**
+
+- Proche de 1 = forte dépendance des variables
+- Proche de 0 = indépendance des variables
+
+**Sens :**
+
+- ">0" = les variables évoluent dans le même sens
+- "<0" = les variables évoluent dans le sens opposé.
+
+Plus on se rapproche de 1 plus les deux variables sont fortement corrélées linéairement. Le signe indique le sens de la relation.
+
+Conditions théoriques :
+
+- Les deux variables doivent suivre une distribution normale (test paramétrique), sauf pour les grands échantillons.
+- Homoscédasticité des résidus.
+
+## Coefficient de détermination
+
+**Le coeffient de corrélation de Pearson au carré. Il détermine le pourcentage de variation de Y imputable à X.**
+
+\
+
+$R^2$% des variations de Y s'expliquent par X.
+
+Par exemple si $R^2 = 0.35$, 35% des variations de la largeur mouillée s'expliquent par le débit.
+
+\
+
+**Attention :** 
+
+- Corrélation $\neq$ causalité!
+- Multicolinéarité, quand plusieurs variables explicatives ont des liens de corrélation entre elles!
+
+## Coefficient de corrélation de Spearman
+
+- C'est le coefficient de Pearson appliqué aux rangs des variables.
+
+- Similaire au coefficient de Pearson mais ne suppose pas de relation linéaire entre les variables. Il évalue la relation monotone entre deux variables.
+
+- La distribution des variables n'a pas besoin d'être normale (test non paramétrique).
+
+- L'interprétation est similaire à celle du coefficient de Pearson.
+
+## Distribution normale? - Test graphique {.smaller}
+
+::: panel-tabset
+
+### Débit de plein bord
+
+```{r, echo=TRUE, collapse=FALSE, fig.height=3.5}
+# Histogram with normal curve
+h <- hist(carhyce_stat$debit_plein_bord_m3_s, col = "lightblue", main = "Débit de plein bord", xlab = "Débit de plein bord (m3/s)") 
+xfit <- seq(min(carhyce_stat$debit_plein_bord_m3_s),
+            max(carhyce_stat$debit_plein_bord_m3_s), length = 40) 
+yfit <- dnorm(xfit, mean = mean(carhyce_stat$debit_plein_bord_m3_s), sd = sd(carhyce_stat$debit_plein_bord_m3_s)) 
+yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat$debit_plein_bord_m3_s) 
+lines(xfit, yfit, col = "red", lwd = 2)
+```
+
+### Largeur mouillée
+
+```{r, echo=TRUE, collapse=FALSE, fig.height=3.5}
+# Histogram with normal curve
+h <- hist(carhyce_stat$largeur_mouillee_qb_m, col = "lightblue", main = "Largeur mouillée", xlab = "Largeur mouillée (m)") 
+xfit <- seq(min(carhyce_stat$largeur_mouillee_qb_m),
+            max(carhyce_stat$largeur_mouillee_qb_m), length = 40) 
+yfit <- dnorm(xfit, mean = mean(carhyce_stat$largeur_mouillee_qb_m), sd = sd(carhyce_stat$largeur_mouillee_qb_m)) 
+yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat$largeur_mouillee_qb_m) 
+lines(xfit, yfit, col = "red", lwd = 2)
+```
+:::
+
+- Et les coefficients d'asymétrie, d'aplatissement et tests...
+
+
+
+## Comparaison des modèles régressions
+
+::: panel-tabset
+
+### Linéaire
+
+```{r, echo=TRUE, collapse=FALSE}
+model_lineaire <- lm(largeur_mouillee_qb_m ~ debit_plein_bord_m3_s, data = carhyce_stat)
+# equation
+print(paste0("y = ", round(coef(model_lineaire)[1], 2), " + ", round(coef(model_lineaire)[2], 2), "x"))
+# R2
+print(paste0("R2 = ", round(summary(model_lineaire)$r.squared, 2)))
+# Residual standard error
+print(paste0("S = ", round(summary(model_lineaire)$sigma, 2)))
+# Pearson correlation
+print(paste0("Pearson = ", round(cor.test(carhyce_stat$largeur_mouillee_qb_m, carhyce_stat$debit_plein_bord_m3_s, method = "pearson")$estimate, 2)))
+# Spearman correlation
+print(paste0("Spearman = ", round(cor.test(carhyce_stat$largeur_mouillee_qb_m, carhyce_stat$debit_plein_bord_m3_s, method = "spearman")$estimate, 2)))
+```
+
+### Polynomiale
+```{r, echo=TRUE, collapse=FALSE}
+# polynomial model (degree 2)
+model_poly <- lm(largeur_mouillee_qb_m ~ poly(debit_plein_bord_m3_s, 2), data = carhyce_stat)
+# equation
+print(paste0("y = ", round(coef(model_poly)[1], 2), " + ", round(coef(model_poly)[2], 2), "x + ", round(coef(model_poly)[3], 2), "x^2"))
+# Residual standard error
+print(paste0("S = ", round(summary(model_poly)$sigma, 2)))
+```
+
+### Logarithmique
+
+```{r, echo=TRUE, collapse=FALSE}
+# logarithmic model
+model_log <- lm(largeur_mouillee_qb_m ~ log(debit_plein_bord_m3_s), data = carhyce_stat)
+# equation
+print(paste0("y = ", round(coef(model_log)[1], 2), " + ", round(coef(model_log)[2], 2), "log(x)"))
+# Residual standard error
+print(paste0("S = ", round(summary(model_log)$sigma, 2)))
+```
+:::
+
+## Homosédasticité/Hétérosédasticité des résidus {.smaller}
+
+```{r, echo=TRUE, collapse=FALSE, fig.width=15}
+plot(model_lineaire, which = 1)
+```
+
+- Les résidus doivent être dispersés aléatoirement autour de zéro. La présence d’une tendance (linéaire ou non) indique des effets systématiques ignorés par le modèle. La variance des résidus doit être approximativement constante (homoscédasticité).
+
+- Ici la variance des résidus est hétérosédastique, la dispersion des résidus augmente avec la valeur prédite.
+
+## Homosédasticité vs Hétérosédasticité
+
+\
+
+![](./img/homosedasticite.png)
+
+## Normalité des résidus {.smaller}
+
+```{r, echo=TRUE, collapse=FALSE, fig.height=3.5}
+par(mfrow=c(1,2))
+plot(model_lineaire, which = 2)
+hist(model_lineaire$residuals, breaks = 100, main = "Histogramme des résidus", xlab = "Résidus")
+```
+- Le diagramme quantile-quantile permet de détecter des déviations systématiques de la normalité des résidus. La distribution des résidus présente une dissymétrie à droite.
+
+- Notre modèle a tendance à surestimer les valeurs basses et sous-estimer les valeurs hautes.
+
+::: aside
+[Pour aller plus loin : Cours de Philippe Marchand (Université du Québec en Abitibi-Témiscamingue) ](https://pmarchand1.github.io/ECL7102/notes_cours/6-Regression_lineaire.html#suppositions_du_mod%C3%A8le_de_r%C3%A9gression_lin%C3%A9aire)
+:::
+
+## Régression linéaire multiple
+
+```{r, echo=TRUE, collapse=FALSE}
+# multiple linear regression with two variables
+model_multiple <- lm(largeur_mouillee_qb_m ~ debit_plein_bord_m3_s + vitesse_moyenne_qb_m_s + d50_mm, data = carhyce_stat)
+# equation
+print(paste0("y = ", round(coef(model_multiple)[1], 2), " + ", round(coef(model_multiple)[2], 2), "x1 + ", round(coef(model_multiple)[3], 2), "x2 + ", round(coef(model_multiple)[4], 2), "x3"))
+# R2
+print(paste0("R2 = ", round(summary(model_multiple)$r.squared, 2)))
+# Residual standard error
+print(paste0("S = ", round(summary(model_multiple)$sigma, 2)))
+```
+## Régression linéaire multiple - cheatcode
+
+```{r, echo=TRUE, collapse=FALSE}
+model_multiple %>%
+  tbl_regression(intercept = TRUE)
+```
+
+## Régression linéaire multiple - graphique en forêt
+
+```{r, echo=TRUE, collapse=FALSE}
+# forest plot
+ggstats::ggcoef_model(model_multiple)
+```
+
+## Matrice de nuage de points
+
+```{r, echo=TRUE, collapse=FALSE}
+pairs(carhyce_stat[, c("vitesse_moyenne_qb_m_s", "debit_plein_bord_m3_s", "largeur_mouillee_qb_m", "d50_mm")])
+```
+
+## Corrélations croisées
+
+```{r, echo=TRUE, collapse=FALSE}
+cor(carhyce_stat[, c("vitesse_moyenne_qb_m_s", "debit_plein_bord_m3_s", "largeur_mouillee_qb_m", "d50_mm")], method = "pearson")
+```
+
+# Comparaison de jeux de données
+
+## Hypothèses et problématiques
+
+Hypothèses : 
+
+- Les stations CARHYCE sont représentatives de l'état des rivières françaises pour les petits bassins versants (<100 km2).
+- Je peux distinguer les stations de montagne des stations de plaine par leur classification géographique.
+
+Problématiques :
+
+- Les rivières de montagne ont-elles des caractéristiques différentes des rivières de plaine pour les petits bassins versants ?
+
+
+## Reprenons nos données {.smaller}
+
+```{r, echo=TRUE, collapse=FALSE}
+carhyce_stat <- carhyce %>% 
+  # select the last date for each station
+  group_by(code_station) %>% # group by station
+  filter(date_realisation == max(date_realisation)) %>% # select the last date by group
+  ungroup() %>%  # ungroup data
+  filter(surface_bv_km2 < 100) %>% # keep surface_bv_km2 data below 200 km2
+  mutate(surface_bv_km2 = ifelse(surface_bv_km2 %in% boxplot.stats(surface_bv_km2)$out, NA, surface_bv_km2),
+         score_ripisylve = ifelse(score_ripisylve %in% boxplot.stats(score_ripisylve)$out, NA, score_ripisylve),
+         profondeur_moyenne_qb_m = ifelse(profondeur_moyenne_qb_m %in% boxplot.stats(profondeur_moyenne_qb_m)$out, NA, profondeur_moyenne_qb_m),
+         largeur_mouillee_qb_m = ifelse(largeur_mouillee_qb_m %in% boxplot.stats(largeur_mouillee_qb_m)$out, NA, largeur_mouillee_qb_m),
+         surface_mouillee_qb_m2 = ifelse(surface_mouillee_qb_m2 %in% boxplot.stats(surface_mouillee_qb_m2)$out, NA, surface_mouillee_qb_m2),
+         rayon_hydraulique_qb = ifelse(rayon_hydraulique_qb %in% boxplot.stats(rayon_hydraulique_qb)$out, NA, rayon_hydraulique_qb),
+         d16_mm = ifelse(d16_mm %in% boxplot.stats(d16_mm)$out, NA, d16_mm),
+         d50_mm = ifelse(d50_mm %in% boxplot.stats(d50_mm)$out, NA, d50_mm),
+         d84_mm = ifelse(d84_mm %in% boxplot.stats(d84_mm)$out, NA, d84_mm),
+         coefficient_de_sinuosite = ifelse(coefficient_de_sinuosite %in% boxplot.stats(coefficient_de_sinuosite)$out, NA, coefficient_de_sinuosite),
+         coefficient_rugosite = ifelse(coefficient_rugosite %in% boxplot.stats(coefficient_rugosite)$out, NA, coefficient_rugosite),
+         debit_plein_bord_m3_s = ifelse(debit_plein_bord_m3_s %in% boxplot.stats(debit_plein_bord_m3_s)$out, NA, debit_plein_bord_m3_s),
+         vitesse_moyenne_qb_m_s = ifelse(vitesse_moyenne_qb_m_s %in% boxplot.stats(vitesse_moyenne_qb_m_s)$out, NA, vitesse_moyenne_qb_m_s),
+         cote_ligne_energie_qb = ifelse(cote_ligne_energie_qb %in% boxplot.stats(cote_ligne_energie_qb)$out, NA, cote_ligne_energie_qb),
+         nombre_de_froude_qb = ifelse(nombre_de_froude_qb %in% boxplot.stats(nombre_de_froude_qb)$out, NA, nombre_de_froude_qb),
+         force_tractrice_qb_n_m2 = ifelse(force_tractrice_qb_n_m2 %in% boxplot.stats(force_tractrice_qb_n_m2)$out, NA, force_tractrice_qb_n_m2)) %>% # replace outliers by NA by Interquartile range (IQR) from boxplot function
+  mutate(montagne_plaine = ifelse(modele_reference_img %in% c("ALPES INTERNES", "CEVENNES", "CORSE", "JURA-PREALPES DU NORD", "MASSIF CENTRAL NORD", "MASSIF CENTRAL SUD", "Montagne volcanique des DOM", "PREALPES DU SUD", "PYRENEES"), "montagne", "plaine")) %>% # try to classify in two category, montagne and plaine
+  # select columns
+  select(surface_bv_km2, 
+         continuite_ripisylve_rive_gauche,
+         continuite_ripisylve_rive_droite,
+         score_ripisylve,
+         profondeur_moyenne_qb_m,
+         largeur_mouillee_qb_m,
+         surface_mouillee_qb_m2,
+         rayon_hydraulique_qb,
+         d16_mm,
+         d50_mm,
+         d84_mm,
+         coefficient_de_sinuosite,
+         coefficient_rugosite,
+         debit_plein_bord_m3_s,
+         vitesse_moyenne_qb_m_s,
+         cote_ligne_energie_qb,
+         nombre_de_froude_qb,
+         force_tractrice_qb_n_m2,
+         modele_reference_img,
+         montagne_plaine) %>%  # select columns
+  na.omit() # remove NA values
+```
+
+## Intervalles de confiance de la moyenne
+
+Distribution normale ou échantillon suffisamment grand (n > 30 = Théorème central limite)
+
+- Théoreme centrale limite => la moyenne d'un grand nombre d'échantillons (>30) de taille n suit une distribution normale.
+- Si on connait l'écart-type de la population, on l'utilise avec les valeurs critiques de la loi normale.
+
+$\text{CI} = \left( \bar{x} \pm z^* \frac{\sigma}{\sqrt{n}} \right)
+
+- $\bar{x}$ = moyenne de l'échantillon
+- $\sigma$ = écart-type de la population
+- $n$ = taille de l'échantillon
+- $z^*$ = valeur critique de la loi normale
+
+- Pour un niveau de confiance de 95%, $z^* = 1.96$, soit 1.96 fois l'écart-type de la moyenne.
+
+```{r, echo=TRUE, collapse=FALSE}
+# mean confidence interval for the all population with 95% confidence level
+# qnorm(0.975) = 1.96 => read in normal distribution critical value
+fake_sd_pop <- 2 # fake standard deviation of the population
+mean_ci <- mean(carhyce_stat$largeur_mouillee_qb_m, na.rm = TRUE) + c(-1, 1) * qnorm(0.975) * fake_sd_pop / sqrt(length(carhyce_stat$largeur_mouillee_qb_m))
+print(mean_ci)
+```
+
+## Intervalles de confiance de la moyenne
+
+Distribution normale ou échantillon suffisamment grand (n > 30 = Théorème central limite)
+
+- Théoreme centrale limite => la moyenne d'un grand nombre d'individus de taille n suit une distribution normale.
+- Si on ne connait pas l'écart-type de la population, on l'estime avec l'écart-type de l'échantillon et on utilise les valeurs critiques de la loi de Student.
+
+```{r, echo=TRUE, collapse=FALSE}
+# mean confidence interval for the all population with 95% confidence level
+mean_ci <- mean(carhyce_stat$largeur_mouillee_qb_m, na.rm = TRUE) + c(-1, 1) * qt(0.975, length(carhyce_stat$largeur_mouillee_qb_m) - 1) * sd(carhyce_stat$largeur_mouillee_qb_m, na.rm = TRUE) / sqrt(length(carhyce_stat$largeur_mouillee_qb_m))
+print(mean_ci)
+```
+
+## Intervalles de confiance moyenne - non normale et petit échantillon
+
+Distribution non normale et petit échantillon (n < 30)
+
+- On utilise la méthode de bootstrap pour estimer l'intervalle de confiance de la moyenne. on simule d'une manière itérative et inductive une multitude d'échantillons analogues à l'échantillon initial. On calcule la moyenne de chaque échantillon et on obtient la distribution des moyennes.
+
+```{r, echo=TRUE, collapse=FALSE}
+# sample 20 values from the population
+sample_largeur <- sample(carhyce_stat$largeur_mouillee_qb_m, 20)
+```
+
+```{r, echo=TRUE, collapse=FALSE}
+# bootstrap function
+bootstat <- function(x, i) mean(x[i])
+# mean confidence interval for the sample with 95% confidence level
+mean_ci_sample <- boot(data = sample_largeur, statistic = bootstat, R = 1000)
+boot.ci(mean_ci_sample, type = "basic", conf = 0.95)
+```
+
+## Comparaison des stations de plaine et de montagne
+
+Séparation des jeux de données.
+
+```{r, echo=TRUE, collapse=FALSE}
+carhyce_stat_montagne <- carhyce_stat %>% filter(montagne_plaine == "montagne")
+carhyce_stat_montagne_mean = mean(carhyce_stat_montagne$d50_mm, na.rm = TRUE)
+print(carhyce_stat_montagne_mean)
+```
+
+```{r, echo=TRUE, collapse=FALSE}
+carhyce_stat_plaine <- carhyce_stat %>% filter(montagne_plaine == "plaine")
+carhyce_stat_plaine_mean = mean(carhyce_stat_plaine$d50_mm, na.rm = TRUE)
+print(carhyce_stat_plaine_mean)
+```
+
+- Les rivières de montagne ont t'elles vraiment une granulométrie plus grossière que cettes de plaine?
+
+## Conditions de comparaison des moyennes
+
+![](./img/t-test-diagram.png)
+
+## Conditions de comparaison des moyennes
+
+Si la distribution est très dissymétrique malgrés un échantillon >30 => test non paramétrique.
+![](./img/normality.png)
+
+```{r, echo=FALSE, eval=FALSE}
+# draw an histogram close to a normal distribution with fake data with the normal curve on top
+# set.seed(123)  # For reproducibility
+fake_data <- rnorm(1000, mean = 0, sd = 1)  # Generate 1000 samples
+h <- hist(fake_data, col = "lightblue", main = "", xlab = "Fake data", breaks = 30)
+xfit <- seq(min(fake_data), max(fake_data), length = 40)
+yfit <- dnorm(xfit, mean = mean(fake_data), sd = sd(fake_data))
+yfit <- yfit * diff(h$mids[1:2]) * length(fake_data)
+lines(xfit, yfit, col = "red", lwd = 2)
+```
+
+```{r, echo=FALSE, eval=FALSE}
+# draw an histogram close to a normal distribution with fake data with the normal curve on top
+# set.seed(123)  # For reproducibility
+fake_data <- rweibull(1000, shape = 30, scale = 2)  # Generate 1000 samples
+h <- hist(fake_data, col = "lightblue", main = "", xlab = "Fake data", breaks = 30)
+xfit <- seq(min(fake_data), max(fake_data), length = 40)
+yfit <- dnorm(xfit, mean = mean(fake_data), sd = sd(fake_data))
+yfit <- yfit * diff(h$mids[1:2]) * length(fake_data)
+lines(xfit, yfit, col = "red", lwd = 2)
+```
+
+```{r, echo=FALSE, eval=FALSE}
+# draw an histogram close to a normal distribution with fake data with the normal curve on top
+# set.seed(123)  # For reproducibility
+fake_data <- data_lognormal <- rlnorm(1000, meanlog = 2, sdlog = 0.8)
+h <- hist(fake_data, col = "lightblue", main = "", xlab = "Fake data", breaks = 30)
+xfit <- seq(min(fake_data), max(fake_data), length = 40)
+yfit <- dnorm(xfit, mean = mean(fake_data), sd = sd(fake_data))
+yfit <- yfit * diff(h$mids[1:2]) * length(fake_data)
+lines(xfit, yfit, col = "red", lwd = 2)
+```
+
+## Comparaison de moyennes - IC
+
+Calcul des intervalles de confiance de la moyenne (grands échantillons).
+
+```{r, echo=TRUE, collapse=FALSE}
+# mean confidence interval for the all population with 95% confidence level
+mean_ci_montagne <- carhyce_stat_montagne_mean + c(-1, 1) * qt(0.975, length(carhyce_stat_montagne$d50_mm) - 1) * sd(carhyce_stat_montagne$d50_mm, na.rm = TRUE) / sqrt(length(carhyce_stat_montagne$d50_mm))
+mean_ci_plaine <- carhyce_stat_plaine_mean + c(-1, 1) * qt(0.975, length(carhyce_stat_plaine$d50_mm) - 1) * sd(carhyce_stat_plaine$d50_mm, na.rm = TRUE) / sqrt(length(carhyce_stat_plaine$d50_mm))
+# print means and confidence intervals for each dataset
+print(paste0("Montagne : ", round(carhyce_stat_montagne_mean, 2), " [", round(mean_ci_montagne[1], 2), " - ", round(mean_ci_montagne[2], 2), "]"))
+print(paste0("Plaine : ", round(carhyce_stat_plaine_mean, 2), " [", round(mean_ci_plaine[1], 2), " - ", round(mean_ci_plaine[2], 2), "]"))
+```
+## Comparaison de moyennes - IC boxplot
+
+```{r, echo=TRUE, collapse=FALSE}
+# boxplot with mean, confidence interval and their values
+boxplot(carhyce_stat$d50_mm ~ carhyce_stat$montagne_plaine, main = "Granulométrie d50", xlab = "Montagne/Plaine", ylab = "Granulométrie d50 (mm)", col = c("lightblue", "lightgreen"))
+points(1, carhyce_stat_montagne_mean, pch = 19, col = "red")
+segments(1, mean_ci_montagne[1], 1, mean_ci_montagne[2], col = "red")
+points(2, carhyce_stat_plaine_mean, pch = 19, col = "red")
+segments(2, mean_ci_plaine[1], 2, mean_ci_plaine[2], col = "red")
+# add values of means and confidence intervals
+text(1, mean_ci_montagne[2], paste0(round(carhyce_stat_montagne_mean, 2), " [", round(mean_ci_montagne[1], 2), " - ", round(mean_ci_montagne[2], 2), "]"), pos = 3)
+text(2, mean_ci_plaine[2], paste0(round(carhyce_stat_plaine_mean, 2), " [", round(mean_ci_plaine[1], 2), " - ", round(mean_ci_plaine[2], 2), "]"), pos = 3)
+```
+## Test de comparaison des moyennes - Student t-test
+
+- Test de Student (t-test) pour comparer les moyennes de deux échantillons indépendants.
+
+- Hypothèses :
+
+    - $H_0$ : les moyennes des deux échantillons sont égales.
+    - $H_1$ : les moyennes des deux échantillons sont différentes.
+    
+```{r, echo=TRUE, collapse=FALSE}
+# Student t-test
+t.test(carhyce_stat_montagne$d50_mm, carhyce_stat_plaine$d50_mm)
+```
+## Petits échantillons ou distributions non normales
+
+```{r, echo=TRUE, collapse=FALSE}
+# montagne data with only PYRENEES
+carhyce_stat_montagne_vosges <- carhyce_stat %>% filter(modele_reference_img == "VOSGES")
+# dataset dimension and mean
+print(paste0("row number : ", dim(carhyce_stat_montagne_vosges)[1]))
+print(paste0("mean : ", mean(carhyce_stat_montagne_vosges$d50_mm, na.rm = TRUE)))
+```
+
+```{r, echo=TRUE, collapse=FALSE}
+carhyce_stat_plaine_collineen <- carhyce_stat %>% filter(modele_reference_img == "Plaine/collinéen calcaire")
+# dataset dimension and mean
+print(paste0("row number : ", dim(carhyce_stat_plaine_collineen)[1]))
+print(paste0("mean : ", mean(carhyce_stat_plaine_collineen$d50_mm, na.rm = TRUE)))
+```
+
+## Les distributions sont-elles normales? - Code
+
+```{r, echo=FALSE, eval=FALSE, collapse=FALSE, fig.width=15}
+par(mfrow=c(1,2))
+# Histogram with normal curve - Montagne
+h <- hist(carhyce_stat_montagne$largeur_mouillee_qb_m, col = "lightblue", main = "Largeur mouillée plein bord - la montagne", xlab = "Largeur mouillée plein bord (m)", ylim = c(0, 40), breaks = 30) 
+xfit <- seq(min(carhyce_stat_montagne$largeur_mouillee_qb_m),
+            max(carhyce_stat_montagne$largeur_mouillee_qb_m), length = 40) 
+yfit <- dnorm(xfit, mean = mean(carhyce_stat_montagne$largeur_mouillee_qb_m), sd = sd(carhyce_stat_montagne$largeur_mouillee_qb_m)) 
+yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat_montagne$largeur_mouillee_qb_m) 
+lines(xfit, yfit, col = "red", lwd = 2)
+
+# Histogram with normal curve - Plaine
+h <- hist(carhyce_stat_plaine$largeur_mouillee_qb_m, col = "lightblue", main = "Largeur mouillée plein bord - la montagne", xlab = "Largeur mouillée plein bord (m)", breaks = 30) 
+xfit <- seq(min(carhyce_stat_plaine$largeur_mouillee_qb_m),
+            max(carhyce_stat_plaine$largeur_mouillee_qb_m), length = 40) 
+yfit <- dnorm(xfit, mean = mean(carhyce_stat_plaine$largeur_mouillee_qb_m), sd = sd(carhyce_stat_plaine$largeur_mouillee_qb_m)) 
+yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat_plaine$largeur_mouillee_qb_m) 
+lines(xfit, yfit, col = "red", lwd = 2)
+```
+
+```{r, echo=FALSE, eval=FALSE, collapse=FALSE}
+# Shapiro-Wilk test - Montagne
+shapiro.test(carhyce_stat_montagne$largeur_mouillee_qb_m)
+# Shapiro-Wilk test - Plaine
+shapiro.test(carhyce_stat_plaine$largeur_mouillee_qb_m)
+```
+
+
+
+
+## Les distributions sont-elles normales?
+
+```{r, echo=FALSE, collapse=FALSE, fig.width=15}
+par(mfrow=c(1,2))
+# Histogram with normal curve - Montagne
+h <- hist(carhyce_stat_montagne$largeur_mouillee_qb_m, col = "lightblue", main = "Largeur mouillée plein bord - la montagne", xlab = "Largeur mouillée plein bord (m)", ylim = c(0, 40)) 
+xfit <- seq(min(carhyce_stat_montagne$largeur_mouillee_qb_m),
+            max(carhyce_stat_montagne$largeur_mouillee_qb_m), length = 40) 
+yfit <- dnorm(xfit, mean = mean(carhyce_stat_montagne$largeur_mouillee_qb_m), sd = sd(carhyce_stat_montagne$largeur_mouillee_qb_m)) 
+yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat_montagne$largeur_mouillee_qb_m) 
+lines(xfit, yfit, col = "red", lwd = 2)
+
+# Histogram with normal curve - Plaine
+h <- hist(carhyce_stat_plaine$largeur_mouillee_qb_m, col = "lightblue", main = "Largeur mouillée plein bord - la montagne", xlab = "Largeur mouillée plein bord (m)") 
+xfit <- seq(min(carhyce_stat_plaine$largeur_mouillee_qb_m),
+            max(carhyce_stat_plaine$largeur_mouillee_qb_m), length = 40) 
+yfit <- dnorm(xfit, mean = mean(carhyce_stat_plaine$largeur_mouillee_qb_m), sd = sd(carhyce_stat_plaine$largeur_mouillee_qb_m)) 
+yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat_plaine$largeur_mouillee_qb_m) 
+lines(xfit, yfit, col = "red", lwd = 2)
+```
+
+```{r, echo=FALSE, collapse=FALSE}
+# Shapiro-Wilk test - Montagne
+shapiro.test(carhyce_stat_montagne$largeur_mouillee_qb_m)
+# Shapiro-Wilk test - Plaine
+shapiro.test(carhyce_stat_plaine$largeur_mouillee_qb_m)
+```
+## Mes variances sont-elles égales?
+
+F-test pour comparer les variances
+
+$H_0$ : les variances sont égales
+$H_1$ : les variances sont différentes
+
+Seuil de significativité : 0.05
+
+```{r}
+# F-test
+var.test(carhyce_stat_montagne$largeur_mouillee_qb_m, carhyce_stat_plaine$largeur_mouillee_qb_m)
+```
+```{r}
+var.equal=FALSE # by default
+if(var.test(carhyce_stat_montagne$largeur_mouillee_qb_m, carhyce_stat_plaine$largeur_mouillee_qb_m)$p.value>=0.05){
+  var.equal=TRUE
+}
+var.equal
+```
+
+
+
+```{r, echo=TRUE, collapse=FALSE}
+# T-test
+t.test(carhyce_stat_montagne$largeur_mouillee_qb_m, carhyce_stat_plaine$largeur_mouillee_qb_m)
+```
+
+## histogramme
+
+
+```{r}
+# Histogram with normal curve
+h <- hist(carhyce_stat$rayon_hydraulique_qb, col = "lightblue", main = "Rayon hydraulique plein bord", xlab = "Rayon hydraulique plein bord (m)") 
+xfit <- seq(min(carhyce_stat$rayon_hydraulique_qb),
+            max(carhyce_stat$rayon_hydraulique_qb), length = 40) 
+yfit <- dnorm(xfit, mean = mean(carhyce_stat$rayon_hydraulique_qb), sd = sd(carhyce_stat$rayon_hydraulique_qb)) 
+yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat$rayon_hydraulique_qb) 
+lines(xfit, yfit, col = "red", lwd = 2)
+```
+
+## Test de normalité
+
+```{r}
+# Shapiro-Wilk test
+shapiro.test(carhyce_stat$rayon_hydraulique_qb)
+
+```
+
+
+
+```{r}
+# Histogram with normal curve
+h <- hist(carhyce_stat_montagne$rayon_hydraulique_qb, col = "lightblue", main = "Débit de plein bord", xlab = "Débit de plein bord (m3/s)") 
+xfit <- seq(min(carhyce_stat_montagne$rayon_hydraulique_qb),
+            max(carhyce_stat_montagne$rayon_hydraulique_qb), length = 40) 
+yfit <- dnorm(xfit, mean = mean(carhyce_stat_montagne$rayon_hydraulique_qb), sd = sd(carhyce_stat_montagne$rayon_hydraulique_qb)) 
+yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat_montagne$rayon_hydraulique_qb) 
+lines(xfit, yfit, col = "red", lwd = 2)
+```
+
+```{r}
+# Shapiro-Wilk test
+shapiro.test(carhyce_stat_montagne$rayon_hydraulique_qb)
+```
+
+
+
+# Analyse multivariée / multidimensionnelle
+
+## Analyse multivariée / multidimensionnelle {.smaller}
+
+- L'objectif est de synthétiser et de structurer l'information contenue dans des données multidimensionnelles (I individus, K variables) => méthode d'exploration des données.
+
+| Analyse    | Variables                                        | Fonction standard      | Fonction ade4          | Fonctions FactoMineR    |
+|----------------|--------------------------------------------------|------------------------|------------------------|-------------------------|
+| ACP            | plusieurs variables quantitatives                | stats::princomp()      | ade4::dudi.pca()       | FactoMineR::PCA()       |
+| AFC            | deux variables qualitatives                      | MASS::corresp()        | ade4::dudi.coa()       | FactoMineR::CA()        |
+| ACM            | plusieurs variables qualitatives                 | MASS::mca()            | ade4::dudi.acm()       | FactoMineR::MCA()       |
+| Analyse mixte  | plusieurs variables quantitatives et/ou qualitatives | —                      | ade4::dudi.mix()       | FactoMineR::FAMD()      |
+
+::: aside
+Source tableau : [Joseph Larmarange 2024](https://larmarange.github.io/guide-R/analyses_avancees/analyse-factorielle.html)
+:::
+
+## Etude des individus et des variables
+
+- Analyse de la variabilité entre les individus : 
+  - Quels sont leurs caractéristiques communes ?
+  - Peut-on identifier des profils d'individus ?
+
+- Analyse des variables :
+  - Quels sont les liaisons entre les variables ?
+  - Peut-on identifier des groupes de variables ?
+  
+- exemples : 30 individus et 4 variables : 
+  - les variables ont 30 dimensions dans l'espace des individus.
+  - les individus ont 4 dimensions dans l'espace des variables.
+
+## Centrage et réduction
+
+- Les variables sont sonvent exprimées dans des unités différentes, les effets d'échelles les rendent difficile à comparer.
+
+- On les centre : on soustrait la moyenne de chaque variable à chaque observation.
+
+- On les réduit : on divise par l'écart-type de chaque variable.
+
+- On obtient des variables centrées-réduites, qui ont une moyenne nulle et une variance égale à 1.
+
+## Reprenons nos données {.smaller}
+
+```{r, echo=TRUE, collapse=FALSE}
+carhyce_stat <- carhyce %>% 
+  # select the last date for each station
+  group_by(code_station) %>% # group by station
+  filter(date_realisation == max(date_realisation)) %>% # select the last date by group
+  ungroup() %>%  # ungroup data
+  mutate(surface_bv_km2 = ifelse(surface_bv_km2 %in% boxplot.stats(surface_bv_km2)$out, NA, surface_bv_km2),
+         score_ripisylve = ifelse(score_ripisylve %in% boxplot.stats(score_ripisylve)$out, NA, score_ripisylve),
+         profondeur_moyenne_qb_m = ifelse(profondeur_moyenne_qb_m %in% boxplot.stats(profondeur_moyenne_qb_m)$out, NA, profondeur_moyenne_qb_m),
+         largeur_mouillee_qb_m = ifelse(largeur_mouillee_qb_m %in% boxplot.stats(largeur_mouillee_qb_m)$out, NA, largeur_mouillee_qb_m),
+         surface_mouillee_qb_m2 = ifelse(surface_mouillee_qb_m2 %in% boxplot.stats(surface_mouillee_qb_m2)$out, NA, surface_mouillee_qb_m2),
+         rayon_hydraulique_qb = ifelse(rayon_hydraulique_qb %in% boxplot.stats(rayon_hydraulique_qb)$out, NA, rayon_hydraulique_qb),
+         d16_mm = ifelse(d16_mm %in% boxplot.stats(d16_mm)$out, NA, d16_mm),
+         d50_mm = ifelse(d50_mm %in% boxplot.stats(d50_mm)$out, NA, d50_mm),
+         d84_mm = ifelse(d84_mm %in% boxplot.stats(d84_mm)$out, NA, d84_mm),
+         coefficient_de_sinuosite = ifelse(coefficient_de_sinuosite %in% boxplot.stats(coefficient_de_sinuosite)$out, NA, coefficient_de_sinuosite),
+         coefficient_rugosite = ifelse(coefficient_rugosite %in% boxplot.stats(coefficient_rugosite)$out, NA, coefficient_rugosite),
+         debit_plein_bord_m3_s = ifelse(debit_plein_bord_m3_s %in% boxplot.stats(debit_plein_bord_m3_s)$out, NA, debit_plein_bord_m3_s),
+         vitesse_moyenne_qb_m_s = ifelse(vitesse_moyenne_qb_m_s %in% boxplot.stats(vitesse_moyenne_qb_m_s)$out, NA, vitesse_moyenne_qb_m_s),
+         cote_ligne_energie_qb = ifelse(cote_ligne_energie_qb %in% boxplot.stats(cote_ligne_energie_qb)$out, NA, cote_ligne_energie_qb),
+         nombre_de_froude_qb = ifelse(nombre_de_froude_qb %in% boxplot.stats(nombre_de_froude_qb)$out, NA, nombre_de_froude_qb),
+         force_tractrice_qb_n_m2 = ifelse(force_tractrice_qb_n_m2 %in% boxplot.stats(force_tractrice_qb_n_m2)$out, NA, force_tractrice_qb_n_m2)) %>% # replace outliers by NA by Interquartile range (IQR) from boxplot function
+  mutate(montagne_plaine = ifelse(modele_reference_img %in% c("ALPES INTERNES", "CEVENNES", "CORSE", "JURA-PREALPES DU NORD", "MASSIF CENTRAL NORD", "MASSIF CENTRAL SUD", "Montagne volcanique des DOM", "PREALPES DU SUD", "PYRENEES"), "montagne", "plaine")) %>% # try to classify in two category, montagne and plaine
+  # select columns
+  select(surface_bv_km2, 
+         continuite_ripisylve_rive_gauche,
+         continuite_ripisylve_rive_droite,
+         score_ripisylve,
+         profondeur_moyenne_qb_m,
+         largeur_mouillee_qb_m,
+         surface_mouillee_qb_m2,
+         rayon_hydraulique_qb,
+         d16_mm,
+         d50_mm,
+         d84_mm,
+         coefficient_de_sinuosite,
+         coefficient_rugosite,
+         debit_plein_bord_m3_s,
+         vitesse_moyenne_qb_m_s,
+         cote_ligne_energie_qb,
+         nombre_de_froude_qb,
+         force_tractrice_qb_n_m2,
+         montagne_plaine) # select columns
+```
+
+## Analyse en composantes principales (ACP)
+
+**ACP sur tous les individus et toutes les variables :**
+
+```{r, echo=TRUE, collapse=FALSE}
+# PCA
+pca <- PCA(carhyce_stat[, c("score_ripisylve", "profondeur_moyenne_qb_m", "largeur_mouillee_qb_m", "surface_mouillee_qb_m2", "rayon_hydraulique_qb", "d16_mm", "d50_mm", "d84_mm", "coefficient_de_sinuosite", "coefficient_rugosite", "debit_plein_bord_m3_s", "vitesse_moyenne_qb_m_s", "cote_ligne_energie_qb", "nombre_de_froude_qb", "force_tractrice_qb_n_m2")], 
+            ncp = Inf, # number of dimensions
+            scale.unit = TRUE, # reduce
+            graph = FALSE) # not display graph
+print(pca)
+```
+
+## ACP - Vocabulaire et information
+
+- **eig** : eigenvalues (valeurs propres)
+- **ind** : individus
+- **var** : variables
+- **coord** : coordonnées dans l'espace des individus ou des variables
+- **cos2** : qualité de représentation d'un individu ou d'une variable
+- **contrib** : contribution d'un individu ou d'une variable au calcul de l'axe
+
+
+## ACP - Analyse des valeurs propres
+
+- Quantité de variance expliquée par chaque axe (ou inertie).
+
+```{r, echo=TRUE, collapse=FALSE}
+pca$eig
+```
+- Les trois premiers axes permettent d'expliquer 61% de la variance.
+
+## ACP - Analyse graphique des valeurs propres
+
+[Peut-on résumer l'essentiel de l'information avec un nombre réduit de dimensions (ou axes) ? => On cherche un "coude", un point d'inflexion.]{style="font-size: 0.7em;"}
+
+```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
+# Scree plot
+fviz_eig(pca, addlabels = TRUE)
+```
+[On trouve 2 points d'inflexion. Le premier axe est particulièrement intéressant avec 30% de l'inertie.]{style="font-size: 0.7em;"}
+
+## ACP - Critère de Kaiser
+
+[On ne garde que les axes dont la valeur propre est supérieure à 1 (1 = inertie moyenne si les variables sont centrées et réduites).]{style="font-size: 0.7em;"}
+
+```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
+barplot(pca$eig[,1],xlab = "facteur", ylab = " Inertie (eigenvalue) ", col="blue")
+```
+
+## ACP - Contribution au premier axe
+
+[Quelles sont les variables qui contribuent le plus à l'inertie du premier axe ? Ou quelles sont les contributions des modalités de l'axe ?]{style="font-size: 0.7em;"}
+
+```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
+fviz_contrib(pca, choice = "var", axes = 1)
+```
+
+[Le premier axe se composent principalement de variables de géométrie avec le débit]{style="font-size: 0.7em;"}
+
+## ACP - Contribution au deuxième axe
+
+```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
+fviz_contrib(pca, choice = "var", axes = 2)
+```
+
+## ACP - Interprétation graphique
+
+![](./img/pca.png){style="width: 100%"}
+
+::: aside
+Voir [le blog de Lise Vaudor, CNRS, 2021](http://perso.ens-lyon.fr/lise.vaudor/acp/)
+:::
+
+## ACP - Modalités dans le plan factoriel
+
+[Le cercle des corrélations :]{style="font-size: 0.7em;"}
+
+```{r, echo=TRUE, collapse=FALSE}
+fviz_pca_var(pca, col.var = "contrib", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE)
+```
+## ACP - Les individus dans le plan factoriel
+
+[Répartition des individus dans les deux premiers axes.]{style="font-size: 0.7em;"}
+
+```{r, echo=TRUE, collapse=FALSE}
+fviz_pca_ind(pca, geom.ind = "point",
+             alpha.ind = 0.3) # densité de points superposées
+```
+
+## ACP Explor
+
+Des variables et/ou individus supplémentaires, non pris en compte dans les calculs, peuvent être ajoutés pour l'interprétation.
+
+```{r, echo=TRUE, collapse=FALSE}
+pca <- PCA(carhyce_stat, 
+           quanti.sup = 1,
+           quali.sup = c(2,3,4,19),
+           ncp = Inf, # number of dimensions
+           scale.unit = TRUE, # reduce
+           graph = FALSE) # not display graph
+```
+Visualisation avec explor : 
+```{r, echo=TRUE, collapse=FALSE}
+# package explor
+explor(pca)
+```
+
+```{r, echo=TRUE, collapse=FALSE, results='hide'}
+res <- explor::prepare_results(pca)
+explor::PCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
+    ind_lab_min_contrib = 0, col_var = "montagne_plaine", labels_size = 9, point_opacity = 0.5,
+    opacity_var = NULL, point_size = 28, ellipses = TRUE, transitions = TRUE,
+    labels_positions = NULL, xlim = c(-6.59, 8.54), ylim = c(-7.28, 7.86))
+```
+
+
+## ACP Explor - Graphique
+
+```{r, echo=FALSE, collapse=FALSE, fig.align='center', fig.height=8}
+res <- explor::prepare_results(pca)
+explor::PCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
+    ind_lab_min_contrib = 0, col_var = "montagne_plaine", labels_size = 9, point_opacity = 0.5,
+    opacity_var = NULL, point_size = 28, ellipses = TRUE, transitions = TRUE,
+    labels_positions = NULL, xlim = c(-6.59, 8.54), ylim = c(-7.28, 7.86))
+```
+
+# Classification
+
+## Classification supervisée vs non supervisée {.smaller}
+
+- **Supervisée** : on connait les classes à l'avance, on cherche à prédire la classe d'un nouvel individu à partir de différentes variables.
+  - Exemple : on a une image satellite et on cherche à identifier les zones urbaines sur la base des valeurs des pixels. On identifie des zones urbains et non urbaines pour entrainer le modèle. On se sert du modèle pour prédire les zones urbaines sur une nouvelle image.
+  - Méthodes : régression logistique, SVM, Random Forest
+- **Non supervisée** : on ne connait pas les classes à l'avance, on cherche à regrouper les individus en fonction de leurs ressemblances.
+  - Exemple : à partir d'un image satellite, on cherche à regrouper les pixels en fonction de leurs valeurs et identifier des zones homogènes que l'on suppose correspondre à des occupations du sol différentes.
+  - Méthodes : K-means, CAH
+
+## Classification ascendante hiérarchique (CAH) {.smaller}
+
+- Une méthode non supervisée qui permet de regrouper des individus en fonction de leurs ressemblances.
+- On cherche à ce que les individus regroupés au sein d’une même classe (homogénéité intra-classe) soient le plus semblables possibles tandis que les classes soient le plus dissemblables (hétérogénéité inter-classe).
+- La ressemblance ou la dissemblance entre les individus est mesurée à l'aide d'une matrice distances entre chaque individus pris deux à deux. Plus la distance est faible, plus les individus sont semblables.
+- La CAH part des individus (ascendante) et les regroupe progressivement en classes de plus en plus grandes (hiérarchique) => dendrogramme.
+
+::: aside
+Voir [le guide de Joseph Larmarange IRD, 2024](https://larmarange.github.io/analyse-R/classification-ascendante-hierarchique.html) ou [Analyse-R](https://larmarange.github.io/analyse-R/classification-ascendante-hierarchique.html)
+:::
+
+## Reprenons nos données {.smaller}
+
+```{r, echo=TRUE, collapse=FALSE}
+carhyce_stat <- carhyce %>% 
+  # select the last date for each station
+  group_by(code_station) %>% # group by station
+  filter(date_realisation == max(date_realisation)) %>% # select the last date by group
+  ungroup() %>%  # ungroup data
+  mutate(surface_bv_km2 = ifelse(surface_bv_km2 %in% boxplot.stats(surface_bv_km2)$out, NA, surface_bv_km2),
+         score_ripisylve = ifelse(score_ripisylve %in% boxplot.stats(score_ripisylve)$out, NA, score_ripisylve),
+         profondeur_moyenne_qb_m = ifelse(profondeur_moyenne_qb_m %in% boxplot.stats(profondeur_moyenne_qb_m)$out, NA, profondeur_moyenne_qb_m),
+         largeur_mouillee_qb_m = ifelse(largeur_mouillee_qb_m %in% boxplot.stats(largeur_mouillee_qb_m)$out, NA, largeur_mouillee_qb_m),
+         surface_mouillee_qb_m2 = ifelse(surface_mouillee_qb_m2 %in% boxplot.stats(surface_mouillee_qb_m2)$out, NA, surface_mouillee_qb_m2),
+         rayon_hydraulique_qb = ifelse(rayon_hydraulique_qb %in% boxplot.stats(rayon_hydraulique_qb)$out, NA, rayon_hydraulique_qb),
+         d16_mm = ifelse(d16_mm %in% boxplot.stats(d16_mm)$out, NA, d16_mm),
+         d50_mm = ifelse(d50_mm %in% boxplot.stats(d50_mm)$out, NA, d50_mm),
+         d84_mm = ifelse(d84_mm %in% boxplot.stats(d84_mm)$out, NA, d84_mm),
+         coefficient_de_sinuosite = ifelse(coefficient_de_sinuosite %in% boxplot.stats(coefficient_de_sinuosite)$out, NA, coefficient_de_sinuosite),
+         coefficient_rugosite = ifelse(coefficient_rugosite %in% boxplot.stats(coefficient_rugosite)$out, NA, coefficient_rugosite),
+         debit_plein_bord_m3_s = ifelse(debit_plein_bord_m3_s %in% boxplot.stats(debit_plein_bord_m3_s)$out, NA, debit_plein_bord_m3_s),
+         vitesse_moyenne_qb_m_s = ifelse(vitesse_moyenne_qb_m_s %in% boxplot.stats(vitesse_moyenne_qb_m_s)$out, NA, vitesse_moyenne_qb_m_s),
+         cote_ligne_energie_qb = ifelse(cote_ligne_energie_qb %in% boxplot.stats(cote_ligne_energie_qb)$out, NA, cote_ligne_energie_qb),
+         nombre_de_froude_qb = ifelse(nombre_de_froude_qb %in% boxplot.stats(nombre_de_froude_qb)$out, NA, nombre_de_froude_qb),
+         force_tractrice_qb_n_m2 = ifelse(force_tractrice_qb_n_m2 %in% boxplot.stats(force_tractrice_qb_n_m2)$out, NA, force_tractrice_qb_n_m2)) %>% # replace outliers by NA by Interquartile range (IQR) from boxplot function
+  mutate(montagne_plaine = ifelse(modele_reference_img %in% c("ALPES INTERNES", "CEVENNES", "CORSE", "JURA-PREALPES DU NORD", "MASSIF CENTRAL NORD", "MASSIF CENTRAL SUD", "Montagne volcanique des DOM", "PREALPES DU SUD", "PYRENEES"), "montagne", "plaine")) %>% # try to classify in two category, montagne and plaine
+  # select columns
+  select(surface_bv_km2,
+         profondeur_moyenne_qb_m,
+         largeur_mouillee_qb_m,
+         surface_mouillee_qb_m2,
+         rayon_hydraulique_qb,
+         d16_mm,
+         d50_mm,
+         d84_mm,
+         debit_plein_bord_m3_s,
+         vitesse_moyenne_qb_m_s,
+         cote_ligne_energie_qb,
+         nombre_de_froude_qb,
+         force_tractrice_qb_n_m2) %>%  # select columns
+  na.omit() # remove NA
+```
+
+## Normalisation des données {.smaller}
+
+- Toujours avoir une étape de description des données (distribution, qualité, graph de corrélation, etc.).
+
+- Homogénéisation des données pour éviter les effets d'échelle (unités différentes) et que les variables à forte variance soit prépondérante dans les résultats.
+
+Transformation de Milligan & Cooper
+```{r, echo=TRUE, collapse=FALSE}
+# Milligan & Cooper transformation function
+normalize_MC <- function(x) {
+                               return ((x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE)))
+                            }
+# normalize data
+carhyce_stat_mc<-as.data.frame(lapply(carhyce_stat, normalize_MC))
+```
+
+\
+
+Transformation z-score (centrage-réduction)
+```{r, echo=TRUE, collapse=FALSE}
+# z-score transformation
+carhyce_stat_z <- scale(carhyce_stat, center = TRUE, scale = TRUE)
+```
+
+## La matrice de distance
+
+- Plusieurs méthode de calcul de distance : 
+  - **Variables quantitative** : euclidienne, manhattan, Gower, etc.
+  - **Variables qualitative** : Gower, $\phi^2$, etc.
+
+```{r, echo=TRUE, collapse=FALSE}
+# Euclidean distance
+dist_euclid <- dist(carhyce_stat_mc, method = "euclidean")
+```
+
+## Agrrégation et dendrogramme
+  
+```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
+# Ward method
+hc <- hclust(dist_euclid, method = "ward.D2")
+# Dendrogram
+plot(hc, hang = -1, cex = 0.6, main = "Dendrogramme CAH")
+```
+## Nombre de classes
+
+- Evaluation graphique sur le dendrogramme.
+- Représentation des pertes d'inertie inter-classe (mesure la séparation entre chaque classe). Plus le saut est grand plus la distance entre les clusters fusionnés est grande.
+
+## Nombre de classes - Inertie
+
+```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
+v <- sort(hc$height,decreasing=T)
+plot(1:length(v),v,type = "s", xlab = "Nombre de classes", ylab = "Inertie", xlim = c(0, 30),
+     xaxt = "n")
+axis(1, at = seq(1, 30, by = 1), las=2)
+```
+
+## Découper les classes
+
+```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
+plot(hc, labels = FALSE, main = "Partition en 2, 5 ou 8 classes", xlab = "", ylab = "", sub = "", axes = FALSE, hang = -1)
+rect.hclust(hc, 2, border = "green3")
+rect.hclust(hc, 5, border = "red3")
+rect.hclust(hc, 8, border = "blue3")
+```
+
+```{r, echo=TRUE, collapse=FALSE}
+# cut dendrograme in 5 classes
+hc_gp <- cutree(hc,k=5)
+```
+
+## Interprétation CAH
+
+- Quelles sont les distributions des variables dans chaque classe ?
+- Quelles sont les caractéristiques des individus dans chaque classe ?
+- Quelles sont les caractéristiques des classes ?
+
+```{r, echo=TRUE, collapse=FALSE, fig.align='center', eval=FALSE}
+# box plot each class for each variable
+carhyce_stat$group <- as.factor(hc_gp)
+carhyce_stat %>%
+  gather(key = "variable", value = "value", -group) %>%
+  ggplot(aes(x = group, y = value, fill = group)) +
+  geom_boxplot() +
+  facet_wrap(~variable, scales = "free_y") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Interprétation CAH - boxplot variables
+
+```{r, echo=FALSE, collapse=FALSE, fig.align='center'}
+# box plot each class for each variable
+carhyce_stat$group <- as.factor(hc_gp)
+carhyce_stat %>%
+  gather(key = "variable", value = "value", -group) %>%
+  ggplot(aes(x = group, y = value, fill = group)) +
+  geom_boxplot() +
+  facet_wrap(~variable, scales = "free_y") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+## Interprétation CAH - boxplot classes
+
+```{r, echo=TRUE, collapse=FALSE, fig.align='center', fig.width=15}
+# variables boxplots for class 2 only
+carhyce_stat %>%
+  filter(group == 2) %>%
+  gather(key = "variable", value = "value", -group) %>%
+  ggplot(aes(x = variable, y = value, fill = variable)) +
+  geom_boxplot() + theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+## Interprétation CAH - ACP
+
+```{r, echo=TRUE, collapse=FALSE}
+# PCA
+pca <- PCA(carhyce_stat, ncp = Inf, scale.unit = TRUE, graph = FALSE,
+            quali.sup = 14) # illustrative group variable
+# explor(pca)
+```
+
+```{r, echo=FALSE, collapse=FALSE, fig.align='center', fig.height=7}
+res <- explor::prepare_results(pca)
+explor::PCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
+    ind_lab_min_contrib = 0, col_var = "group", labels_size = 9, point_opacity = 0.5,
+    opacity_var = NULL, point_size = 64, ellipses = TRUE, transitions = TRUE,
+    labels_positions = NULL, xlim = c(-6.76, 11.9), ylim = c(-8.72, 9.95))
+```
+
+## Classification K
+
+
+
+
+
