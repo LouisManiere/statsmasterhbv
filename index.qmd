@@ -3,6 +3,7 @@ title: "Statistiques et data mining - Master Hydrosystèmes et Bassins Versants"
 author: "Louis Manière"
 institute: "Université de Tours"
 date: "2024-07-22"
+license: "CC BY NC"
 format: 
   revealjs:
     navigation-mode: vertical
@@ -22,12 +23,12 @@ editor: visual
 
 # Introduction
 
-## Les statistiques {.smaller}
+## Les statistiques
 
 L'ensemble des méthodes qui ont pour objet la collecte, le traitement et l'interprétation de données d'observation relatives à un groupe d'individus ou d'unités.
 
--   Statistique descriptive : Décrire, résumer, visualiser des données.
--   Statistique inférentielle (Inférence statistique) : induire des caractéristiques sur une population à partir d'un échantillon (relation, distribution).
+- Statistique descriptive : Décrire, résumer, visualiser des données.
+- Statistique inférentielle (Inférence statistique) : induire des caractéristiques sur une population à partir d'un échantillon (relation, distribution).
 
 ## Population ou échantillon ?
 
@@ -42,34 +43,46 @@ Sélection de tous les bruns de la salle, population ou échantillon ?
 
 L'exploration et l'analyse de base de données pour le résumer, détecter des règles, des tendances, des associations ou des structures particulières. L'exploration des bases de données existantes en géosciences peut être utilisée pour détecter des nouvelles tendances ou comportements dans des milieux ou bien préparer une étude avant de une campagne de mesure.
 
-## Objectifs du cours
+## Objectifs du cours {.smaller}
 
--   La description de jeux de données, c'est à dire le synthétiser ou d'explorer son potentiel et ses limites. Il s'agit de mettre en évidence les informations que peuvent contenir le jeu de données.
+- Apprendre à décrire un jeu de données, le synthétiser pour mettre en évidence les informations pertinentes qu'il contient et ses limites pour répondre à certaines questions.
 
--   La prédiction de nouvelles informations, soit l'extrapolation de nouvelles données à partir des associations ou relations mises en évidence dans les données. Ces informations peuvent être qualitatives (classement ou scoring) ou quantitative (prédiction).
+- Pourvoir créer de nouvelles informations à partir de relations ou comportements identifiés dans les données. Utiliser ces informations pour prédire de nouvelles données et identifier communauté d'individus communs ou différents.
 
-## Objectifs du cours
+- Acquérir des outils de manipulation, description et d'analyse de données.
 
-Acquérir des outils de description et d'analyse de données et une démarche critique sur les données et les résultats obtenus.
+- Avoir une démarche critique sur les données, les outils statistiques et les résultats obtenus.
 
 ## R et RStudio
 
 ::: columns
 ::: {.column width="50%"}
-\
 
-Un outil très complet gratuit et open source. Permet de reproduire facilement les analyses et assure une reproductibilité des résultats.
+- Un logiciel et language de développement très complet, gratuit et open source avec une communauté active. 
+- Permet de reproduire et partager facilement les analyses. 
+- Un début apprentissage un peu plus difficile que des logiciels "clé en main".
 :::
 
 ::: {.column width="50%"}
 ![](./img/Rscary.png){width="100%"} [^1]
-:::
-:::
-
 [^1]: Artwork by @allison_horst.
+:::
+:::
 
-## Ressources
 
+
+## Ressources {.smaller}
+
+- [Analyse-R, Joseph Larmarange - Université Paris Cité, IRD](https://larmarange.github.io/analyse-R/)
+- [Guide-R, Joseph Larmarange - Université Paris Cité, IRD](https://larmarange.github.io/guide-R/)
+- [Grimoire, Lise Vaudor, CNRS](http://perso.ens-lyon.fr/lise.vaudor/grimoireStat/_book/intro.html)
+- [Cours d'Eric Marcon, Agro Paris Tech](https://ericmarcon.github.io/Cours-R-Geeft/)
+- [Cours d'Antoine Massé, IUT de Bordeaux](https://sites.google.com/site/rgraphiques/home)
+- [R for datascience, Hadley Wickham, Mine Çetinkaya-Rundel, and Garrett Grolemund](https://r4ds.hadley.nz/)
+- [Formation ministérielle à R et aux sciences des données](https://mtes-mct.github.io/parcours-r/)
+- Datamining...
+- [Vidéos d'Eric Lombardot - Université Paris 1 Panthéon Sorbonne](https://www.youtube.com/@EricLombardot)
+  
 ## Plan du cours
 
 Introduction
@@ -86,18 +99,24 @@ Approche data mining et ses application
 
 ## Données utilisées
 
-Données hydromorphologiques issus du protocole CARHYCE. [IED CARHYCE](https://analytics.huma-num.fr/ied_carhyce/)
+- Données hydromorphologiques issus du protocole CARHYCE (Agence Française de la Biodiversité), disponible sur [IED CARHYCE](https://analytics.huma-num.fr/ied_carhyce/)
+  - Mesure de morphologie du lit, de granulométrie, de débit et de ripisylve.
+  - Des données enrichies par des estimations à plein bord et les surfaces des bassins versant.
+  - Plus de 2000 stations de mesures.
 
-## Importons les pakages et le jeu de données
+## Installation des (nombreux?) packages
 
-\
-
-```{r, echo=TRUE, collapse=FALSE, results='hide'}
+```{r, echo=TRUE, collapse=FALSE, eval=FALSE}
 # install all necessary packages
-# install.packages(c("ggplot2", "dplyr", "tidyr", "tibble", "janitor", "skimr", "dataMaid", "plotly", "e1071", "gmodels", "ggpmisc", "nortest", "FactoMineR", "factoextra", "gtsummary", "explor"))
+install.packages(c("ggplot2", "dplyr", "tidyr", "tibble", 
+                   "janitor", "skimr", "dataMaid", "plotly", 
+                   "e1071", "gmodels", "ggpmisc", "nortest", 
+                   "FactoMineR", "factoextra", "gtsummary", 
+                   "explor", "broom.helpers", "ggstats"))
 ```
 
-\
+
+## Importons les pakages du cours
 
 ```{r, echo=TRUE, collapse=FALSE, results='hide'}
 library(ggplot2) # Graphics
@@ -119,29 +138,27 @@ library(explor) # Data exploration
 library(boot) # Bootstrap
 ```
 
-\
+## Explorons le jeu de données
 
 ```{r, echo=TRUE, collapse=FALSE, results='hide'}
 # import dataset
-carhyce_brute <- read.csv("data/Operations_CARHYCE_2024-06-25.csv", sep=";",dec=",",header=TRUE, encoding = "utf-8")
+carhyce_brute <- read.csv("data/Operations_CARHYCE_2024-06-25.csv",
+                  sep=";",dec=",",header=TRUE, encoding = "utf-8")
 ```
-
-## Explorons le jeu de données
 
 ```{r, echo=TRUE, collapse=FALSE}
 print(as_tibble(head(carhyce_brute)))
 ```
 
+
 ## Dimensions et variables
 
-```{r, echo=TRUE, collapse=FALSE, results='hide'}
-# names(carhyce_brute) # variable names
-# class(carhyce_brute) # table type (data.frame)
-# dim(carhyce_brute)   # table dimension
-# str(carhyce_brute)   # variable type
+```{r, echo=TRUE, collapse=FALSE, eval=FALSE}
+names(carhyce_brute) # variable names
+class(carhyce_brute) # table type (data.frame)
+dim(carhyce_brute)   # table dimension
+str(carhyce_brute)   # variable type
 ```
-
-\
 
 ```{r, echo=TRUE, collapse=FALSE}
 print(str(carhyce_brute))
@@ -153,7 +170,7 @@ print(str(carhyce_brute))
 
 [^2]: Artwork by @allison_horst.
 
-## Les données quantitatives
+## Les données qualitatives
 
 ![](./img/datatype_qualitative.png){width="80%" fig-align="center"} [^3]
 
@@ -163,9 +180,8 @@ print(str(carhyce_brute))
 
 ```{r, echo=TRUE, collapse=FALSE}
 # clean column names with janitor
-carhyce <- carhyce_brute %>% # %>% = pipe operator from dplyr
+carhyce <- carhyce_brute %>% # %>% = pipe operator from dplyr |> for native pipe
   clean_names() # clean column  names
-
 print(names(carhyce))
 ```
 
@@ -176,14 +192,11 @@ print(names(carhyce))
 ```{r, echo=TRUE, collapse=FALSE}
 carhyce_stat <- carhyce %>% 
   group_by(code_station) %>% # group by station
-  filter(date_realisation == max(date_realisation)) %>% # select the last date by group
+  filter(date_realisation == max(date_realisation)) %>% # select the last date
   ungroup() %>%  # ungroup data
-  select(surface_bv_km2, 
-         continuite_ripisylve_rive_gauche,
-         continuite_ripisylve_rive_droite,
-         classe_ripisylve,
-         nom_her_ou_dom_dominant,
-         debit_plein_bord_m3_s,
+  select(surface_bv_km2, continuite_ripisylve_rive_gauche,
+         continuite_ripisylve_rive_droite, classe_ripisylve,
+         nom_her_ou_dom_dominant, debit_plein_bord_m3_s,
          largeur_mouillee_qb_m) # select columns
 print(head(carhyce_stat))
 ```
