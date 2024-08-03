@@ -974,7 +974,7 @@ print(carhyce_stat_plaine_mean)
 
 ![](./img/t-test-diagram.png)
 
-## Conditions de comparaison des moyennes
+<!-- ## Conditions de comparaison des moyennes -->
 
 Si la distribution est très dissymétrique malgrés un échantillon >30 => test non paramétrique.
 ![](./img/normality.png)
