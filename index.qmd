@@ -67,11 +67,10 @@ L'exploration et l'analyse de base de données pour le résumer, détecter des r
 
 ::: {.column width="50%"}
 ![](./img/Rscary.png){width="100%"} [^1]
+
 [^1]: Artwork by @allison_horst.
 :::
 :::
-
-
 
 ## Ressources {.smaller}
 
