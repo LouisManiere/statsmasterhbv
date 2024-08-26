@@ -1,9 +1,11 @@
 ---
-title: "Statistiques et data mining - Master Hydrosystèmes et Bassins Versants"
+title: "Statistiques et data mining"
+subtitle: "Master Hydrosystèmes et Bassins Versants"
 author: "Louis Manière"
 institute: "Université de Tours"
-date: "2024-07-22"
-license: "CC BY NC"
+date: last-modified
+license: "CC BY-NC"
+lang: "fr"
 format: 
   revealjs:
     navigation-mode: vertical
