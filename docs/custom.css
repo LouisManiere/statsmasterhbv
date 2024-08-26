@@ -1,0 +1,24 @@
+.reveal .slide-logo {
+  bottom: unset !important;
+  right: unset !important;
+  top: 0px;
+  left: 10px;
+  width: 120px !important;
+  height: auto !important;
+  max-width: unset !important;
+  max-height: unset !important;
+}
+.slide-number {
+  font-size: 0.8em !important;
+  bottom: 5px !important;
+  right: 12px !important;
+  top: unset !important;
+}
+.quarto-title-affiliation {
+  font-size: 1.2em !important;
+  padding-right: 200px !important;
+  background-image: url(img/by-nc.png) !important;
+  background-position: right !important;
+  background-size: 25% !important;
+  background-repeat: no-repeat !important;
+}
