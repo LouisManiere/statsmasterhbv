@@ -67,10 +67,10 @@ L'exploration et l'analyse de base de données pour le résumer, détecter des r
 
 ::: {.column width="50%"}
 ![](./img/Rscary.png){width="100%"} [^1]
+:::
+:::
 
 [^1]: Artwork by @allison_horst.
-:::
-:::
 
 ## Ressources {.smaller}
 
@@ -88,15 +88,11 @@ L'exploration et l'analyse de base de données pour le résumer, détecter des r
 
 Introduction
 
-Statistiques descriptives univariées
-
-Statistiques descriptives bivariées
-
-Statistiques descriptives multivariées
-
-Statistiques inférentielles
-
-Approche data mining et ses application
+- Statistiques univariées
+- Statistiques bivariées
+- La comapraison de jeux de données
+- Statistiques multivariées ou  multimentionnelles
+- Classification
 
 ## Données utilisées
 
@@ -113,7 +109,7 @@ install.packages(c("ggplot2", "dplyr", "tidyr", "tibble",
                    "janitor", "skimr", "dataMaid", "plotly", 
                    "e1071", "gmodels", "ggpmisc", "nortest", 
                    "FactoMineR", "factoextra", "gtsummary", 
-                   "explor", "broom.helpers", "ggstats"))
+                   "explor", "boot"))
 ```
 
 
@@ -188,6 +184,14 @@ print(names(carhyce))
 
 # Statistiques univariées
 
+## Objectifs
+
+- Description des types de variables
+- Analyse de la distribution (graphiques et paramètres)
+- Discrétisation de variables quantitatives
+- Détection et traitement des valeurs extrêmes
+- Comparaison à la loi normale
+
 ## nettoyage des lignes et sélection des variables
 
 ```{r, echo=TRUE, collapse=FALSE}
@@ -229,25 +233,40 @@ points(1,mean(carhyce_stat$surface_bv_km2,na.rm=T),pch=16,col="red")
 :::
 :::
 
-## La discrétisation de variables quantitatives
+## Discrétiser une variable quantitative
 
-- **Règle de Sturges** : méthode de détermination du nombre de classes à utiliser dans un histogramme : avoir un nombre de classes qui soit à la fois suffisamment grand pour capturer la structure de la distribution des données, mais pas trop grand pour ne pas perdre de sensibilité dans la visualisation.
-
-- Peut parfois sous-estimer le nombre de classes nécessaires, surtout pour des échantillons de taille réduite ou pour des distributions non normales.
+- **Règle de Sturges** : méthode de détermination du nombre de classes à utiliser dans un histogramme => avoir un nombre de classes qui soit à la fois suffisamment grand pour capturer la structure de la distribution des données, mais pas trop grand pour ne pas perdre de sensibilité dans la visualisation.
 
 - En pratique, il est souvent recommandé de tester plusieurs nombres de classes et de choisir celui qui offre la meilleure représentation visuelle des données tout en préservant leur structure.
 
-## Changement de discrétisation et outliers
+- Autres méthodes : 
+    - Effectifs égaux : par exemple les quantiles
+    - Intervalles égaux : par exemple une classe toute les X unités
+    - Par seuil de valeurs : par exemple les classes de granulométrie
 
-```{r, echo=TRUE, collapse=FALSE}
-# print decile values
-print(quantile(carhyce_stat$surface_bv_km2, probs = seq(0, 1, 0.1), na.rm = TRUE))
+## Discrétisation "manuelle" par la règle de Sturges
+
+```{r, echo=TRUE, collapse=FALSE, eval=FALSE}
+bins <- nclass.Sturges(carhyce_stat$largeur_mouillee_qb_m) # set breaks with Sturges
+carhyce_stat$largeur_mouillee_qb_m_sturges <- cut(carhyce_stat$largeur_mouillee_qb_m, 
+                                                  breaks = bins, 
+                                                  include.lowest = TRUE, 
+                                                  right = FALSE) # new column with breaks
 ```
+
+## Changement de discrétisation et outliers
 
 ```{r, echo=TRUE, collapse=FALSE, warning=FALSE, fig.align='center', fig.height=4}
 # plotly interactive histogram with 1000 breaks
 plot_ly(x = carhyce_stat$surface_bv_km2, type = "histogram", nbinsx = 1000)
 ```
+
+## Les outliers
+
+- Valeurs extrêmes qui ne suivent pas la distribution générale des données.
+- Peuvent être des erreurs de mesure, des valeurs aberrantes ou des valeurs extrêmes.
+- Peuvent fausser les résultats des analyses statistiques qui ne seront plus représentatives de la population.
+- Rend la lecture et l'interprétation des graphiques difficiles.
 
 ## Retrait des valeurs extrêmes
 
@@ -268,8 +287,6 @@ yfit <- dnorm(xfit, mean = mean(carhyce_stat$surface_bv_km2), sd = sd(carhyce_st
 yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat$surface_bv_km2) 
 lines(xfit, yfit, col = "red", lwd = 2)
 ```
-
-
 :::
 
 ::: {.column width="50%"}
@@ -283,7 +300,7 @@ points(1,mean(carhyce_stat$surface_bv_km2,na.rm=T),pch=16,col="red")
 
 ## Loi normale ou loi de Gauss {.smaller}
 
--  Distribution symétrique centrée sur la moyenne et dont la forme est déterminée par l'écart-type.
+-  Distribution symétrique centrée sur la moyenne dont la forme est déterminée par l'écart-type.
 
 Définie par une fonction de probabilité :
 
@@ -295,10 +312,10 @@ Définie par une fonction de probabilité :
 ```{r, echo=FALSE, collapse=FALSE, fig.align='center'}
 # several density plots on the same graph with dnorm
 x <- seq(-4, 4, length=100)
-hx <- dnorm(x)
+hx <- dnorm(x, mean=0, sd=1)
 hx2 <- dnorm(x, mean=-0.5, sd=0.7)
 hx3 <- dnorm(x, mean=0.5, sd=0.5)
-plot(x, hx, type="l", lwd=2, col="black", xlab="x", ylab="Density", main="Density of normal distribution", ylim=c(0,0.8), xlim=c(-5,5))
+plot(x, hx, type="l", lwd=2, col="black", xlab="x", ylab="Density", main="Density de distributions normale", ylim=c(0,0.8), xlim=c(-5,5))
 lines(x, hx2, lwd=2, col="red")
 lines(x, hx3, lwd=2, col="blue")
 ```
@@ -321,15 +338,44 @@ e1071::kurtosis(carhyce_stat$surface_bv_km2, na.rm = TRUE, type = 1) # type 1 = 
 
 ![](./img/kurtosis.png){width="100%" fig-align="center"}
 
-## Distribution normale? - QQ-plot
+## QQ-plot ou diagramme quantile-quantile
 
+On compare les quantiles de la distribution observée et ceux de la distribution théorique (ici la loi normale).
 
 ```{r, echo=TRUE, collapse=FALSE, fig.height=4}
 # QQ-plot
 qqnorm(carhyce_stat$surface_bv_km2, 
-       main = "Normal Q-Q Plot - Surface des bassins versants")
-qqline(carhyce_stat$surface_bv_km2)
+       main = "Q-Q Plot Normal - Surface des bassins versants")
+qqline(carhyce_stat$surface_bv_km2, distribution = qnorm)
 ```
+
+## Vous avez dit tests statistiques ? {.smaller}
+
+Partons d'une hypothèse :
+
+- $H_0$ : la distribution suit une loi normale.
+
+On va comparer la distribution de nos données à une distribution théorique (ici la loi normale) pour déterminer si on peut rejeter $H_0$.
+Le test de Shapiro-Wilk utilise la position des quantile pour déterminer si la distribution suit une loi normale, un peu comme pour le QQ-plot. On prend la position des valeurs de nos données triées pour calculer leur équivalent projecté dans une distribution normale et les résultat attendus si $H_0$ est vrai qui n'ont presque aucune chance d'être obtenu.
+
+- $H_0$ est rejetée si les valeurs de nos données ont presque aucune chance d'être obtenues si la distribution était normale. Presque aucune chance est généralement <5% de chance, noté p-value (seuil de significativité) < 0.05.
+- $H_0$ n'est pas rejetée si les valeurs de nos données ont une chance (même modeste) d'être obtenues si la distribution était normale.
+
+::: aside
+Cette explication des tests est reprise de l'ouvrage de Denis Poinsot "Les statistiques pour les statophobes" (2004) disponible gratuitement [ici](https://perso.univ-rennes1.fr/denis.poinsot/Statistiques_%20pour_statophobes/STATISTIQUES%20POUR%20STATOPHOBES.pdf)
+:::
+
+## Test de normalité - précaution / utilisation
+
+- Les tests de normalité sont sensibles à la taille de l'échantillon : 
+    - Pour un échantillon de taille réduite, les tests de normalité peuvent être biaisés.
+    - Pour un échantillon de taille importante, les tests de normalité peuvent être trop sensibles.
+
+- Souvent utilisé au prélable d'autres tests statistiques dit paramétriques : 
+  - Shapiro-Wilk => meilleur pour de petits échantillons (<2000).
+  - Kolmogorov-Smirnov => grands échantillons (>2000).
+  - Anderson-Darling => grands échantillons (>2000).
+
 
 ## Test de normalité
 
@@ -356,19 +402,7 @@ ks.test(carhyce_stat$surface_bv_km2, "pnorm", mean = mean(carhyce_stat$surface_b
 
 - On peut rejeter $H_0$ et valider $H_1$ avec une probabilité de se tromper de $2.2 \times 10^{-16} \times 100$%.
 
-- p-value $<$ 0.05 => la distribution ne suit pas une loi normale.
-
-
-## Test de normalité - précaution / utilisation
-
-- Les tests de normalité sont sensibles à la taille de l'échantillon : 
-    - Pour un échantillon de taille réduite, les tests de normalité peuvent être biaisés.
-    - Pour un échantillon de taille importante, les tests de normalité peuvent être trop sensibles.
-
-- Souvent utilisé au prélable d'autres tests statistiques dit paramétriques : 
-  - Shapiro-Wilk => meilleur pour de petits échantillons (<2000).
-  - Kolmogorov-Smirnov => grands échantillons (>2000).
-  - Anderson-Darling => grands échantillons (>2000).
+- **Ou** (*moins bien*) p-value $<$ 0.05 => la distribution ne suit pas une loi normale.
 
 ## Distribution des classes de ripisylve
 
@@ -407,6 +441,10 @@ print(skim(carhyce_stat$surface_bv_km2))
 
 # Statistiques bivariées
 
+## Objectifs
+
+- Décrire l'évolution d'une variable par rapport à une autre (sens, intensité).
+
 ## Une relation de dépendance entre deux variables ?
 
 -   Dans quel sens est la relation de causalité ?
@@ -435,8 +473,21 @@ carhyce_stat <- carhyce %>%
          largeur_mouillee_qb_m,
          vitesse_moyenne_qb_m_s,
          d50_mm) # select columns
-print(head(carhyce_stat))
 ```
+
+## Tableau de contingence (qualitatives vs qualitatives)
+
+![](./img/contingency_table.png){width="100%" fig-align="center"}
+
+[Distribution jointe de deux variables qualitatives (ou quantitatives discrétisées)]{style="font-size: 0.7em;"}
+
+[On compte les individus pour chaque modalité des deux variables]{style="font-size: 0.7em;"}
+
+[Distribution conditionnelle : ]{style="font-size: 0.7em;"}
+
+[   - en ligne : quelle distribution de X des cours d'eau normand]{style="font-size: 0.7em;"}
+
+[   - en colonne : quelle distribution de y des cours d'eau de bonne qualité]{style="font-size: 0.7em;"}
 
 ## Tableau de contingence (qualitatives vs qualitatives)
 
@@ -463,12 +514,12 @@ print(contingency_table$t)
 ```
 :::
 
-## Effectif partiels
+## Effectif partiels (fréquence)
 
 ::: panel-tabset
 ### total
 
-[Fréquences partielles sur effectif total]{style="font-size: 0.7em;"}
+[Fréquences partielles sur effectif total : X% des individus appartiennet aux modalités truc et bidule]{style="font-size: 0.7em;"}
 
 ```{r, echo=TRUE, collapse=FALSE}
 # x = rive gauche, y = rive droite
@@ -568,14 +619,35 @@ print(chi2_ripisylve)
 
 -   Cette situation est très improbable. On peut rejeter $H_0$ et valider $H_1$ avec une probabilité de se tromper de $2.2 \times 10^{-16} \times 100$%.
 
-## Tableau de contingence (qualitatives vs quantitatives)
+## Discrétiser une variable quantitative
 
-[Discrétiser la variable quantitative.]{style="font-size: 0.7em;"}
+### Créer des classes d'appartenances
+
+- Règle de Sturges : méthode de détermination du nombre de classes à utiliser dans un histogramme => avoir un nombre de classes qui soit à la fois suffisamment grand pour capturer la structure de la distribution des données, mais pas trop grand pour ne pas perdre de sensibilité dans la visualisation.
+- Effectifs égaux : par exemple les quantiles
+- Intervalles égaux : par exemple une classe toute les X unités.
+- Par seuil de valeurs : par exemple les classes de granulométrie.
+
+## Discrétiser une variable quantitative (règle de Sturges)
+
+```{r, echo=TRUE, collapse=FALSE, eval=FALSE}
+bins <- nclass.Sturges(carhyce_stat$largeur_mouillee_qb_m) # set breaks with Sturges
+carhyce_stat$largeur_mouillee_qb_m_sturges <- cut(carhyce_stat$largeur_mouillee_qb_m, 
+                                                  breaks = bins, 
+                                                  include.lowest = TRUE, 
+                                                  right = FALSE) # new column with breaks
+```
+
+## Discrétiser une variable quantitative (seuil de valeurs)
 
 ```{r, echo=TRUE, collapse=FALSE}
-bins <- nclass.Sturges(carhyce_stat$largeur_mouillee_qb_m) # set breaks with Sturges
-carhyce_stat$largeur_mouillee_qb_m_sturges <- cut(carhyce_stat$largeur_mouillee_qb_m, breaks = bins, include.lowest = TRUE, right = FALSE) # new column with breaks
-tab <- table(carhyce_stat$continuite_ripisylve_rive_gauche, carhyce_stat$largeur_mouillee_qb_m_sturges) # contingency table
+# create breaks [0,5), [5,10), [10,20), [20,30), [30,40), [40,50), [>50]
+largeurs_breaks <- c(0, 5, 10, 20, 30, 40, 50, Inf)
+carhyce_stat$largeur_mouillee_qb_m_breaks <- cut(carhyce_stat$largeur_mouillee_qb_m, 
+                                                  breaks = largeurs_breaks, 
+                                                  include.lowest = TRUE, 
+                                                  right = FALSE) # new column with breaks
+tab <- table(carhyce_stat$continuite_ripisylve_rive_gauche, carhyce_stat$largeur_mouillee_qb_m_breaks) # contingency table
 addmargins(tab) # with margins (effectifs marginaux)
 ```
 
@@ -597,7 +669,7 @@ summary_table <- carhyce_stat %>%
 print(summary_table)
 ```
 
-### Boxplot
+### Sans discrétisation - Boxplot
 
 ```{r, echo=TRUE, collapse=FALSE, fig.height=3.5}
 ggplot(carhyce_stat, aes(x = factor(continuite_ripisylve_rive_gauche), y = largeur_mouillee_qb_m, fill = factor(continuite_ripisylve_rive_gauche))) +
