@@ -81,8 +81,10 @@ L'exploration et l'analyse de base de données pour le résumer, détecter des r
 - [Cours d'Antoine Massé, IUT de Bordeaux](https://sites.google.com/site/rgraphiques/home)
 - [R for datascience, Hadley Wickham, Mine Çetinkaya-Rundel, and Garrett Grolemund](https://r4ds.hadley.nz/)
 - [Formation ministérielle à R et aux sciences des données](https://mtes-mct.github.io/parcours-r/)
-- Datamining...
+- Data Mining et Statistique décisionnelle (2017), Stéphane Tufféry, Editions Technip
 - [Vidéos d'Eric Lombardot - Université Paris 1 Panthéon Sorbonne](https://www.youtube.com/@EricLombardot)
+- [Logiciel Jamovi](https://www.jamovi.org/)
+- [Logiciel Rattle](https://github.com/gjwgit/rattleng)
   
 ## Plan du cours
 
@@ -109,7 +111,7 @@ install.packages(c("ggplot2", "dplyr", "tidyr", "tibble",
                    "janitor", "skimr", "dataMaid", "plotly", 
                    "e1071", "gmodels", "ggpmisc", "nortest", 
                    "FactoMineR", "factoextra", "gtsummary", 
-                   "explor", "boot"))
+                   "explor", "boot", "qqplotr"))
 ```
 
 
@@ -133,6 +135,7 @@ library(factoextra) # Factorial analysis
 library(gtsummary) # Regression summary
 library(explor) # Data exploration
 library(boot) # Bootstrap
+library(qqplotr) # QQ-plot
 ```
 
 ## Explorons le jeu de données
@@ -220,14 +223,18 @@ summary(carhyce_stat$surface_bv_km2)
 ::: {.column width="50%"}
 ```{r, echo=TRUE, collapse=FALSE}
 # Histogram
-hist(carhyce_stat$surface_bv_km2, main = "Surfaces de bassins versants", xlab = "Surface de bassins versants (km2)", col = "lightblue")
+hist(carhyce_stat$surface_bv_km2, 
+     main = "Surfaces de bassins versants", 
+     xlab = "Surface de bassins versants (km2)", col = "lightblue")
 ```
 :::
 
 ::: {.column width="50%"}
 ```{r, echo=TRUE, collapse=FALSE}
 # Boxplot
-boxplot(carhyce_stat$surface_bv_km2, main = "Surfaces de bassins versants", ylab = "Surface de bassins versants (km2)", col = "lightblue")
+boxplot(carhyce_stat$surface_bv_km2, 
+        main = "Surfaces de bassins versants", 
+        ylab = "Surface de bassins versants (km2)", col = "lightblue")
 points(1,mean(carhyce_stat$surface_bv_km2,na.rm=T),pch=16,col="red")
 ```
 :::
@@ -271,16 +278,19 @@ plot_ly(x = carhyce_stat$surface_bv_km2, type = "histogram", nbinsx = 1000)
 ## Retrait des valeurs extrêmes
 
 ```{r, echo=TRUE, collapse=FALSE}
-# keep the data below the 90th percentile
+# keep the data below the 90th percentile and above 0
 carhyce_stat <- carhyce_stat %>% 
-  filter(surface_bv_km2 < quantile(carhyce_stat$surface_bv_km2, 0.90, na.rm = TRUE))
+  filter(surface_bv_km2 < quantile(carhyce_stat$surface_bv_km2, 0.90, na.rm = TRUE)) %>% 
+  filter(surface_bv_km2 > 0)
 ```
 
 ::: columns
 ::: {.column width="50%"}
 ```{r, echo=TRUE, collapse=FALSE}
 # Histogram with normal curve
-h <- hist(carhyce_stat$surface_bv_km2, col = "lightblue", main = "Surface des bassins versants", xlab = "Surface de bassins versants (km2)") 
+h <- hist(carhyce_stat$surface_bv_km2, col = "lightblue", 
+          main = "Surface des bassins versants", 
+          xlab = "Surface de bassins versants (km2)") 
 xfit <- seq(min(carhyce_stat$surface_bv_km2),
             max(carhyce_stat$surface_bv_km2), length = 40) 
 yfit <- dnorm(xfit, mean = mean(carhyce_stat$surface_bv_km2), sd = sd(carhyce_stat$surface_bv_km2)) 
@@ -292,7 +302,10 @@ lines(xfit, yfit, col = "red", lwd = 2)
 ::: {.column width="50%"}
 ```{r, echo=TRUE, collapse=FALSE}
 # Boxplot
-boxplot(carhyce_stat$surface_bv_km2, main = "Surfaces de bassins versants", ylab = "Surface de bassins versants (km2)", col = "lightblue", range = 0)
+boxplot(carhyce_stat$surface_bv_km2, 
+        main = "Surfaces de bassins versants", 
+        ylab = "Surface de bassins versants (km2)", 
+        col = "lightblue", range = 0)
 points(1,mean(carhyce_stat$surface_bv_km2,na.rm=T),pch=16,col="red")
 ```
 :::
@@ -344,9 +357,11 @@ On compare les quantiles de la distribution observée et ceux de la distribution
 
 ```{r, echo=TRUE, collapse=FALSE, fig.height=4}
 # QQ-plot
-qqnorm(carhyce_stat$surface_bv_km2, 
-       main = "Q-Q Plot Normal - Surface des bassins versants")
-qqline(carhyce_stat$surface_bv_km2, distribution = qnorm)
+ggplot(data = carhyce_stat, mapping = aes(sample = surface_bv_km2)) +
+  stat_qq_band() +
+  stat_qq_line() +
+  stat_qq_point() +
+  labs(title = "QQ-plot de la surface des bassins versants", x = "Quantiles théoriques", y = "Quantiles observés")
 ```
 
 ## Vous avez dit tests statistiques ? {.smaller}
