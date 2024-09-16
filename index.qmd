@@ -240,7 +240,7 @@ points(1,mean(carhyce_stat$surface_bv_km2,na.rm=T),pch=16,col="red")
 :::
 :::
 
-## Discrétiser une variable quantitative
+## Discrétiser une variable quantitative {.smaller}
 
 - **Règle de Sturges** : méthode de détermination du nombre de classes à utiliser dans un histogramme => avoir un nombre de classes qui soit à la fois suffisamment grand pour capturer la structure de la distribution des données, mais pas trop grand pour ne pas perdre de sensibilité dans la visualisation.
 
@@ -458,14 +458,9 @@ print(skim(carhyce_stat$surface_bv_km2))
 
 ## Objectifs
 
-- Décrire l'évolution d'une variable par rapport à une autre (sens, intensité).
+- Pouvoir décrire la relation qui peut exister entre deux variables.
+- Utiliser les bons outils selon la nature des variables à comparer.
 
-## Une relation de dépendance entre deux variables ?
-
--   Dans quel sens est la relation de causalité ?
--   Y a-t-il d'autres variables qui peuvent expliquer cette relation ? (Effet cigogne)
--   La mesure des phénomènes est-elle fiable ?
--   L'échantillon est-il représentatif de la population ?
 
 ## Reprenons nos données
 
@@ -480,6 +475,9 @@ carhyce_stat <- carhyce %>%
   filter(largeur_mouillee_qb_m < quantile(carhyce$largeur_mouillee_qb_m, 0.975, na.rm = TRUE)) %>%
   filter(vitesse_moyenne_qb_m_s < quantile(carhyce$vitesse_moyenne_qb_m_s, 0.975, na.rm = TRUE)) %>%
   filter(d50_mm < quantile(carhyce$d50_mm, 0.99, na.rm = TRUE)) %>%
+  # group categories continuite_ripisylve_rive_gauche and continuite_ripisylve_rive_droite :"espacée" = "bosquets éparses" + "espacée-régulière" + "isolée"
+  mutate(continuite_ripisylve_rive_gauche = ifelse(continuite_ripisylve_rive_gauche %in% c("bosquets éparses", "espacée-régulière", "isolée"), "espacée", continuite_ripisylve_rive_gauche),
+         continuite_ripisylve_rive_droite = ifelse(continuite_ripisylve_rive_droite %in% c("bosquets éparses", "espacée-régulière", "isolée"), "espacée", continuite_ripisylve_rive_droite)) %>%
   # select columns
   select(surface_bv_km2, 
          continuite_ripisylve_rive_gauche,
@@ -490,7 +488,7 @@ carhyce_stat <- carhyce %>%
          d50_mm) # select columns
 ```
 
-## Tableau de contingence (qualitatives vs qualitatives)
+## Qualitatif VS qualitatif - Tableau de contingence
 
 ![](./img/contingency_table.png){width="100%" fig-align="center"}
 
@@ -502,9 +500,9 @@ carhyce_stat <- carhyce %>%
 
 [   - en ligne : quelle distribution de X des cours d'eau normand]{style="font-size: 0.7em;"}
 
-[   - en colonne : quelle distribution de y des cours d'eau de bonne qualité]{style="font-size: 0.7em;"}
+[   - en colonne : quelle distribution de Y des cours d'eau de bonne qualité]{style="font-size: 0.7em;"}
 
-## Tableau de contingence (qualitatives vs qualitatives)
+## Tableau de contingence
 
 ::: panel-tabset
 ### Rbase
@@ -521,7 +519,7 @@ print(tab_mag)
 ```{r, echo=TRUE, collapse=FALSE, results='hide'}
 contingency_table <- CrossTable(carhyce_stat$continuite_ripisylve_rive_gauche, 
                                  carhyce_stat$continuite_ripisylve_rive_droite, 
-                                 prop.chisq = FALSE, prop.t = FALSE, prop.r = FALSE, prop.c = FALSE)
+                                 prop.chisq = FALSE, prop.t = TRUE, prop.r = TRUE, prop.c = TRUE)
 ```
 
 ```{r, echo=TRUE, collapse=FALSE}
@@ -534,29 +532,29 @@ print(contingency_table$t)
 ::: panel-tabset
 ### total
 
-[Fréquences partielles sur effectif total : X% des individus appartiennet aux modalités truc et bidule]{style="font-size: 0.7em;"}
+[Fréquences partielles sur effectif total (le total des fréquences = 1) : X% des individus appartiennent aux modalités truc et bidule **ou**  X % des cours d'eau ont une eau de bonne qualité et sont en Normandie]{style="font-size: 0.7em;"}
 
 ```{r, echo=TRUE, collapse=FALSE}
 # x = rive gauche, y = rive droite
-print(contingency_table$prop.tbl) # or prop.table(x, y)
+print(round(contingency_table$prop.tbl, 3)) # or prop.table(x, y)
 ```
 
 ### ligne
 
-[Fréquence partielle sur effectif marginal (fréquence conditionnelle)]{style="font-size: 0.7em;"}
+[Fréquence partielle sur effectif marginal (fréquence conditionnelle, le total de chaque ligne = 1) : X% des cours d'eau Normands ont une eau de mauvaise qualité]{style="font-size: 0.7em;"}
 
 ```{r, echo=TRUE, collapse=FALSE}
 # x = rive gauche, y = rive droite
-print(contingency_table$prop.row) # or prop.table(x, y, margin = 1)
+print(round(contingency_table$prop.row, 3)) # or prop.table(x, y, margin = 1)
 ```
 
 ### colonne
 
-[Fréquence partielle sur effectif marginal (fréquence conditionnelle)]{style="font-size: 0.7em;"}
+[Fréquence partielle sur effectif marginal (fréquence conditionnelle, le total de chaque colonne = 1) : X% des cours d'eau de bonne qualité sont Normands]{style="font-size: 0.7em;"}
 
 ```{r, echo=TRUE, collapse=FALSE}
 # x = rive gauche, y = rive droite (ou fréquence conditionnelle)
-print(contingency_table$prop.col) # or prop.table(x, y, margin = 2)
+print(round(contingency_table$prop.col, 3)) # or prop.table(x, y, margin = 2)
 ```
 :::
 
@@ -588,72 +586,65 @@ mosaicplot(table(carhyce_stat$continuite_ripisylve_rive_gauche, carhyce_stat$con
 ```
 :::
 
-## Test du Chi2 - Théorie
+## Test du Chi2 d'indépendance
 
-Démontrer un lien de dépendance statistiquement significatif entre deux variables qualitatives.
+- Vérifier un lien de dépendance statistiquement significatif entre deux variables qualitatives.
 
-Deux hypothèses :
+- Conditions d'application : 
+    - Les variables doivent être qualitatives.
+    - Les effectifs combinés des modalités des variables $\geq$ 5 (du moins pour 80% des effectifs joints).
+    
+- Hypothèses : 
+    - $H_0$ : les variables sont indépendantes.
+    - $H_1$ : les variables sont dépendantes.
 
--   $H_0$ : les variables sont indépendantes
--   $H_1$ : les variables sont dépendantes
+## Test du Chi2 - calcul des effectifs attendus.
 
-Si $H_0$ est rejetée, $H_1$ est validée. Si $H_0$ n'est pas rejetée, $H_1$ n'est pas validée mais on a rien démontrer concernant $H_0$. Si $H_0$ est rejeté, on ne peut pas montrer qu'il y a un lien, mais pas qu'un lien n'existe pas.
-
-## Test du Chi2 - précaution et application
-
-- Attention :
-    - Le test du Chi2 ne marche pas pour les petits effectifs : 80% des effectifs doivent dépasser 5 individus.
-    - Le test du Chi2 ne dit rien sur le sens de la relation.
-
-### Application R
-```{r, echo=TRUE, collapse=FALSE}
-chi2_ripisylve <- chisq.test(table(carhyce_stat$continuite_ripisylve_rive_gauche, carhyce_stat$continuite_ripisylve_rive_droite))
+Tableau de contingence observé :
+```{r}
+tab_mag
 ```
+- Quelles sont les effectifs joints attendus si les deux variables sont indépendantes ?
+
+- Les effectifs attendus suivent la distribution marginale des variables pour respecter les répartitions totales de chaque variable.
+
+- La formule est le produit des effectifs marginaux divisé par le total des effectifs.
+
+## Test du Chi2 - calcul des effectifs attendus.
+
+Tableau de contingence observé :
+```{r}
+tab_mag
+```
+Exemple : 
+
+- Le nombre de stations avec une ripisyle espacée en rive gauche doit resté de 492 (effectif marginal) mais peut être réparti différemment dans les modalités de la rive droite.
+
+- L'effectif joint attendu entre espacée en rive gauche et continue en rive droite : $\frac{492 \times 664}{1834} = 178$
 
 ## Test du Chi2 - effectif calculé sous $H_0$
-
-[Effectifs observés]{style="font-size: 0.7em;"}
-
-```{r, echo=TRUE, collapse=FALSE}
-print(chi2_ripisylve$observed[,1:4])
-```
 
 [Effectif calculé sous $H_0$]{style="font-size: 0.7em;"}
 
 ```{r, echo=TRUE, collapse=FALSE}
+# run chi2 test
+chi2_ripisylve <- chisq.test(table(carhyce_stat$continuite_ripisylve_rive_gauche, carhyce_stat$continuite_ripisylve_rive_droite))
 print(round(chi2_ripisylve$expected[,1:4], 0))
 ```
+Le $\chi^2$ représente la différence des deux tables que l'on compare au $\chi^2$ critique pour déterminer si on peut rejeter $H_0$ avec un une probabilité d'erreur définie (5% généralement). Voir [table de $\chi^2$ par Fabrice Larribe](http://fabricelarribe.uqam.ca/resources/Tables/Table-Chi2-Print.pdf)
 
 ## Test du Chi2 - interprétation
 
 ```{r, echo=TRUE, collapse=FALSE}
 print(chi2_ripisylve)
 ```
+- La p-value représente la probabilité d'obtenir un résultat aussi extrême que celui observé, dans les conditions de $H_0$.
 
--   La p-value représente la probabilité d'obtenir un résultat aussi extrême que celui observé, dans les conditions de $H_0$.
+- Cette situation est très improbable. On peut rejeter $H_0$ et valider $H_1$ avec une probabilité de se tromper de $2.2 \times 10^{-16} \times 100$%.
 
--   Cette situation est très improbable. On peut rejeter $H_0$ et valider $H_1$ avec une probabilité de se tromper de $2.2 \times 10^{-16} \times 100$%.
+## Qualitatif VS Quantitatif - Discrétisation
 
-## Discrétiser une variable quantitative
-
-### Créer des classes d'appartenances
-
-- Règle de Sturges : méthode de détermination du nombre de classes à utiliser dans un histogramme => avoir un nombre de classes qui soit à la fois suffisamment grand pour capturer la structure de la distribution des données, mais pas trop grand pour ne pas perdre de sensibilité dans la visualisation.
-- Effectifs égaux : par exemple les quantiles
-- Intervalles égaux : par exemple une classe toute les X unités.
-- Par seuil de valeurs : par exemple les classes de granulométrie.
-
-## Discrétiser une variable quantitative (règle de Sturges)
-
-```{r, echo=TRUE, collapse=FALSE, eval=FALSE}
-bins <- nclass.Sturges(carhyce_stat$largeur_mouillee_qb_m) # set breaks with Sturges
-carhyce_stat$largeur_mouillee_qb_m_sturges <- cut(carhyce_stat$largeur_mouillee_qb_m, 
-                                                  breaks = bins, 
-                                                  include.lowest = TRUE, 
-                                                  right = FALSE) # new column with breaks
-```
-
-## Discrétiser une variable quantitative (seuil de valeurs)
+Discrétiser une variable quantitative, exemple par seuil de valeurs.
 
 ```{r, echo=TRUE, collapse=FALSE}
 # create breaks [0,5), [5,10), [10,20), [20,30), [30,40), [40,50), [>50]
@@ -666,12 +657,10 @@ tab <- table(carhyce_stat$continuite_ripisylve_rive_gauche, carhyce_stat$largeur
 addmargins(tab) # with margins (effectifs marginaux)
 ```
 
-## Tableau de contingence (qualitatives vs quantitatives)
-
-[Calculer des indicateurs par modalité.]{style="font-size: 0.7em;"}
+## Description de la distribution par modalité
 
 ::: panel-tabset
-### Tableau
+### Indicateurs
 
 ```{r, echo=TRUE, collapse=FALSE}
 summary_table <- carhyce_stat %>%
@@ -684,7 +673,7 @@ summary_table <- carhyce_stat %>%
 print(summary_table)
 ```
 
-### Sans discrétisation - Boxplot
+### Boxplot
 
 ```{r, echo=TRUE, collapse=FALSE, fig.height=3.5}
 ggplot(carhyce_stat, aes(x = factor(continuite_ripisylve_rive_gauche), y = largeur_mouillee_qb_m, fill = factor(continuite_ripisylve_rive_gauche))) +
@@ -694,9 +683,11 @@ ggplot(carhyce_stat, aes(x = factor(continuite_ripisylve_rive_gauche), y = large
 ```
 :::
 
-## Quantitatif vs quantitatif
+## Quantitatif VS quantitatif
 
-```{r, echo=TRUE, collapse=FALSE}
+La représentation par nuage de point, avec en X plutôt la variable explicative et en Y la variable expliquée.
+
+```{r, echo=TRUE, collapse=FALSE, fig.align='center', fig.height=4}
 plot <- ggplot(carhyce_stat, aes(x = debit_plein_bord_m3_s, y = largeur_mouillee_qb_m)) +
   geom_point() +
   labs(x = "Débit de plein bord (m3/s)", y = "Largeur mouillée plein bord (m)") +
@@ -739,7 +730,7 @@ plot + geom_smooth(method="lm", col="red", formula = y ~ log(x) + x)
 
 - Sa dimension est le produit des dimensions des variables (e.g. euros et années), elle est donc difficile à interpréter.
 
-- Davantage un outil qui permet d'effectuer d'autres calculs comme la corrélation de Person qu'un indicateur utilisé pour l'interprétation.
+- Davantage un outil qui permet d'effectuer d'autres calculs comme la corrélation de Person qu'un indicateur utilisé pour l'interprétation (c'est un peu comme la variance et l'écart type).
 
 ## Coefficient de corrélation linéaire de Pearson {.smaller}
 
@@ -747,7 +738,7 @@ plot + geom_smooth(method="lm", col="red", formula = y ~ log(x) + x)
 
 **Intensité :**
 
-- Proche de 1 = forte dépendance des variables
+- Proche de 1 (ou -1) = forte dépendance des variables
 - Proche de 0 = indépendance des variables
 
 **Sens :**
