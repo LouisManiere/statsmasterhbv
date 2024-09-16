@@ -460,7 +460,7 @@ print(skim(carhyce_stat$surface_bv_km2))
 
 - Pouvoir décrire la relation qui peut exister entre deux variables.
 - Utiliser les bons outils selon la nature des variables à comparer.
-
+- Evaluer le type, l'intensité et le sens d'une relation entre deux variables qauntitatives.
 
 ## Reprenons nos données
 
@@ -598,7 +598,7 @@ mosaicplot(table(carhyce_stat$continuite_ripisylve_rive_gauche, carhyce_stat$con
     - $H_0$ : les variables sont indépendantes.
     - $H_1$ : les variables sont dépendantes.
 
-## Test du Chi2 - calcul des effectifs attendus.
+## Chi2 - calcul des effectifs attendus.
 
 Tableau de contingence observé :
 ```{r}
@@ -610,7 +610,7 @@ tab_mag
 
 - La formule est le produit des effectifs marginaux divisé par le total des effectifs.
 
-## Test du Chi2 - calcul des effectifs attendus.
+## Chi2 - calcul des effectifs attendus.
 
 Tableau de contingence observé :
 ```{r}
@@ -622,7 +622,7 @@ Exemple :
 
 - L'effectif joint attendu entre espacée en rive gauche et continue en rive droite : $\frac{492 \times 664}{1834} = 178$
 
-## Test du Chi2 - effectif calculé sous $H_0$
+## Chi2 - effectif calculé sous $H_0$
 
 [Effectif calculé sous $H_0$]{style="font-size: 0.7em;"}
 
@@ -633,7 +633,7 @@ print(round(chi2_ripisylve$expected[,1:4], 0))
 ```
 Le $\chi^2$ représente la différence des deux tables que l'on compare au $\chi^2$ critique pour déterminer si on peut rejeter $H_0$ avec un une probabilité d'erreur définie (5% généralement). Voir [table de $\chi^2$ par Fabrice Larribe](http://fabricelarribe.uqam.ca/resources/Tables/Table-Chi2-Print.pdf)
 
-## Test du Chi2 - interprétation
+## Chi2 - interprétation
 
 ```{r, echo=TRUE, collapse=FALSE}
 print(chi2_ripisylve)
@@ -746,12 +746,12 @@ plot + geom_smooth(method="lm", col="red", formula = y ~ log(x) + x)
 - ">0" = les variables évoluent dans le même sens
 - "<0" = les variables évoluent dans le sens opposé.
 
-Plus on se rapproche de 1 plus les deux variables sont fortement corrélées linéairement. Le signe indique le sens de la relation.
+Plus on s'éloigne de 0 plus les deux variables sont fortement corrélées linéairement. Le signe indique le sens de la relation.
 
-Conditions théoriques :
+## Quelques exemples de corrélation
 
-- Les deux variables doivent suivre une distribution normale (test paramétrique), sauf pour les grands échantillons.
-- Homoscédasticité des résidus.
+![](./img/pearson_corr_examples.png){width="100%" fig-align="center"}
+
 
 ## Coefficient de détermination
 
@@ -770,48 +770,19 @@ Par exemple si $R^2 = 0.35$, 35% des variations de la largeur mouillée s'expliq
 - Corrélation $\neq$ causalité!
 - Multicolinéarité, quand plusieurs variables explicatives ont des liens de corrélation entre elles!
 
+## Le Quartet d'Anscombe
+
+![](./img/quartet_anscombe.png){width="100%" fig-align="center"}
+
+- Moralité : toujours visualiser les données avant de les analyser ! 🧐
+
 ## Coefficient de corrélation de Spearman
 
 - C'est le coefficient de Pearson appliqué aux rangs des variables.
 
-- Similaire au coefficient de Pearson mais ne suppose pas de relation linéaire entre les variables. Il évalue la relation monotone entre deux variables.
-
-- La distribution des variables n'a pas besoin d'être normale (test non paramétrique).
+- Similaire au coefficient de Pearson mais ne suppose pas de relation linéaire entre les variables. Il évalue la relation monotone, qui ont tendance à se déplacer dans la même direction relative, entre deux variables.
 
 - L'interprétation est similaire à celle du coefficient de Pearson.
-
-## Distribution normale? - Test graphique {.smaller}
-
-::: panel-tabset
-
-### Débit de plein bord
-
-```{r, echo=TRUE, collapse=FALSE, fig.height=3.5}
-# Histogram with normal curve
-h <- hist(carhyce_stat$debit_plein_bord_m3_s, col = "lightblue", main = "Débit de plein bord", xlab = "Débit de plein bord (m3/s)") 
-xfit <- seq(min(carhyce_stat$debit_plein_bord_m3_s),
-            max(carhyce_stat$debit_plein_bord_m3_s), length = 40) 
-yfit <- dnorm(xfit, mean = mean(carhyce_stat$debit_plein_bord_m3_s), sd = sd(carhyce_stat$debit_plein_bord_m3_s)) 
-yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat$debit_plein_bord_m3_s) 
-lines(xfit, yfit, col = "red", lwd = 2)
-```
-
-### Largeur mouillée
-
-```{r, echo=TRUE, collapse=FALSE, fig.height=3.5}
-# Histogram with normal curve
-h <- hist(carhyce_stat$largeur_mouillee_qb_m, col = "lightblue", main = "Largeur mouillée", xlab = "Largeur mouillée (m)") 
-xfit <- seq(min(carhyce_stat$largeur_mouillee_qb_m),
-            max(carhyce_stat$largeur_mouillee_qb_m), length = 40) 
-yfit <- dnorm(xfit, mean = mean(carhyce_stat$largeur_mouillee_qb_m), sd = sd(carhyce_stat$largeur_mouillee_qb_m)) 
-yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat$largeur_mouillee_qb_m) 
-lines(xfit, yfit, col = "red", lwd = 2)
-```
-:::
-
-- Et les coefficients d'asymétrie, d'aplatissement et tests...
-
-
 
 ## Comparaison des modèles régressions
 
