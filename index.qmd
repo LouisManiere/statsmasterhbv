@@ -780,9 +780,37 @@ Par exemple si $R^2 = 0.35$, 35% des variations de la largeur mouillée s'expliq
 
 - C'est le coefficient de Pearson appliqué aux rangs des variables.
 
-- Similaire au coefficient de Pearson mais ne suppose pas de relation linéaire entre les variables. Il évalue la relation monotone, qui ont tendance à se déplacer dans la même direction relative, entre deux variables.
+- Similaire au coefficient de Pearson mais ne suppose pas de relation linéaire entre les variables. Il évalue la relation monotone, qui ont tendance à se déplacer dans la même direction relative, entre deux variables indépendamment de la forme.
 
 - L'interprétation est similaire à celle du coefficient de Pearson.
+
+## Calcul des coefficients de corrélation
+
+```{r, echo=TRUE, collapse=FALSE}
+# r Pearson correlation
+print(paste0("r = ", round(cor.test(carhyce_stat$largeur_mouillee_qb_m, carhyce_stat$debit_plein_bord_m3_s, method = "pearson")$estimate, 2)))
+# rho Spearman correlation
+print(paste0("rho = ", round(cor.test(carhyce_stat$largeur_mouillee_qb_m, carhyce_stat$debit_plein_bord_m3_s, method = "spearman")$estimate, 2)))
+```
+Intérêt de calculer les deux coefficients :
+
+- r>$\rho$ : présence éventuelle de valeurs exceptionnelles.
+- r<$\rho$ : présence éventuelle d'une relation non linéaire.
+
+## Lire le résultat d'un modèle de régression linéaire {.smaller}
+
+```{r}
+model_lineaire <- lm(largeur_mouillee_qb_m ~ debit_plein_bord_m3_s, data = carhyce_stat)
+summary(model_lineaire)
+```
+- Résidus : différence entre les valeurs observées et les valeurs prédites par le modèle.
+- Erreur standard des résidus : écart-type des résidus (ou la dispersion autour de la droite)
+- Coefficients :
+
+  - Estimate (Intersept) : b ou l'ordonnée à l'origine
+  - Estimate (Variable) : a ou la pente
+
+- R-squared : coefficient de détermination
 
 ## Comparaison des modèles régressions
 
@@ -798,10 +826,6 @@ print(paste0("y = ", round(coef(model_lineaire)[1], 2), " + ", round(coef(model_
 print(paste0("R2 = ", round(summary(model_lineaire)$r.squared, 2)))
 # Residual standard error
 print(paste0("S = ", round(summary(model_lineaire)$sigma, 2)))
-# Pearson correlation
-print(paste0("Pearson = ", round(cor.test(carhyce_stat$largeur_mouillee_qb_m, carhyce_stat$debit_plein_bord_m3_s, method = "pearson")$estimate, 2)))
-# Spearman correlation
-print(paste0("Spearman = ", round(cor.test(carhyce_stat$largeur_mouillee_qb_m, carhyce_stat$debit_plein_bord_m3_s, method = "spearman")$estimate, 2)))
 ```
 
 ### Polynomiale
@@ -826,15 +850,31 @@ print(paste0("S = ", round(summary(model_log)$sigma, 2)))
 ```
 :::
 
-## Homosédasticité/Hétérosédasticité des résidus {.smaller}
+## Analyse des résidus {.smaller}
+
+::: panel-tabset
+
+### Linéaire
 
 ```{r, echo=TRUE, collapse=FALSE, fig.width=15}
 plot(model_lineaire, which = 1)
 ```
 
-- Les résidus doivent être dispersés aléatoirement autour de zéro. La présence d’une tendance (linéaire ou non) indique des effets systématiques ignorés par le modèle. La variance des résidus doit être approximativement constante (homoscédasticité).
+### Polynomiale
 
-- Ici la variance des résidus est hétérosédastique, la dispersion des résidus augmente avec la valeur prédite.
+```{r, echo=TRUE, collapse=FALSE, fig.width=15}
+plot(model_poly, which = 1)
+```
+
+### Logarithmique
+
+```{r, echo=TRUE, collapse=FALSE, fig.width=15}
+plot(model_log, which = 1)
+```
+
+:::
+
+- Les résidus doivent être dispersés aléatoirement autour de zéro. La présence d’une tendance (linéaire ou non) indique des effets systématiques ignorés par le modèle.
 
 ## Homosédasticité vs Hétérosédasticité
 
@@ -844,14 +884,16 @@ plot(model_lineaire, which = 1)
 
 ## Normalité des résidus {.smaller}
 
-```{r, echo=TRUE, collapse=FALSE, fig.height=3.5}
+```{r, echo=TRUE, collapse=FALSE, fig.height=3.2}
 par(mfrow=c(1,2))
 plot(model_lineaire, which = 2)
 hist(model_lineaire$residuals, breaks = 100, main = "Histogramme des résidus", xlab = "Résidus")
 ```
-- Le diagramme quantile-quantile permet de détecter des déviations systématiques de la normalité des résidus. La distribution des résidus présente une dissymétrie à droite.
-
-- Notre modèle a tendance à surestimer les valeurs basses et sous-estimer les valeurs hautes.
+<details>
+  <summary>Analyse de la normalité</summary>
+- Q-Q plot => détection des déviations systématiques de la normalité des résidus. La distribution des résidus présente une dissymétrie à droite.
+- Notre modèle tend à surestimer les valeurs basses et sous-estimer les valeurs hautes.
+</details>
 
 ::: aside
 [Pour aller plus loin : Cours de Philippe Marchand (Université du Québec en Abitibi-Témiscamingue) ](https://pmarchand1.github.io/ECL7102/notes_cours/6-Regression_lineaire.html#suppositions_du_mod%C3%A8le_de_r%C3%A9gression_lin%C3%A9aire)
