@@ -88,11 +88,10 @@ L'exploration et l'analyse de base de données pour le résumer, détecter des r
   
 ## Plan du cours
 
-Introduction
-
+- Introduction
 - Statistiques univariées
 - Statistiques bivariées
-- La comapraison de jeux de données
+- La comparaison de jeux de données
 - Statistiques multivariées ou  multimentionnelles
 - Classification
 
@@ -111,7 +110,7 @@ install.packages(c("ggplot2", "dplyr", "tidyr", "tibble",
                    "janitor", "skimr", "dataMaid", "plotly", 
                    "e1071", "gmodels", "ggpmisc", "nortest", 
                    "FactoMineR", "factoextra", "gtsummary", 
-                   "explor", "boot", "qqplotr"))
+                   "explor", "boot", "qqplotr", "corrplot"))
 ```
 
 
@@ -136,6 +135,7 @@ library(gtsummary) # Regression summary
 library(explor) # Data exploration
 library(boot) # Bootstrap
 library(qqplotr) # QQ-plot
+library(corrplot) # Correlation plot
 ```
 
 ## Explorons le jeu de données
@@ -318,7 +318,7 @@ points(1,mean(carhyce_stat$surface_bv_km2,na.rm=T),pch=16,col="red")
 Définie par une fonction de probabilité :
 
 - Environ 68% des valeurs sont comprises entre $\mu - \sigma$ et $\mu + \sigma$.
-- 95% des valeurs sont comprises entre $\mu - 2\sigma$ et $\mu + 2\sigma$.
+- 95% des valeurs sont comprises entre $\mu - 1.96\sigma$ et $\mu + 1.96\sigma$.
 
 - Très utilisées dans les tests statistiques ou la description de phénomènes aléatoires.
 
@@ -415,7 +415,7 @@ ks.test(carhyce_stat$surface_bv_km2, "pnorm", mean = mean(carhyce_stat$surface_b
 - $H_0$ : la variable suit une distribution normale.
 - $H_1$ : la variable ne suit pas une distribution normale.
 
-- On peut rejeter $H_0$ et valider $H_1$ avec une probabilité de se tromper de $2.2 \times 10^{-16} \times 100$%.
+- On peut rejeter $H_0$ et valider $H_1$ avec une probabilité de se tromper de $2.2 \times 10^{-14} \times 100$%.
 
 - **Ou** (*moins bien*) p-value $<$ 0.05 => la distribution ne suit pas une loi normale.
 
@@ -485,7 +485,8 @@ carhyce_stat <- carhyce %>%
          debit_plein_bord_m3_s,
          largeur_mouillee_qb_m,
          vitesse_moyenne_qb_m_s,
-         d50_mm) # select columns
+         d50_mm,
+         nombre_transect) # select columns
 ```
 
 ## Qualitatif VS qualitatif - Tableau de contingence
@@ -805,7 +806,7 @@ summary(model_lineaire)
 ```
 - Résidus : différence entre les valeurs observées et les valeurs prédites par le modèle.
 - Erreur standard des résidus : écart-type des résidus (ou la dispersion autour de la droite)
-- Coefficients :
+- Coefficients avec erreur standard et test de significativité  :
 
   - Estimate (Intersept) : b ou l'ordonnée à l'origine
   - Estimate (Variable) : a ou la pente
@@ -901,17 +902,33 @@ hist(model_lineaire$residuals, breaks = 100, main = "Histogramme des résidus", 
 
 ## Régression linéaire multiple
 
-```{r, echo=TRUE, collapse=FALSE}
+Plusieurs variables explicatives pour une variable expliquée.
+
+```{r, echo=TRUE, collapse=FALSE, out.height= 1}
 # multiple linear regression with two variables
-model_multiple <- lm(largeur_mouillee_qb_m ~ debit_plein_bord_m3_s + vitesse_moyenne_qb_m_s + d50_mm, data = carhyce_stat)
+model_multiple <- lm(largeur_mouillee_qb_m ~ debit_plein_bord_m3_s + 
+                       vitesse_moyenne_qb_m_s + d50_mm + 
+                       nombre_transect, data = carhyce_stat)
 # equation
-print(paste0("y = ", round(coef(model_multiple)[1], 2), " + ", round(coef(model_multiple)[2], 2), "x1 + ", round(coef(model_multiple)[3], 2), "x2 + ", round(coef(model_multiple)[4], 2), "x3"))
-# R2
-print(paste0("R2 = ", round(summary(model_multiple)$r.squared, 2)))
-# Residual standard error
-print(paste0("S = ", round(summary(model_multiple)$sigma, 2)))
+print(paste0("y = ", round(coef(model_multiple)[1], 2), " + ", 
+                round(coef(model_multiple)[2], 2), "x1 + ", 
+                round(coef(model_multiple)[3], 2), "x2 + ", 
+                round(coef(model_multiple)[4], 2), "x3"))
 ```
-## Régression linéaire multiple - cheatcode
+
+## Régression linéaire multiple - interprétation {.smaller}
+
+```{r, echo=TRUE, collapse=FALSE}
+summary(model_multiple)
+```
+<details>
+  <summary>Interprétation</summary>
+- Le débit, la vitesse, la granulométrie et le nombre de transect expliquent 56% de la variation de la largeur mouillée.
+- Les variables explicatives ont toutes un effet légèrement positif sur la largeur mouillée à l'exception de la vitesse qui a un effet fortement négatif.
+- Les variables ont un effet significatif sur la largeur mouillée sauf le nombre de transect.
+</details>
+
+## Régression linéaire multiple - synthèse
 
 ```{r, echo=TRUE, collapse=FALSE}
 model_multiple %>%
@@ -934,7 +951,22 @@ pairs(carhyce_stat[, c("vitesse_moyenne_qb_m_s", "debit_plein_bord_m3_s", "large
 ## Corrélations croisées
 
 ```{r, echo=TRUE, collapse=FALSE}
-cor(carhyce_stat[, c("vitesse_moyenne_qb_m_s", "debit_plein_bord_m3_s", "largeur_mouillee_qb_m", "d50_mm")], method = "pearson")
+pearson <- cor(carhyce_stat[, c("vitesse_moyenne_qb_m_s", "debit_plein_bord_m3_s", "largeur_mouillee_qb_m", "d50_mm")], method = "pearson")
+pearson
+```
+
+[- Les corrélations linéaire les plus fortes sont entre le débit et la largeur mouillée et entre la vitesse et le débit. Le D50 est peu corrélé avec les autres variables (un peu avec la largeur mouillée). ]{style="font-size: 0.7em;"}
+
+[- Si on prend la largeur mouillée comme variable expliquée, le débit et le D50 semblent être des variables explicatives intéressantes.]{style="font-size: 0.7em;"}
+
+## Corrélations croisées - graphique
+
+```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
+corrplot(pearson, 
+         type = "upper",
+         diag = FALSE,
+         tl.col = "dark grey",
+         tl.srt = 45)
 ```
 
 # Comparaison de jeux de données
@@ -959,7 +991,7 @@ carhyce_stat <- carhyce %>%
   group_by(code_station) %>% # group by station
   filter(date_realisation == max(date_realisation)) %>% # select the last date by group
   ungroup() %>%  # ungroup data
-  filter(surface_bv_km2 < 100) %>% # keep surface_bv_km2 data below 200 km2
+  filter(surface_bv_km2 < 100) %>% # keep surface_bv_km2 data below 100 km2
   mutate(surface_bv_km2 = ifelse(surface_bv_km2 %in% boxplot.stats(surface_bv_km2)$out, NA, surface_bv_km2),
          score_ripisylve = ifelse(score_ripisylve %in% boxplot.stats(score_ripisylve)$out, NA, score_ripisylve),
          profondeur_moyenne_qb_m = ifelse(profondeur_moyenne_qb_m %in% boxplot.stats(profondeur_moyenne_qb_m)$out, NA, profondeur_moyenne_qb_m),
@@ -1001,14 +1033,38 @@ carhyce_stat <- carhyce %>%
   na.omit() # remove NA values
 ```
 
-## Intervalles de confiance de la moyenne
+## Théorème central limite {.smaller}
 
-Distribution normale ou échantillon suffisamment grand (n > 30 = Théorème central limite)
+- Prennons un grand nombre d'échantillons de taille n d'une distribution non normale de moyenne $\mu$ et d'écart-type $\sigma$. Quelle est la distribution des moyennes si on effectue de nombreux tirage aléatoire de taille n?
+
+- Illustration sur le [Grimoire de Lise Vaudor](http://perso.ens-lyon.fr/lise.vaudor/grimoireStat/_book/decrire-une-variable.html#loi-normale)
+
+- La moyenne d'un grand nombre d'échantillons (n>30) de distribution quelconque de taille n suit une distribution normale, soit $\bar{x} \sim N(\mu, \frac{\sigma}{\sqrt{n}})$
+
+$\bar X \in \left[\mu-1.96\frac{\sigma}{\sqrt{N}},\mu+1.96\frac{\sigma}{\sqrt{N}}\right]$
+
+## Erreur standard {.smaller}
+
+- L'écart type est un indicateur de la dispersion des valeurs d'un échantillon (ou d'une population) autour de la moyenne.
+
+- L'erreur standard est l'écart type d'un paramètre (moyenne, pourcentage, etc.). Notre moyenne de notre jeu de données (ou échantillon) n'est qu'une estimation de la moyenne de la population. Si on refaisait l'échantillonnage, on obtiendrait une autre moyenne à cause des fluctuations d'échantillonnage. L'erreur standard est l'écart type de ces moyennes.
+
+- L'erreur standard de la moyenne d'un échantillon peut être calculé : $\frac{\sigma}{\sqrt{n}}$. Il a donc la particularité de diminuer avec la racine carrée de la taille de l'échantillon, contrairement à l'écart type d'un échantillon.
+
+## Intervalles de confiance de la moyenne (n>30) {.smaller}
+
+- Selon le théorème central limite, la moyenne calculé sur un grand échantillon $m$ suit une loi approximativement normale de moyenne (de la population) $\mu$ et d'écart type $\frac{\sigma}{\sqrt{n}}$ (erreur standard).
+
+- Or on sait que dans une distribution normale, 95% des valeurs se trouvent dans l'intervalle $[\mu-1.96\frac{\sigma}{\sqrt{m}},\mu+1.96\frac{\sigma}{\sqrt{m}}]$. On peut donc dire que la moyenne de l'échantillon a 95% de chance de se trouver dans cet intervalle. On peut remplacer 1.96 par n'importe quelle valeur critique de la loi normale pour son niveau de confiance associé (pour un niveau de confiance de 99%, la valeur critique est de 2.575).
+
+- 
+
+
 
 - Théoreme centrale limite => la moyenne d'un grand nombre d'échantillons (>30) de taille n suit une distribution normale.
 - Si on connait l'écart-type de la population, on l'utilise avec les valeurs critiques de la loi normale.
 
-$\text{CI} = \left( \bar{x} \pm z^* \frac{\sigma}{\sqrt{n}} \right)
+$\text{CI} = \left( \bar{x} \pm z^* \frac{\sigma}{\sqrt{n}} \right)$
 
 - $\bar{x}$ = moyenne de l'échantillon
 - $\sigma$ = écart-type de la population
