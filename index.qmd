@@ -72,8 +72,10 @@ L'exploration et l'analyse de base de données pour le résumer, détecter des r
 
 [^1]: Artwork by @allison_horst.
 
-## Ressources {.smaller}
+## Ressources et sources du cours {.smaller}
 
+- [Les statistiques pour statophobes (2004), Denis Poinsot](https://perso.univ-rennes1.fr/denis.poinsot/Statistiques_%20pour_statophobes/STATISTIQUES%20POUR%20STATOPHOBES.pdf)
+- Data Mining et Statistique décisionnelle (2017), Stéphane Tufféry, Editions Technip
 - [Analyse-R, Joseph Larmarange - Université Paris Cité, IRD](https://larmarange.github.io/analyse-R/)
 - [Guide-R, Joseph Larmarange - Université Paris Cité, IRD](https://larmarange.github.io/guide-R/)
 - [Grimoire, Lise Vaudor, CNRS](http://perso.ens-lyon.fr/lise.vaudor/grimoireStat/_book/intro.html)
@@ -81,8 +83,8 @@ L'exploration et l'analyse de base de données pour le résumer, détecter des r
 - [Cours d'Antoine Massé, IUT de Bordeaux](https://sites.google.com/site/rgraphiques/home)
 - [R for datascience, Hadley Wickham, Mine Çetinkaya-Rundel, and Garrett Grolemund](https://r4ds.hadley.nz/)
 - [Formation ministérielle à R et aux sciences des données](https://mtes-mct.github.io/parcours-r/)
-- Data Mining et Statistique décisionnelle (2017), Stéphane Tufféry, Editions Technip
 - [Vidéos d'Eric Lombardot - Université Paris 1 Panthéon Sorbonne](https://www.youtube.com/@EricLombardot)
+Pour éviter R studio : 
 - [Logiciel Jamovi](https://www.jamovi.org/)
 - [Logiciel Rattle](https://github.com/gjwgit/rattleng)
   
@@ -332,6 +334,45 @@ plot(x, hx, type="l", lwd=2, col="black", xlab="x", ylab="Density", main="Densit
 lines(x, hx2, lwd=2, col="red")
 lines(x, hx3, lwd=2, col="blue")
 ```
+## Niveau de dissymétrie
+
+\
+
+![](./img/normality.png){width="100%" fig-align="center"}
+
+```{r, echo=FALSE, eval=FALSE}
+# draw an histogram close to a normal distribution with fake data with the normal curve on top
+# set.seed(123)  # For reproducibility
+fake_data <- rnorm(1000, mean = 0, sd = 1)  # Generate 1000 samples
+h <- hist(fake_data, col = "lightblue", main = "", xlab = "Fake data", breaks = 30)
+xfit <- seq(min(fake_data), max(fake_data), length = 40)
+yfit <- dnorm(xfit, mean = mean(fake_data), sd = sd(fake_data))
+yfit <- yfit * diff(h$mids[1:2]) * length(fake_data)
+lines(xfit, yfit, col = "red", lwd = 2)
+```
+
+```{r, echo=FALSE, eval=FALSE}
+# draw an histogram close to a normal distribution with fake data with the normal curve on top
+# set.seed(123)  # For reproducibility
+fake_data <- rweibull(1000, shape = 30, scale = 2)  # Generate 1000 samples
+h <- hist(fake_data, col = "lightblue", main = "", xlab = "Fake data", breaks = 30)
+xfit <- seq(min(fake_data), max(fake_data), length = 40)
+yfit <- dnorm(xfit, mean = mean(fake_data), sd = sd(fake_data))
+yfit <- yfit * diff(h$mids[1:2]) * length(fake_data)
+lines(xfit, yfit, col = "red", lwd = 2)
+```
+
+```{r, echo=FALSE, eval=FALSE}
+# draw an histogram close to a normal distribution with fake data with the normal curve on top
+# set.seed(123)  # For reproducibility
+fake_data <- data_lognormal <- rlnorm(1000, meanlog = 2, sdlog = 0.8)
+h <- hist(fake_data, col = "lightblue", main = "", xlab = "Fake data", breaks = 30)
+xfit <- seq(min(fake_data), max(fake_data), length = 40)
+yfit <- dnorm(xfit, mean = mean(fake_data), sd = sd(fake_data))
+yfit <- yfit * diff(h$mids[1:2]) * length(fake_data)
+lines(xfit, yfit, col = "red", lwd = 2)
+```
+
 
 ## Coefficient d'assymétrie de Fisher
 
@@ -355,7 +396,7 @@ e1071::kurtosis(carhyce_stat$surface_bv_km2, na.rm = TRUE, type = 1) # type 1 = 
 
 On compare les quantiles de la distribution observée et ceux de la distribution théorique (ici la loi normale).
 
-```{r, echo=TRUE, collapse=FALSE, fig.height=4}
+```{r, echo=TRUE, collapse=FALSE, fig.height=4, fig.align='center'}
 # QQ-plot
 ggplot(data = carhyce_stat, mapping = aes(sample = surface_bv_km2)) +
   stat_qq_band() +
@@ -375,6 +416,9 @@ Le test de Shapiro-Wilk utilise la position des quantile pour déterminer si la 
 
 - $H_0$ est rejetée si les valeurs de nos données ont presque aucune chance d'être obtenues si la distribution était normale. Presque aucune chance est généralement <5% de chance, noté p-value (seuil de significativité) < 0.05.
 - $H_0$ n'est pas rejetée si les valeurs de nos données ont une chance (même modeste) d'être obtenues si la distribution était normale.
+
+La p-value est la probabilité de se tromper en rejetant $H_0$.
+
 
 ::: aside
 Cette explication des tests est reprise de l'ouvrage de Denis Poinsot "Les statistiques pour les statophobes" (2004) disponible gratuitement [ici](https://perso.univ-rennes1.fr/denis.poinsot/Statistiques_%20pour_statophobes/STATISTIQUES%20POUR%20STATOPHOBES.pdf)
@@ -1033,15 +1077,19 @@ carhyce_stat <- carhyce %>%
   na.omit() # remove NA values
 ```
 
-## Théorème central limite {.smaller}
+## Théorème central limite
 
 - Prennons un grand nombre d'échantillons de taille n d'une distribution non normale de moyenne $\mu$ et d'écart-type $\sigma$. Quelle est la distribution des moyennes si on effectue de nombreux tirage aléatoire de taille n?
 
-- Illustration sur le [Grimoire de Lise Vaudor](http://perso.ens-lyon.fr/lise.vaudor/grimoireStat/_book/decrire-une-variable.html#loi-normale)
+- Illustration dans le [Grimoire de Lise Vaudor](http://perso.ens-lyon.fr/lise.vaudor/grimoireStat/_book/decrire-une-variable.html#loi-normale){target="_blank"}
 
 - La moyenne d'un grand nombre d'échantillons (n>30) de distribution quelconque de taille n suit une distribution normale, soit $\bar{x} \sim N(\mu, \frac{\sigma}{\sqrt{n}})$
 
-$\bar X \in \left[\mu-1.96\frac{\sigma}{\sqrt{N}},\mu+1.96\frac{\sigma}{\sqrt{N}}\right]$
+::: aside
+
+$\mu$ = moyenne de la population, $\sigma$ = écart-type de la population, $n$ = taille de l'échantillon
+
+:::
 
 ## Erreur standard {.smaller}
 
@@ -1051,156 +1099,168 @@ $\bar X \in \left[\mu-1.96\frac{\sigma}{\sqrt{N}},\mu+1.96\frac{\sigma}{\sqrt{N}
 
 - L'erreur standard de la moyenne d'un échantillon peut être calculé : $\frac{\sigma}{\sqrt{n}}$. Il a donc la particularité de diminuer avec la racine carrée de la taille de l'échantillon, contrairement à l'écart type d'un échantillon.
 
-## Intervalles de confiance de la moyenne (n>30) {.smaller}
+::: aside
 
-- Selon le théorème central limite, la moyenne calculé sur un grand échantillon $m$ suit une loi approximativement normale de moyenne (de la population) $\mu$ et d'écart type $\frac{\sigma}{\sqrt{n}}$ (erreur standard).
+Une explication complète et très pédagogique est dans l'annexe 3 des [Statistiques pour statophobes (2004) de Denis Poinsot](https://perso.univ-rennes1.fr/denis.poinsot/Statistiques_%20pour_statophobes/STATISTIQUES%20POUR%20STATOPHOBES.pdf).
 
-- Or on sait que dans une distribution normale, 95% des valeurs se trouvent dans l'intervalle $[\mu-1.96\frac{\sigma}{\sqrt{m}},\mu+1.96\frac{\sigma}{\sqrt{m}}]$. On peut donc dire que la moyenne de l'échantillon a 95% de chance de se trouver dans cet intervalle. On peut remplacer 1.96 par n'importe quelle valeur critique de la loi normale pour son niveau de confiance associé (pour un niveau de confiance de 99%, la valeur critique est de 2.575).
+:::
 
-- 
+## Intervalle de confiance de la moyenne (n>30, distribution quelconque) {.smaller}
 
+- Selon le théorème central limite, la moyenne calculé sur un grand échantillon $m$ suit une loi approximativement normale de moyenne $\mu$ (de la population) $\mu$ et d'écart type (ou erreur standard) $\frac{\sigma}{\sqrt{n}}$.
 
+- Nous avons un grand échantillon, l'écart-type de l'échantillon est donc une bonne estimation de l'écart-type de la population. 
 
-- Théoreme centrale limite => la moyenne d'un grand nombre d'échantillons (>30) de taille n suit une distribution normale.
-- Si on connait l'écart-type de la population, on l'utilise avec les valeurs critiques de la loi normale.
+- Dans une distribution normale, 95% des valeurs se trouvent dans l'intervalle $IC_{95\%} = [\bar x-1.96\frac{s}{\sqrt{n}},\bar x+1.96\frac{s}{\sqrt{n}}]$. On peut donc dire que la moyenne de l'échantillon a 95% de chance de se trouver dans cet intervalle. On peut remplacer 1.96 par n'importe quelle valeur critique de la loi normale pour son niveau de confiance associé (pour un niveau de confiance de 99%, la valeur critique est de 2.575).
 
-$\text{CI} = \left( \bar{x} \pm z^* \frac{\sigma}{\sqrt{n}} \right)$
+::: aside
 
-- $\bar{x}$ = moyenne de l'échantillon
-- $\sigma$ = écart-type de la population
-- $n$ = taille de l'échantillon
-- $z^*$ = valeur critique de la loi normale
+$\mu$ = moyenne de la population, $\bar x$ = moyenne de l'échantillon, $\sigma$ = écart-type de la population, $s$ = écart-type de l'échantillon, $n$ = taille de l'échantillon
 
-- Pour un niveau de confiance de 95%, $z^* = 1.96$, soit 1.96 fois l'écart-type de la moyenne.
+:::
 
-```{r, echo=TRUE, collapse=FALSE}
-# mean confidence interval for the all population with 95% confidence level
-# qnorm(0.975) = 1.96 => read in normal distribution critical value
-fake_sd_pop <- 2 # fake standard deviation of the population
-mean_ci <- mean(carhyce_stat$largeur_mouillee_qb_m, na.rm = TRUE) + c(-1, 1) * qnorm(0.975) * fake_sd_pop / sqrt(length(carhyce_stat$largeur_mouillee_qb_m))
-print(mean_ci)
-```
+## Intervalle de confiance de la moyenne (n<30, distribution normale) {.smaller}
 
-## Intervalles de confiance de la moyenne
+- La distribution est normale mais on ne peut plus remplacer l'écart-type de la population $\sigma$ par l'écart-type de l'échantillon $s$. L'écart-type de la population est alors remplacé par le $t$ de Student pour $n-1$ degrés de liberté (df ou degrees of freedom en anglais). 
 
-Distribution normale ou échantillon suffisamment grand (n > 30 = Théorème central limite)
+- Les degrées de liberté sont le nombre de valeurs susceptible de varier dans un calcul statistique. Les observations d'un échantillon peuvent variées d'un échantillon à l'autre, reflétant la variabilité inhérente des données dans la population. Les degrés de liberté sont un concept statistique qui quantifie combien de valeurs peuvent encore varier après que certaines restrictions ont été appliquées. Dans le cas de l'échantillon, si vous connaissez la moyenne $\bar x$, toutes les valeurs de l'échantillon doivent s'ajuster pour que la somme totale des écarts à la moyenne soit nulle. Cela signifie que si n est la taille de l'échantillon, seulement n-1 valeurs peuvent varier indépendamment, la dernière est déterminée par les autres.
 
-- Théoreme centrale limite => la moyenne d'un grand nombre d'individus de taille n suit une distribution normale.
-- Si on ne connait pas l'écart-type de la population, on l'estime avec l'écart-type de l'échantillon et on utilise les valeurs critiques de la loi de Student.
+- L'intervalle de confiance est alors pour $IC_{95\%} = [\bar x-t_{0.975}\frac{s}{\sqrt{n}},\bar x+t_{0.975}\frac{s}{\sqrt{n}}]$. On peut remplacer $t_{0.975}$ par n'importe quelle valeur critique de la loi de Student pour son niveau de confiance associé.
+
+## Intervalle de confiance de la moyenne (n>30 ou distribution normale) - calcul
 
 ```{r, echo=TRUE, collapse=FALSE}
-# mean confidence interval for the all population with 95% confidence level
-mean_ci <- mean(carhyce_stat$largeur_mouillee_qb_m, na.rm = TRUE) + c(-1, 1) * qt(0.975, length(carhyce_stat$largeur_mouillee_qb_m) - 1) * sd(carhyce_stat$largeur_mouillee_qb_m, na.rm = TRUE) / sqrt(length(carhyce_stat$largeur_mouillee_qb_m))
-print(mean_ci)
+# mean confidence interval for the sample with 95% confidence level
+t.test(carhyce_stat$largeur_mouillee_qb_m, conf.level = 0.95)
 ```
 
-## Intervalles de confiance moyenne - non normale et petit échantillon
+## Intervalle de confiance de la moyenne (n<30, distribution non normale) {.smaller}
 
-Distribution non normale et petit échantillon (n < 30)
-
-- On utilise la méthode de bootstrap pour estimer l'intervalle de confiance de la moyenne. on simule d'une manière itérative et inductive une multitude d'échantillons analogues à l'échantillon initial. On calcule la moyenne de chaque échantillon et on obtient la distribution des moyennes.
+- La méthode du bootstrap : on simule d'une manière itérative et inductive une multitude d'échantillons analogues à l'échantillon initial. On calcule la moyenne de chaque échantillon et on obtient la distribution des moyennes. L'intervalle de confiance est alors déterminé par les quantiles de cette distribution.
 
 ```{r, echo=TRUE, collapse=FALSE}
 # sample 20 values from the population
 sample_largeur <- sample(carhyce_stat$largeur_mouillee_qb_m, 20)
+print(paste0("Moyenne du sous échantillon = ", median(sample_largeur)))
 ```
-
 ```{r, echo=TRUE, collapse=FALSE}
-# bootstrap function
-bootstat <- function(x, i) mean(x[i])
+bootstat <- function(x, i) median(x[i]) # bootstrap function
 # mean confidence interval for the sample with 95% confidence level
 mean_ci_sample <- boot(data = sample_largeur, statistic = bootstat, R = 1000)
 boot.ci(mean_ci_sample, type = "basic", conf = 0.95)
 ```
+## Intervalle de confiance d'une médiane
+
+- La méthode du bootstrap peut être utilisée.
+
+```{r, echo=TRUE, collapse=FALSE}
+print(paste0("Médiane = ", median(carhyce_stat$largeur_mouillee_qb_m)))
+bootstat <- function(x, i) median(x[i]) # bootstrap function
+# mean confidence interval for the sample with 95% confidence level
+median_ci_sample <- boot(data = carhyce_stat$largeur_mouillee_qb_m, statistic = bootstat, R = 1000)
+boot.ci(median_ci_sample, type = "basic", conf = 0.95)
+```
+
+```{r, echo=FALSE, include=FALSE}
+# Median confidence interval for symmetric distribution 
+wilcox.test(carhyce_stat$largeur_mouillee_qb_m, conf.int = TRUE)
+```
 
 ## Comparaison des stations de plaine et de montagne
+
+**Est-ce que les rivières de montagne ont une granulométrie plus grossière que les rivières de plaine?**
+
+\
 
 Séparation des jeux de données.
 
 ```{r, echo=TRUE, collapse=FALSE}
 carhyce_stat_montagne <- carhyce_stat %>% filter(montagne_plaine == "montagne")
 carhyce_stat_montagne_mean = mean(carhyce_stat_montagne$d50_mm, na.rm = TRUE)
-print(carhyce_stat_montagne_mean)
+print(paste0("Moyenne D50 station de montage = ", round(carhyce_stat_montagne_mean, 2)))
 ```
 
 ```{r, echo=TRUE, collapse=FALSE}
 carhyce_stat_plaine <- carhyce_stat %>% filter(montagne_plaine == "plaine")
 carhyce_stat_plaine_mean = mean(carhyce_stat_plaine$d50_mm, na.rm = TRUE)
-print(carhyce_stat_plaine_mean)
+print(paste0("Moyenne D50 station de montage = ", round(carhyce_stat_plaine_mean, 2)))
 ```
+## Vérification des distributions
 
-- Les rivières de montagne ont t'elles vraiment une granulométrie plus grossière que cettes de plaine?
+```{r}
+# histogram with normal curve
+par(mfrow=c(1,2))
+h <- hist(carhyce_stat_montagne$d50_mm, col = "lightblue", main = "Montagne", 
+          xlab = "D50 (mm)", ylim = c(0, 20))
+xfit <- seq(min(carhyce_stat_montagne$d50_mm),
+            max(carhyce_stat_montagne$d50_mm), length = 40) 
+yfit <- dnorm(xfit, mean = mean(carhyce_stat_montagne$d50_mm), sd = sd(carhyce_stat_montagne$d50_mm)) 
+yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat_montagne$d50_mm) 
+lines(xfit, yfit, col = "red", lwd = 2)
+h <- hist(carhyce_stat_plaine$d50_mm, col = "lightgreen", main = "Plaine", 
+          xlab = "D50 (mm)")
+xfit <- seq(min(carhyce_stat_plaine$d50_mm),
+            max(carhyce_stat_plaine$d50_mm), length = 40)
+yfit <- dnorm(xfit, mean = mean(carhyce_stat_plaine$d50_mm), sd = sd(carhyce_stat_plaine$d50_mm))
+yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat_plaine$d50_mm)
+lines(xfit, yfit, col = "red", lwd = 2)
+```
 
 ## Conditions de comparaison des moyennes
 
-![](./img/t-test-diagram.png)
+![](./img/t-test-diagram.png){width="100%" fig-align="center"}
 
 <!-- ## Conditions de comparaison des moyennes -->
 
-Si la distribution est très dissymétrique malgrés un échantillon >30 => test non paramétrique.
-![](./img/normality.png)
+[Si la distribution est très dissymétrique malgrés un échantillon >30 => test non paramétrique.]{style="font-size: 0.7em;"}
 
-```{r, echo=FALSE, eval=FALSE}
-# draw an histogram close to a normal distribution with fake data with the normal curve on top
-# set.seed(123)  # For reproducibility
-fake_data <- rnorm(1000, mean = 0, sd = 1)  # Generate 1000 samples
-h <- hist(fake_data, col = "lightblue", main = "", xlab = "Fake data", breaks = 30)
-xfit <- seq(min(fake_data), max(fake_data), length = 40)
-yfit <- dnorm(xfit, mean = mean(fake_data), sd = sd(fake_data))
-yfit <- yfit * diff(h$mids[1:2]) * length(fake_data)
-lines(xfit, yfit, col = "red", lwd = 2)
-```
 
-```{r, echo=FALSE, eval=FALSE}
-# draw an histogram close to a normal distribution with fake data with the normal curve on top
-# set.seed(123)  # For reproducibility
-fake_data <- rweibull(1000, shape = 30, scale = 2)  # Generate 1000 samples
-h <- hist(fake_data, col = "lightblue", main = "", xlab = "Fake data", breaks = 30)
-xfit <- seq(min(fake_data), max(fake_data), length = 40)
-yfit <- dnorm(xfit, mean = mean(fake_data), sd = sd(fake_data))
-yfit <- yfit * diff(h$mids[1:2]) * length(fake_data)
-lines(xfit, yfit, col = "red", lwd = 2)
-```
-
-```{r, echo=FALSE, eval=FALSE}
-# draw an histogram close to a normal distribution with fake data with the normal curve on top
-# set.seed(123)  # For reproducibility
-fake_data <- data_lognormal <- rlnorm(1000, meanlog = 2, sdlog = 0.8)
-h <- hist(fake_data, col = "lightblue", main = "", xlab = "Fake data", breaks = 30)
-xfit <- seq(min(fake_data), max(fake_data), length = 40)
-yfit <- dnorm(xfit, mean = mean(fake_data), sd = sd(fake_data))
-yfit <- yfit * diff(h$mids[1:2]) * length(fake_data)
-lines(xfit, yfit, col = "red", lwd = 2)
-```
-
-## Comparaison de moyennes - IC
-
-Calcul des intervalles de confiance de la moyenne (grands échantillons).
+## Comparaison de moyennes - IC95%
 
 ```{r, echo=TRUE, collapse=FALSE}
-# mean confidence interval for the all population with 95% confidence level
-mean_ci_montagne <- carhyce_stat_montagne_mean + c(-1, 1) * qt(0.975, length(carhyce_stat_montagne$d50_mm) - 1) * sd(carhyce_stat_montagne$d50_mm, na.rm = TRUE) / sqrt(length(carhyce_stat_montagne$d50_mm))
-mean_ci_plaine <- carhyce_stat_plaine_mean + c(-1, 1) * qt(0.975, length(carhyce_stat_plaine$d50_mm) - 1) * sd(carhyce_stat_plaine$d50_mm, na.rm = TRUE) / sqrt(length(carhyce_stat_plaine$d50_mm))
-# print means and confidence intervals for each dataset
-print(paste0("Montagne : ", round(carhyce_stat_montagne_mean, 2), " [", round(mean_ci_montagne[1], 2), " - ", round(mean_ci_montagne[2], 2), "]"))
-print(paste0("Plaine : ", round(carhyce_stat_plaine_mean, 2), " [", round(mean_ci_plaine[1], 2), " - ", round(mean_ci_plaine[2], 2), "]"))
+print(paste0("Taille de l'échantillon montagne : ", nrow(carhyce_stat_montagne)))
+print(paste0("Taille de l'échantillon plaine : ", nrow(carhyce_stat_plaine)))
+```
+\
+
+[Condition n>30, distribution quelconque]{style="font-size: 0.7em;"}
+
+```{r, echo=TRUE, collapse=FALSE}
+# mean confidence interval with 95% confidence level
+montagne_t_test <- t.test(carhyce_stat_montagne$d50_mm, conf.level = 0.95)
+print(paste0("Montagne mean ", round(carhyce_stat_montagne_mean, 2), " IC95% = ", "[", round(montagne_t_test$conf.int[1], 2), " - ", round(montagne_t_test$conf.int[2], 2), "]"))
+plaine_t_test <- t.test(carhyce_stat_plaine$d50_mm, conf.level = 0.95)
+print(paste0("Plaine mean ", round(carhyce_stat_plaine_mean, 2), " IC95% = ", "[", round(plaine_t_test$conf.int[1], 2), " - ", round(plaine_t_test$conf.int[2], 2), "]"))
 ```
 ## Comparaison de moyennes - IC boxplot
 
-```{r, echo=TRUE, collapse=FALSE}
+```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
 # boxplot with mean, confidence interval and their values
-boxplot(carhyce_stat$d50_mm ~ carhyce_stat$montagne_plaine, main = "Granulométrie d50", xlab = "Montagne/Plaine", ylab = "Granulométrie d50 (mm)", col = c("lightblue", "lightgreen"))
+boxplot(carhyce_stat$d50_mm ~ carhyce_stat$montagne_plaine, main = "Granulométrie d50", xlab = "", ylab = "Granulométrie d50 (mm)", col = c("lightblue", "lightgreen"))
 points(1, carhyce_stat_montagne_mean, pch = 19, col = "red")
-segments(1, mean_ci_montagne[1], 1, mean_ci_montagne[2], col = "red")
+segments(1, montagne_t_test$conf.int[1], 1, montagne_t_test$conf.int[2], col = "red")
 points(2, carhyce_stat_plaine_mean, pch = 19, col = "red")
-segments(2, mean_ci_plaine[1], 2, mean_ci_plaine[2], col = "red")
-# add values of means and confidence intervals
-text(1, mean_ci_montagne[2], paste0(round(carhyce_stat_montagne_mean, 2), " [", round(mean_ci_montagne[1], 2), " - ", round(mean_ci_montagne[2], 2), "]"), pos = 3)
-text(2, mean_ci_plaine[2], paste0(round(carhyce_stat_plaine_mean, 2), " [", round(mean_ci_plaine[1], 2), " - ", round(mean_ci_plaine[2], 2), "]"), pos = 3)
+segments(2, plaine_t_test$conf.int[1], 2, plaine_t_test$conf.int[2], col = "red")
+text(1, montagne_t_test$conf.int[2], paste0(round(carhyce_stat_montagne_mean, 2), " [", round(montagne_t_test$conf.int[1], 2), " - ", round(montagne_t_test$conf.int[2], 2), "]"), pos = 3) # 
+text(2, plaine_t_test$conf.int[2], paste0(round(carhyce_stat_plaine_mean, 2), " [", round(plaine_t_test$conf.int[1], 2), " - ", round(plaine_t_test$conf.int[2], 2), "]"), pos = 3) # add values of means and confidence intervals
+abline(h = 35, col = "red") # add horizontal line at 35 mm
 ```
-## Test de comparaison des moyennes - Student t-test
+## Test de comparaison des variances
 
-- Test de Student (t-test) pour comparer les moyennes de deux échantillons indépendants.
+F-test pour comparer les variances :
+
+$H_0$ : les variances sont égales
+$H_1$ : les variances ne sont pas égales
+
+```{r, echo=TRUE, collapse=FALSE}
+# F-test
+var.test(carhyce_stat_montagne$d50_mm, carhyce_stat_plaine$d50_mm)
+```
+La p-value est inférieure à 0.05, l'hypothèse nulle est rejetée, les variances des granulométries des rivières de montagne et de plaine sont significativement différentes.
+
+## Test de comparaison des moyennes - Welch t-test {.smaller}
+
+- Test de Welch pour comparer les moyennes de deux échantillons indépendants de variance égales. (le t.test de R réalise un test de variance automatique et réalise automatiquement un test de Welch si les variances sont égales).
 
 - Hypothèses :
 
@@ -1208,9 +1268,17 @@ text(2, mean_ci_plaine[2], paste0(round(carhyce_stat_plaine_mean, 2), " [", roun
     - $H_1$ : les moyennes des deux échantillons sont différentes.
     
 ```{r, echo=TRUE, collapse=FALSE}
-# Student t-test
-t.test(carhyce_stat_montagne$d50_mm, carhyce_stat_plaine$d50_mm)
+# Welch test
+t.test(carhyce_stat_montagne$d50_mm, carhyce_stat_plaine$d50_mm,
+       var.equal = FALSE, # Welch test
+       alternative = "two.sided", # test difference of means
+       paired = FALSE) # independant samples
 ```
+https://www.datanovia.com/en/fr/lessons/test-t-dans-r/
+
+
+L'hypothèse nulle est rejetée, les moyennes des granulométries des rivières de montagne et de plaine sont significativement différentes avec un risque de se tromper de 0.52%.
+
 ## Petits échantillons ou distributions non normales
 
 ```{r, echo=TRUE, collapse=FALSE}
