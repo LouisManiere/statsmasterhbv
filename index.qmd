@@ -84,6 +84,8 @@ L'exploration et l'analyse de base de données pour le résumer, détecter des r
 - [R for datascience, Hadley Wickham, Mine Çetinkaya-Rundel, and Garrett Grolemund](https://r4ds.hadley.nz/)
 - [Formation ministérielle à R et aux sciences des données](https://mtes-mct.github.io/parcours-r/)
 - [Vidéos d'Eric Lombardot - Université Paris 1 Panthéon Sorbonne](https://www.youtube.com/@EricLombardot)
+- [Vidéos de Tierry Ancelle, EHESP, MCU-PH, Faculté de médecine Paris-Descartes](https://www.epiter.org/page/2366997-lecons-epiteriennes-en-ligne)
+
 Pour éviter R studio : 
 - [Logiciel Jamovi](https://www.jamovi.org/)
 - [Logiciel Rattle](https://github.com/gjwgit/rattleng)
@@ -405,24 +407,82 @@ ggplot(data = carhyce_stat, mapping = aes(sample = surface_bv_km2)) +
   labs(title = "QQ-plot de la surface des bassins versants", x = "Quantiles théoriques", y = "Quantiles observés")
 ```
 
-## Vous avez dit tests statistiques ? {.smaller}
+## Tests statistiques ? - Principe {.smaller}
+
+- Je lance une pièce de monaie 5 fois et elle tombe 5 fois sur pile => 🤔 la pièce doit être truquée.... A partir de combien de pile à la suite je peux considérer que la pièce est truquée?
+
+- **Partons d'une hypothèse : La pièce est bien équilibrée** (ou j'ai 50% de chance d'avoir pile ou face).
+
+Je vais donc calculer la probabilité d'obtenir 5 fois pile si la pièce est équilibrée (ou dans les conditions de l'hypothèse). Je considère que si la probabilité d'obtenir 5 fois pile est inférieure à 5%, je peux rejeter l'hypothèse que la pièce est équilibrée.
+
+\
+
+La loi binomiale permet de calculer ces probabilités. J'ai 3% de chance d'obtenir 5 fois pile si la pièce est équilibrée. Je peux donc rejeter l'hypothèse que la pièce est équilibrée tout en sachant que j'ai 5% de chance de me tromper. 5% est donc le risque (arbitraire) que j'ai décidé à priori, que la pièce soit équilibrée alors que j'affirme que la pièce est truquée.
+
+```{r, include=FALSE}
+# densité de probabilité de la loi binomiale
+n <- 5  # Nombre de lancers
+p <- 0.5  # Probabilité de succès (pile)
+# Valeurs possibles de succès
+x <- 0:n
+# Densité de probabilité
+prob <- dbinom(x, size = n, prob = p)
+# Représentation graphique
+plot(x, prob, type = "h", lwd = 2, col = "blue",
+     xlab = "Nombre de succès", ylab = "Probabilité", ylim = c(0, 0.5),
+     main = "Densité de probabilité de la loi binomiale")
+# ajouter les valeurs
+text(x, prob, labels = round(prob, 2)*100, pos = 3)
+```
+
+## Tests statistiques ? - test d'adéquation {.smaller}
 
 Partons d'une hypothèse :
 
 - $H_0$ : la distribution suit une loi normale.
+- $H_1$ : la distribution ne suit pas une loi normale.
 
-On va comparer la distribution de nos données à une distribution théorique (ici la loi normale) pour déterminer si on peut rejeter $H_0$.
-Le test de Shapiro-Wilk utilise la position des quantile pour déterminer si la distribution suit une loi normale, un peu comme pour le QQ-plot. On prend la position des valeurs de nos données triées pour calculer leur équivalent projecté dans une distribution normale et les résultat attendus si $H_0$ est vrai qui n'ont presque aucune chance d'être obtenu.
+**Quel est la probabilité d'obtenir notre distribution observée si la distribution était normale?**
 
-- $H_0$ est rejetée si les valeurs de nos données ont presque aucune chance d'être obtenues si la distribution était normale. Presque aucune chance est généralement <5% de chance, noté p-value (seuil de significativité) < 0.05.
-- $H_0$ n'est pas rejetée si les valeurs de nos données ont une chance (même modeste) d'être obtenues si la distribution était normale.
+On compare notre distribution observée à une distribution théorique (ici la loi normale). Si notre distribution observée à très peu de chance d'être obtenue si la distribution était normale, on peut rejeter $H_0$. Si nos observations appartiennent aux résultats qui ont une chance d'être obtenus si $H_0$ est vraie, on peut accepter $H_0$ (ou $H_0$ reste crédible).
 
-La p-value est la probabilité de se tromper en rejetant $H_0$.
+\
 
+Le "très peu de chance" est représenté par le risque $\alpha$ (seuil de significativité ou risque de premier espèce), souvent de 5%. Si la probabilité d'obtenir notre distribution observée est inférieure à 5% si la distribution était normale, on peut rejeter $H_0$. 
+On peut choisir un risque $\alpha$ plus faible selon notre confiance dans nos résultats et l'enjeu du risque. Imaginez que l'on teste l'efficacité d'un médicament d'une maladie grave... as t'on envie d'avoir 1 chance sur 20 de se tromper?
 
-::: aside
-Cette explication des tests est reprise de l'ouvrage de Denis Poinsot "Les statistiques pour les statophobes" (2004) disponible gratuitement [ici](https://perso.univ-rennes1.fr/denis.poinsot/Statistiques_%20pour_statophobes/STATISTIQUES%20POUR%20STATOPHOBES.pdf)
-:::
+## Tests statistiques ? - p-value {.smaller}
+
+- Tous les tests se concluent par une p-value. On la compare au seuil de significativité $\alpha$ annoncée avant le test.
+
+- Interprétation de la p-value : $p=0.15$ signifie que l'on a 15% de chance d'obtenir les données observées si $H_0$ est vraie (ou si la distribution était normale). $p$ n'est pas un risque de se tromper mais une mesure de la significativité du résultat (ou une probabilité à postériori). Le risque de se tromper se choisi à priori et non à postériori du test.
+
+- p-value < $\alpha$ : on rejette $H_0$ et on accepte $H_1$ avec le riques de se tromper de $\alpha$. La différence observée est significative.
+- p-value > $\alpha$ : on accepte $H_0$ **mais** on ne peut pas dire que $H_0$ est vraie 🤯. 
+
+*Petite subtilité, le fait d'accepter $H_0$ ne signifie pas que $H_0$ soit vraie, mais que sur la base des données observées rien ne permet de conclure qu'elle soit fausses.*
+
+## Tests statistiques ? - erreur! {.smaller}
+
+Lors d'un test statistique, on peut faire deux types d'erreurs :
+
+- **Erreur de type I** : Risque de rejeter $H_0$ alors qu'elle est vraie. Risque $\alpha$ => on affirme une différence alors qu'en réalité il n'y en a pas.
+- **Erreur de type II** : Risque de ne pas rejeter $H_0$ alors qu'elle est fausse. Risque $\beta$ => on affirme qu'il n'y a pas de différence alors qu'en réalité il y en a une. On se sait pas calculer ce risque, on ne peut donc pas affirmer $H_0$.
+
+Le risque $\beta$ est d'autant plus petit que l'échantillon est important. La puissance d'un test, $1 - \beta$, est la probabilité de rejeter $H_0$ alors qu'elle est fausse. Pour détecter une faible différence, il faux un test puissant, soit un échantillon suffisamment grand (voir la vidéos de [Tierry Ancelle](https://www.youtube.com/watch?v=qWxJkq7QFWY) pour une très bonne illustration).
+
+![](./img/test_rules.png){width="100%" fig-align="center"}
+
+## Tests statistiques ? - ressources
+
+Des vidéos très pédagogiques de [Tierry Ancelle](https://www.epiter.org/page/2366997-lecons-epiteriennes-en-ligne){target="_blank"} : 
+
+- [Principes des tests statistiques](https://www.youtube.com/watch?v=qWxJkq7QFWY){target="_blank"}
+- [Le petit p](https://www.youtube.com/watch?v=X6gPReE1w2g){target="_blank"}
+
+Sur la description, l'histoire et l'utilisation des tests statistiques : 
+
+- L'ouvrage en ligne de Denis Poinsot ["Les statistiques pour les statophobes" (2004)](https://perso.univ-rennes1.fr/denis.poinsot/Statistiques_%20pour_statophobes/STATISTIQUES%20POUR%20STATOPHOBES.pdf){target="_blank"}
 
 ## Test de normalité - précaution / utilisation
 
@@ -431,10 +491,9 @@ Cette explication des tests est reprise de l'ouvrage de Denis Poinsot "Les stati
     - Pour un échantillon de taille importante, les tests de normalité peuvent être trop sensibles.
 
 - Souvent utilisé au prélable d'autres tests statistiques dit paramétriques : 
-  - Shapiro-Wilk => meilleur pour de petits échantillons (<2000).
-  - Kolmogorov-Smirnov => grands échantillons (>2000).
-  - Anderson-Darling => grands échantillons (>2000).
-
+  - Shapiro-Wilk => meilleur pour de petits échantillons (<2000)
+  - Kolmogorov-Smirnov => grands échantillons (>2000)
+  - Anderson-Darling => grands échantillons (>2000)
 
 ## Test de normalité
 
@@ -459,9 +518,7 @@ ks.test(carhyce_stat$surface_bv_km2, "pnorm", mean = mean(carhyce_stat$surface_b
 - $H_0$ : la variable suit une distribution normale.
 - $H_1$ : la variable ne suit pas une distribution normale.
 
-- On peut rejeter $H_0$ et valider $H_1$ avec une probabilité de se tromper de $2.2 \times 10^{-14} \times 100$%.
-
-- **Ou** (*moins bien*) p-value $<$ 0.05 => la distribution ne suit pas une loi normale.
+- p-value < 2.2e-16 < 0.05, On peut rejeter $H_0$ et valider $H_1$ avec une probabilité de se tromper de 5%.
 
 ## Distribution des classes de ripisylve
 
@@ -504,7 +561,7 @@ print(skim(carhyce_stat$surface_bv_km2))
 
 - Pouvoir décrire la relation qui peut exister entre deux variables.
 - Utiliser les bons outils selon la nature des variables à comparer.
-- Evaluer le type, l'intensité et le sens d'une relation entre deux variables qauntitatives.
+- Evaluer le type, l'intensité et le sens d'une relation entre deux variables quantitatives.
 
 ## Reprenons nos données
 
@@ -577,7 +634,7 @@ print(contingency_table$t)
 ::: panel-tabset
 ### total
 
-[Fréquences partielles sur effectif total (le total des fréquences = 1) : X% des individus appartiennent aux modalités truc et bidule **ou**  X % des cours d'eau ont une eau de bonne qualité et sont en Normandie]{style="font-size: 0.7em;"}
+[Effectifs partiels sur effectif total (le total des fréquences = 1) : X% des individus appartiennent aux modalités truc et bidule **ou**  X % des cours d'eau ont une eau de bonne qualité et sont en Normandie]{style="font-size: 0.7em;"}
 
 ```{r, echo=TRUE, collapse=FALSE}
 # x = rive gauche, y = rive droite
@@ -586,7 +643,7 @@ print(round(contingency_table$prop.tbl, 3)) # or prop.table(x, y)
 
 ### ligne
 
-[Fréquence partielle sur effectif marginal (fréquence conditionnelle, le total de chaque ligne = 1) : X% des cours d'eau Normands ont une eau de mauvaise qualité]{style="font-size: 0.7em;"}
+[Effectifs partiels sur effectif marginal (fréquence conditionnelle, le total de chaque ligne = 1) : X% des cours d'eau Normands ont une eau de mauvaise qualité]{style="font-size: 0.7em;"}
 
 ```{r, echo=TRUE, collapse=FALSE}
 # x = rive gauche, y = rive droite
@@ -595,7 +652,7 @@ print(round(contingency_table$prop.row, 3)) # or prop.table(x, y, margin = 1)
 
 ### colonne
 
-[Fréquence partielle sur effectif marginal (fréquence conditionnelle, le total de chaque colonne = 1) : X% des cours d'eau de bonne qualité sont Normands]{style="font-size: 0.7em;"}
+[Effectifs partiels sur effectif marginal (fréquence conditionnelle, le total de chaque colonne = 1) : X% des cours d'eau de bonne qualité sont Normands]{style="font-size: 0.7em;"}
 
 ```{r, echo=TRUE, collapse=FALSE}
 # x = rive gauche, y = rive droite (ou fréquence conditionnelle)
@@ -676,7 +733,7 @@ Exemple :
 chi2_ripisylve <- chisq.test(table(carhyce_stat$continuite_ripisylve_rive_gauche, carhyce_stat$continuite_ripisylve_rive_droite))
 print(round(chi2_ripisylve$expected[,1:4], 0))
 ```
-Le $\chi^2$ représente la différence des deux tables que l'on compare au $\chi^2$ critique pour déterminer si on peut rejeter $H_0$ avec un une probabilité d'erreur définie (5% généralement). Voir [table de $\chi^2$ par Fabrice Larribe](http://fabricelarribe.uqam.ca/resources/Tables/Table-Chi2-Print.pdf)
+Le $\chi^2$ représente la différence des deux tables que l'on compare au $\chi^2$ critique pour déterminer si on peut rejeter $H_0$ avec un une probabilité d'erreur définie (5% généralement). Voir [table de $\chi^2$ par Fabrice Larribe](http://fabricelarribe.uqam.ca/resources/Tables/Table-Chi2-Print.pdf){target="_blank"}
 
 ## Chi2 - interprétation
 
@@ -692,8 +749,8 @@ print(chi2_ripisylve)
 Discrétiser une variable quantitative, exemple par seuil de valeurs.
 
 ```{r, echo=TRUE, collapse=FALSE}
-# create breaks [0,5), [5,10), [10,20), [20,30), [30,40), [40,50), [>50]
-largeurs_breaks <- c(0, 5, 10, 20, 30, 40, 50, Inf)
+# create breaks [0,5), [5,10), [10,20), [20,30), [30,40), [>40]
+largeurs_breaks <- c(0, 5, 10, 20, 30, 40, Inf)
 carhyce_stat$largeur_mouillee_qb_m_breaks <- cut(carhyce_stat$largeur_mouillee_qb_m, 
                                                   breaks = largeurs_breaks, 
                                                   include.lowest = TRUE, 
@@ -737,6 +794,7 @@ plot <- ggplot(carhyce_stat, aes(x = debit_plein_bord_m3_s, y = largeur_mouillee
   geom_point() +
   labs(x = "Débit de plein bord (m3/s)", y = "Largeur mouillée plein bord (m)") +
   theme_minimal()
+  # + geom_smooth(method="lm", col="red") # décommenter cette ligne pour ajouter la régression linéaire
 plot
 ```
 
@@ -767,9 +825,9 @@ plot + geom_smooth(method="lm", col="red", formula = y ~ log(x) + x)
 
 **Evalue dans quelle mesure les variations de deux variables sont simultanées ou non.**
 
-- "+" = les écarts entre les valeurs et leur moyenne ont tendance a être de même signe.
-- "=" les écarts entre les valeurs et leur moyenne ont tendance a être de signe opposé.
-- "0" les écarts entre les $Xi$ et leur moyenne et les écarts entre les $Yi$ et leur moyenne n'ont aucun lien entre eux.
+- "+" : les écarts entre les valeurs et leur moyenne ont tendance a être de même signe.
+- "-" : les écarts entre les valeurs et leur moyenne ont tendance a être de signe opposé.
+- "0" : les écarts entre les $Xi$ et leur moyenne et les écarts entre les $Yi$ et leur moyenne n'ont aucun lien entre eux.
 
 **Attention** : 
 
@@ -791,7 +849,8 @@ plot + geom_smooth(method="lm", col="red", formula = y ~ log(x) + x)
 - ">0" = les variables évoluent dans le même sens
 - "<0" = les variables évoluent dans le sens opposé.
 
-Plus on s'éloigne de 0 plus les deux variables sont fortement corrélées linéairement. Le signe indique le sens de la relation.
+- Plus on s'éloigne de 0 plus les deux variables sont fortement corrélées linéairement. 
+- Le signe indique le sens de la relation.
 
 ## Quelques exemples de corrélation
 
@@ -812,7 +871,7 @@ Par exemple si $R^2 = 0.35$, 35% des variations de la largeur mouillée s'expliq
 
 **Attention :** 
 
-- Corrélation $\neq$ causalité!
+- Corrélation $\neq$ causalité! [Quelques beaux exemples](https://tylervigen.com/spurious-scholar){target="_blank"}
 - Multicolinéarité, quand plusieurs variables explicatives ont des liens de corrélation entre elles!
 
 ## Le Quartet d'Anscombe
@@ -844,10 +903,17 @@ Intérêt de calculer les deux coefficients :
 
 ## Lire le résultat d'un modèle de régression linéaire {.smaller}
 
-```{r}
-model_lineaire <- lm(largeur_mouillee_qb_m ~ debit_plein_bord_m3_s, data = carhyce_stat)
+::: columns
+::: {.column width="50%"}
+
+```{r, echo=TRUE, collapse=FALSE}
+model_lineaire <- lm(largeur_mouillee_qb_m ~ debit_plein_bord_m3_s, 
+                     data = carhyce_stat)
 summary(model_lineaire)
 ```
+
+:::
+::: {.column width="50%"}
 - Résidus : différence entre les valeurs observées et les valeurs prédites par le modèle.
 - Erreur standard des résidus : écart-type des résidus (ou la dispersion autour de la droite)
 - Coefficients avec erreur standard et test de significativité  :
@@ -856,6 +922,9 @@ summary(model_lineaire)
   - Estimate (Variable) : a ou la pente
 
 - R-squared : coefficient de détermination
+
+:::
+:::
 
 ## Comparaison des modèles régressions
 
@@ -937,12 +1006,8 @@ hist(model_lineaire$residuals, breaks = 100, main = "Histogramme des résidus", 
 <details>
   <summary>Analyse de la normalité</summary>
 - Q-Q plot => détection des déviations systématiques de la normalité des résidus. La distribution des résidus présente une dissymétrie à droite.
-- Notre modèle tend à surestimer les valeurs basses et sous-estimer les valeurs hautes.
+- Notre modèle a une surreprésentation d'écarts à la moyenne élevés.
 </details>
-
-::: aside
-[Pour aller plus loin : Cours de Philippe Marchand (Université du Québec en Abitibi-Témiscamingue) ](https://pmarchand1.github.io/ECL7102/notes_cours/6-Regression_lineaire.html#suppositions_du_mod%C3%A8le_de_r%C3%A9gression_lin%C3%A9aire)
-:::
 
 ## Régression linéaire multiple
 
@@ -962,15 +1027,25 @@ print(paste0("y = ", round(coef(model_multiple)[1], 2), " + ",
 
 ## Régression linéaire multiple - interprétation {.smaller}
 
+::: columns
+::: {.column width="50%"}
+
 ```{r, echo=TRUE, collapse=FALSE}
 summary(model_multiple)
 ```
+
+:::
+::: {.column width="50%"}
+
 <details>
   <summary>Interprétation</summary>
 - Le débit, la vitesse, la granulométrie et le nombre de transect expliquent 56% de la variation de la largeur mouillée.
 - Les variables explicatives ont toutes un effet légèrement positif sur la largeur mouillée à l'exception de la vitesse qui a un effet fortement négatif.
 - Les variables ont un effet significatif sur la largeur mouillée sauf le nombre de transect.
 </details>
+
+:::
+:::
 
 ## Régression linéaire multiple - synthèse
 
@@ -1260,10 +1335,7 @@ La p-value est inférieure à 0.05, l'hypothèse nulle est rejetée, les varianc
 
 ## Test de comparaison des moyennes - Welch t-test {.smaller}
 
-- Test de Welch pour comparer les moyennes de deux échantillons indépendants de variance égales. (le t.test de R réalise un test de variance automatique et réalise automatiquement un test de Welch si les variances sont égales).
-
-- Hypothèses :
-
+- Test de Welch pour comparer les moyennes de deux échantillons indépendants de variance égales. (le t.test de R réalise un test de variance automatique et réalise automatiquement un test de Welch si les variances sont égales) :
     - $H_0$ : les moyennes des deux échantillons sont égales.
     - $H_1$ : les moyennes des deux échantillons sont différentes.
     
@@ -1272,14 +1344,14 @@ La p-value est inférieure à 0.05, l'hypothèse nulle est rejetée, les varianc
 t.test(carhyce_stat_montagne$d50_mm, carhyce_stat_plaine$d50_mm,
        var.equal = FALSE, # Welch test
        alternative = "two.sided", # test difference of means
-       paired = FALSE) # independant samples
+       paired = FALSE, # independant samples
+       conf.level = 0.99) # 99% confidence level
 ```
-https://www.datanovia.com/en/fr/lessons/test-t-dans-r/
-
-
-L'hypothèse nulle est rejetée, les moyennes des granulométries des rivières de montagne et de plaine sont significativement différentes avec un risque de se tromper de 0.52%.
+L'hypothèse nulle est rejetée, les moyennes des granulométries des rivières de montagne et de plaine sont significativement différentes avec un risque de se tromper de 1%.
 
 ## Petits échantillons ou distributions non normales
+
+Etudes des Vosges et des Plaine/collinéen calcaire.
 
 ```{r, echo=TRUE, collapse=FALSE}
 # montagne data with only PYRENEES
@@ -1298,10 +1370,10 @@ print(paste0("mean : ", mean(carhyce_stat_plaine_collineen$d50_mm, na.rm = TRUE)
 
 ## Les distributions sont-elles normales? - Code
 
-```{r, echo=FALSE, eval=FALSE, collapse=FALSE, fig.width=15}
+```{r, echo=TRUE, results='hide'}
 par(mfrow=c(1,2))
 # Histogram with normal curve - Montagne
-h <- hist(carhyce_stat_montagne$largeur_mouillee_qb_m, col = "lightblue", main = "Largeur mouillée plein bord - la montagne", xlab = "Largeur mouillée plein bord (m)", ylim = c(0, 40), breaks = 30) 
+h <- hist(carhyce_stat_montagne$largeur_mouillee_qb_m, col = "lightblue", main = "Largeur mouillée plein bord - la montagne", xlab = "Largeur mouillée plein bord (m)", ylim = c(0, 40), breaks = 10) 
 xfit <- seq(min(carhyce_stat_montagne$largeur_mouillee_qb_m),
             max(carhyce_stat_montagne$largeur_mouillee_qb_m), length = 40) 
 yfit <- dnorm(xfit, mean = mean(carhyce_stat_montagne$largeur_mouillee_qb_m), sd = sd(carhyce_stat_montagne$largeur_mouillee_qb_m)) 
@@ -1309,7 +1381,7 @@ yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat_montagne$largeur_mouillee
 lines(xfit, yfit, col = "red", lwd = 2)
 
 # Histogram with normal curve - Plaine
-h <- hist(carhyce_stat_plaine$largeur_mouillee_qb_m, col = "lightblue", main = "Largeur mouillée plein bord - la montagne", xlab = "Largeur mouillée plein bord (m)", breaks = 30) 
+h <- hist(carhyce_stat_plaine$largeur_mouillee_qb_m, col = "lightblue", main = "Largeur mouillée plein bord - la montagne", xlab = "Largeur mouillée plein bord (m)", breaks = 10) 
 xfit <- seq(min(carhyce_stat_plaine$largeur_mouillee_qb_m),
             max(carhyce_stat_plaine$largeur_mouillee_qb_m), length = 40) 
 yfit <- dnorm(xfit, mean = mean(carhyce_stat_plaine$largeur_mouillee_qb_m), sd = sd(carhyce_stat_plaine$largeur_mouillee_qb_m)) 
@@ -1317,15 +1389,12 @@ yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat_plaine$largeur_mouillee_q
 lines(xfit, yfit, col = "red", lwd = 2)
 ```
 
-```{r, echo=FALSE, eval=FALSE, collapse=FALSE}
+```{r, echo=TRUE, results='hide'}
 # Shapiro-Wilk test - Montagne
 shapiro.test(carhyce_stat_montagne$largeur_mouillee_qb_m)
 # Shapiro-Wilk test - Plaine
 shapiro.test(carhyce_stat_plaine$largeur_mouillee_qb_m)
 ```
-
-
-
 
 ## Les distributions sont-elles normales?
 
@@ -1354,6 +1423,7 @@ shapiro.test(carhyce_stat_montagne$largeur_mouillee_qb_m)
 # Shapiro-Wilk test - Plaine
 shapiro.test(carhyce_stat_plaine$largeur_mouillee_qb_m)
 ```
+
 ## Mes variances sont-elles égales?
 
 F-test pour comparer les variances
@@ -1363,24 +1433,11 @@ $H_1$ : les variances sont différentes
 
 Seuil de significativité : 0.05
 
-```{r}
+```{r, echo=TRUE, collapse=FALSE}
 # F-test
 var.test(carhyce_stat_montagne$largeur_mouillee_qb_m, carhyce_stat_plaine$largeur_mouillee_qb_m)
 ```
-```{r}
-var.equal=FALSE # by default
-if(var.test(carhyce_stat_montagne$largeur_mouillee_qb_m, carhyce_stat_plaine$largeur_mouillee_qb_m)$p.value>=0.05){
-  var.equal=TRUE
-}
-var.equal
-```
 
-
-
-```{r, echo=TRUE, collapse=FALSE}
-# T-test
-t.test(carhyce_stat_montagne$largeur_mouillee_qb_m, carhyce_stat_plaine$largeur_mouillee_qb_m)
-```
 
 ## histogramme
 
