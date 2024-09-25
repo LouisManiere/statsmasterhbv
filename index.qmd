@@ -74,21 +74,21 @@ L'exploration et l'analyse de base de données pour le résumer, détecter des r
 
 ## Ressources et sources du cours {.smaller}
 
-- [Les statistiques pour statophobes (2004), Denis Poinsot](https://perso.univ-rennes1.fr/denis.poinsot/Statistiques_%20pour_statophobes/STATISTIQUES%20POUR%20STATOPHOBES.pdf)
+- [Les statistiques pour statophobes (2004), Denis Poinsot](https://perso.univ-rennes1.fr/denis.poinsot/Statistiques_%20pour_statophobes/STATISTIQUES%20POUR%20STATOPHOBES.pdf){target="_blank"}
 - Data Mining et Statistique décisionnelle (2017), Stéphane Tufféry, Editions Technip
-- [Analyse-R, Joseph Larmarange - Université Paris Cité, IRD](https://larmarange.github.io/analyse-R/)
-- [Guide-R, Joseph Larmarange - Université Paris Cité, IRD](https://larmarange.github.io/guide-R/)
-- [Grimoire, Lise Vaudor, CNRS](http://perso.ens-lyon.fr/lise.vaudor/grimoireStat/_book/intro.html)
-- [Cours d'Eric Marcon, Agro Paris Tech](https://ericmarcon.github.io/Cours-R-Geeft/)
-- [Cours d'Antoine Massé, IUT de Bordeaux](https://sites.google.com/site/rgraphiques/home)
-- [R for datascience, Hadley Wickham, Mine Çetinkaya-Rundel, and Garrett Grolemund](https://r4ds.hadley.nz/)
-- [Formation ministérielle à R et aux sciences des données](https://mtes-mct.github.io/parcours-r/)
-- [Vidéos d'Eric Lombardot - Université Paris 1 Panthéon Sorbonne](https://www.youtube.com/@EricLombardot)
-- [Vidéos de Tierry Ancelle, EHESP, MCU-PH, Faculté de médecine Paris-Descartes](https://www.epiter.org/page/2366997-lecons-epiteriennes-en-ligne)
+- [Analyse-R, Joseph Larmarange - Université Paris Cité, IRD](https://larmarange.github.io/analyse-R/){target="_blank"}
+- [Guide-R, Joseph Larmarange - Université Paris Cité, IRD](https://larmarange.github.io/guide-R/){target="_blank"}
+- [Grimoire, Lise Vaudor, CNRS](http://perso.ens-lyon.fr/lise.vaudor/grimoireStat/_book/intro.html){target="_blank"}
+- [Cours d'Eric Marcon, Agro Paris Tech](https://ericmarcon.github.io/Cours-R-Geeft/){target="_blank"}
+- [Cours d'Antoine Massé, IUT de Bordeaux](https://sites.google.com/site/rgraphiques/home){target="_blank"}
+- [R for datascience, Hadley Wickham, Mine Çetinkaya-Rundel, and Garrett Grolemund](https://r4ds.hadley.nz/){target="_blank"}
+- [Formation ministérielle à R et aux sciences des données](https://mtes-mct.github.io/parcours-r/){target="_blank"}
+- [Vidéos d'Eric Lombardot - Université Paris 1 Panthéon Sorbonne](https://www.youtube.com/@EricLombardot){target="_blank"}
+- [Vidéos de Tierry Ancelle, EHESP, MCU-PH, Faculté de médecine Paris-Descartes](https://www.epiter.org/page/2366997-lecons-epiteriennes-en-ligne){target="_blank"}
 
 Pour éviter R studio : 
-- [Logiciel Jamovi](https://www.jamovi.org/)
-- [Logiciel Rattle](https://github.com/gjwgit/rattleng)
+- [Logiciel Jamovi](https://www.jamovi.org/){target="_blank"}
+- [Logiciel Rattle](https://github.com/gjwgit/rattleng){target="_blank"}
   
 ## Plan du cours
 
@@ -101,7 +101,7 @@ Pour éviter R studio :
 
 ## Données utilisées
 
-- Données hydromorphologiques issus du protocole CARHYCE (Agence Française de la Biodiversité), disponible sur [IED CARHYCE](https://analytics.huma-num.fr/ied_carhyce/)
+- Données hydromorphologiques issus du protocole CARHYCE (Agence Française de la Biodiversité), disponible sur [IED CARHYCE](https://analytics.huma-num.fr/ied_carhyce/){target="_blank"}
   - Mesure de morphologie du lit, de granulométrie, de débit et de ripisylve.
   - Des données enrichies par des estimations à plein bord et les surfaces des bassins versant.
   - Plus de 2000 stations de mesures.
@@ -217,23 +217,88 @@ print(head(carhyce_stat))
 
 ![](./img/datatype_summary.png){width="100%" fig-align="center"}
 
-## Distribution des bassins versants des stations
+## Paramètres de position et de dispersion
+
+Calcul des paramètres pour les surfaces de bassins versants des stations CARHYCE.
 
 ```{r, echo=TRUE, collapse=FALSE}
 summary(carhyce_stat$surface_bv_km2)
 ```
+<details>
+<summary>Interprétation</summary>
+  [La moyenne est près de 5 fois plus élevé que la médiane, elle est même bien plus élevée que le 3ème quartile. La distribution est donc asymétrique à droite. Nous avons probablement des valeurs extrêmes qui rendent cette moyenne particulièrement élevée. Le mininum est de 0, on ne peut pas avoir de surface de bassin versant nulle, il y a probablement des erreurs. De même le maximum est supérieur à 70 000 km2, le protocole CARHYCE est surtout réalisé sur des petits cours d'eau et à pied, ce maximum représente plus du double du bassin versant de la Loire.]{style="font-size: 0.7em;"}
+</details>
+
+## Histogramme
+
+[Représentation des effectifs ou fréquences d'une variable quantitative divisée en classes.]{style="font-size: 0.7em;"}
 
 ::: columns
-::: {.column width="50%"}
-```{r, echo=TRUE, collapse=FALSE}
+::: {.column width="70%"}
+
+```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
 # Histogram
 hist(carhyce_stat$surface_bv_km2, 
      main = "Surfaces de bassins versants", 
      xlab = "Surface de bassins versants (km2)", col = "lightblue")
 ```
 :::
+::: {.column width="30%"}
 
-::: {.column width="50%"}
+
+<details>
+<summary>Interprétation</summary>
+  [La distribution est très dissymétrique à droite. Cet histogramme ne permet pas de bien représenter la distribution à cause des valeurs extrêmes.]{style="font-size: 0.7em;"}
+</details>
+
+:::
+:::
+
+## Niveau de dissymétrie
+
+\
+
+![](./img/normality.png){width="100%" fig-align="center"}
+
+```{r, echo=FALSE, eval=FALSE}
+# draw an histogram close to a normal distribution with fake data with the normal curve on top
+# set.seed(123)  # For reproducibility
+fake_data <- rnorm(1000, mean = 0, sd = 1)  # Generate 1000 samples
+h <- hist(fake_data, col = "lightblue", main = "", xlab = "Fake data", breaks = 30)
+xfit <- seq(min(fake_data), max(fake_data), length = 40)
+yfit <- dnorm(xfit, mean = mean(fake_data), sd = sd(fake_data))
+yfit <- yfit * diff(h$mids[1:2]) * length(fake_data)
+lines(xfit, yfit, col = "red", lwd = 2)
+```
+
+```{r, echo=FALSE, eval=FALSE}
+# draw an histogram close to a normal distribution with fake data with the normal curve on top
+# set.seed(123)  # For reproducibility
+fake_data <- rweibull(1000, shape = 30, scale = 2)  # Generate 1000 samples
+h <- hist(fake_data, col = "lightblue", main = "", xlab = "Fake data", breaks = 30)
+xfit <- seq(min(fake_data), max(fake_data), length = 40)
+yfit <- dnorm(xfit, mean = mean(fake_data), sd = sd(fake_data))
+yfit <- yfit * diff(h$mids[1:2]) * length(fake_data)
+lines(xfit, yfit, col = "red", lwd = 2)
+```
+
+```{r, echo=FALSE, eval=FALSE}
+# draw an histogram close to a normal distribution with fake data with the normal curve on top
+# set.seed(123)  # For reproducibility
+fake_data <- data_lognormal <- rlnorm(1000, meanlog = 2, sdlog = 0.8)
+h <- hist(fake_data, col = "lightblue", main = "", xlab = "Fake data", breaks = 30)
+xfit <- seq(min(fake_data), max(fake_data), length = 40)
+yfit <- dnorm(xfit, mean = mean(fake_data), sd = sd(fake_data))
+yfit <- yfit * diff(h$mids[1:2]) * length(fake_data)
+lines(xfit, yfit, col = "red", lwd = 2)
+```
+
+
+## Boxplot / boîte à moustache
+
+::: columns
+::: {.column width="60%"}
+
 ```{r, echo=TRUE, collapse=FALSE}
 # Boxplot
 boxplot(carhyce_stat$surface_bv_km2, 
@@ -241,6 +306,9 @@ boxplot(carhyce_stat$surface_bv_km2,
         ylab = "Surface de bassins versants (km2)", col = "lightblue")
 points(1,mean(carhyce_stat$surface_bv_km2,na.rm=T),pch=16,col="red")
 ```
+:::
+::: {.column width="40%"}
+![](./img/boxplot.png){width="100%" fig-align="center"}
 :::
 :::
 
@@ -255,29 +323,40 @@ points(1,mean(carhyce_stat$surface_bv_km2,na.rm=T),pch=16,col="red")
     - Intervalles égaux : par exemple une classe toute les X unités
     - Par seuil de valeurs : par exemple les classes de granulométrie
 
-## Discrétisation "manuelle" par la règle de Sturges
+## Discrétisation "manuelle"
 
+Par la règle de Sturges
 ```{r, echo=TRUE, collapse=FALSE, eval=FALSE}
-bins <- nclass.Sturges(carhyce_stat$largeur_mouillee_qb_m) # set breaks with Sturges
-carhyce_stat$largeur_mouillee_qb_m_sturges <- cut(carhyce_stat$largeur_mouillee_qb_m, 
-                                                  breaks = bins, 
-                                                  include.lowest = TRUE, 
-                                                  right = FALSE) # new column with breaks
+bins <- nclass.Sturges(carhyce_stat$surface_bv_km2) # set breaks with Sturges
+carhyce_stat$surface_bv_km2_sturges <- cut(carhyce_stat$surface_bv_km2, 
+                                           breaks = bins, 
+                                           include.lowest = TRUE, 
+                                           right = FALSE) # new column with breaks
 ```
+
+Par seuil de valeurs
+```{r, echo=TRUE, collapse=FALSE, eval=FALSE}
+carhyce_stat$surface_bv_km2_breaks <- cut(carhyce_stat$surface_bv_km2, 
+                                          breaks = c(0, 50, 100, 500, Inf), 
+                                          labels = c("petit", "moyenne", "grand", "très grand"))
+```
+
 
 ## Changement de discrétisation et outliers
 
-```{r, echo=TRUE, collapse=FALSE, warning=FALSE, fig.align='center', fig.height=4}
+```{r, echo=TRUE, collapse=FALSE, warning=FALSE, fig.height=5, fig.align='center'}
 # plotly interactive histogram with 1000 breaks
 plot_ly(x = carhyce_stat$surface_bv_km2, type = "histogram", nbinsx = 1000)
 ```
 
-## Les outliers
+## Les outliers ou valeurs extrêmes
 
 - Valeurs extrêmes qui ne suivent pas la distribution générale des données.
 - Peuvent être des erreurs de mesure, des valeurs aberrantes ou des valeurs extrêmes.
 - Peuvent fausser les résultats des analyses statistiques qui ne seront plus représentatives de la population.
 - Rend la lecture et l'interprétation des graphiques difficiles.
+
+=> Nécessite une vraie réflexion sur leur origine et leur pertinence dans la suite des analyses statistiques.
 
 ## Retrait des valeurs extrêmes
 
@@ -336,45 +415,6 @@ plot(x, hx, type="l", lwd=2, col="black", xlab="x", ylab="Density", main="Densit
 lines(x, hx2, lwd=2, col="red")
 lines(x, hx3, lwd=2, col="blue")
 ```
-## Niveau de dissymétrie
-
-\
-
-![](./img/normality.png){width="100%" fig-align="center"}
-
-```{r, echo=FALSE, eval=FALSE}
-# draw an histogram close to a normal distribution with fake data with the normal curve on top
-# set.seed(123)  # For reproducibility
-fake_data <- rnorm(1000, mean = 0, sd = 1)  # Generate 1000 samples
-h <- hist(fake_data, col = "lightblue", main = "", xlab = "Fake data", breaks = 30)
-xfit <- seq(min(fake_data), max(fake_data), length = 40)
-yfit <- dnorm(xfit, mean = mean(fake_data), sd = sd(fake_data))
-yfit <- yfit * diff(h$mids[1:2]) * length(fake_data)
-lines(xfit, yfit, col = "red", lwd = 2)
-```
-
-```{r, echo=FALSE, eval=FALSE}
-# draw an histogram close to a normal distribution with fake data with the normal curve on top
-# set.seed(123)  # For reproducibility
-fake_data <- rweibull(1000, shape = 30, scale = 2)  # Generate 1000 samples
-h <- hist(fake_data, col = "lightblue", main = "", xlab = "Fake data", breaks = 30)
-xfit <- seq(min(fake_data), max(fake_data), length = 40)
-yfit <- dnorm(xfit, mean = mean(fake_data), sd = sd(fake_data))
-yfit <- yfit * diff(h$mids[1:2]) * length(fake_data)
-lines(xfit, yfit, col = "red", lwd = 2)
-```
-
-```{r, echo=FALSE, eval=FALSE}
-# draw an histogram close to a normal distribution with fake data with the normal curve on top
-# set.seed(123)  # For reproducibility
-fake_data <- data_lognormal <- rlnorm(1000, meanlog = 2, sdlog = 0.8)
-h <- hist(fake_data, col = "lightblue", main = "", xlab = "Fake data", breaks = 30)
-xfit <- seq(min(fake_data), max(fake_data), length = 40)
-yfit <- dnorm(xfit, mean = mean(fake_data), sd = sd(fake_data))
-yfit <- yfit * diff(h$mids[1:2]) * length(fake_data)
-lines(xfit, yfit, col = "red", lwd = 2)
-```
-
 
 ## Coefficient d'assymétrie de Fisher
 
@@ -396,9 +436,12 @@ e1071::kurtosis(carhyce_stat$surface_bv_km2, na.rm = TRUE, type = 1) # type 1 = 
 
 ## QQ-plot ou diagramme quantile-quantile
 
-On compare les quantiles de la distribution observée et ceux de la distribution théorique (ici la loi normale).
+[On compare les quantiles de la distribution observée et ceux de la distribution théorique (ici la loi normale).]{style="font-size: 0.7em;"}
 
-```{r, echo=TRUE, collapse=FALSE, fig.height=4, fig.align='center'}
+::: columns
+::: {.column width="70%"}
+
+```{r, echo=TRUE, collapse=FALSE}
 # QQ-plot
 ggplot(data = carhyce_stat, mapping = aes(sample = surface_bv_km2)) +
   stat_qq_band() +
@@ -406,6 +449,16 @@ ggplot(data = carhyce_stat, mapping = aes(sample = surface_bv_km2)) +
   stat_qq_point() +
   labs(title = "QQ-plot de la surface des bassins versants", x = "Quantiles théoriques", y = "Quantiles observés")
 ```
+
+:::
+::: {.column width="30%"}
+<details>
+<summary>Interprétation</summary>
+  [Plus les points sont alignés sur la droite, plus la distribution observée est proche d'une distribution normale. La distribution observée est très éloignée d'une distribution normale.]{style="font-size: 0.7em;"}
+</details>
+:::
+:::
+
 
 ## Tests statistiques ? - Principe {.smaller}
 
@@ -1581,6 +1634,20 @@ text(2, t.test(carhyce_stat_plaine_collineen$d50_mm, conf.level = 0.95)$conf.int
 ```
 # Analyse multivariée / multidimensionnelle
 
+## Principe d'une analyse multivariée {.smaller}
+
+J'ai une banane, c'est un objet 3D que je souhaite représenter en 2D. Quel angle choisir pour avoir quelque chose de "reconnaissable" ?
+
+![](./img/banane.png){width="60%" fig-align="center"}
+
+Ma banane de droite est bien plus reconnaissable que celle de gauche. L'angle choisie permet de reconnaitre l'aspect allongé et courbé de la banane. La couleur est aussi une information complémentaire utile pour l'interprétation.
+
+L'objectif d'une analyse multivariée est de trouver un plan (définis par deux axes) avec le plus d'information possible pour avoir une vue d'ensemble du comportement ou de la structure de nos données.
+
+::: aside
+Cette analogie, l'image et l'explication sont reprises du blog de Lise Vaudor [Lise Vaudor, CNRS, 2021](http://perso.ens-lyon.fr/lise.vaudor/acp/){target="_blank"}
+:::
+
 ## Analyse multivariée / multidimensionnelle {.smaller}
 
 - L'objectif est de synthétiser et de structurer l'information contenue dans des données multidimensionnelles (I individus, K variables) => méthode d'exploration des données.
@@ -1593,7 +1660,7 @@ text(2, t.test(carhyce_stat_plaine_collineen$d50_mm, conf.level = 0.95)$conf.int
 | Analyse mixte  | plusieurs variables quantitatives et/ou qualitatives | —                      | ade4::dudi.mix()       | FactoMineR::FAMD()      |
 
 ::: aside
-Source tableau : [Joseph Larmarange 2024](https://larmarange.github.io/guide-R/analyses_avancees/analyse-factorielle.html)
+Source tableau : [Joseph Larmarange 2024](https://larmarange.github.io/guide-R/analyses_avancees/analyse-factorielle.html){target="_blank"}
 :::
 
 ## Etude des individus et des variables
@@ -1609,17 +1676,7 @@ Source tableau : [Joseph Larmarange 2024](https://larmarange.github.io/guide-R/a
 - exemples : 30 individus et 4 variables : 
   - les variables ont 30 dimensions dans l'espace des individus.
   - les individus ont 4 dimensions dans l'espace des variables.
-
-## Centrage et réduction
-
-- Les variables sont sonvent exprimées dans des unités différentes, les effets d'échelles les rendent difficile à comparer.
-
-- On les centre : on soustrait la moyenne de chaque variable à chaque observation.
-
-- On les réduit : on divise par l'écart-type de chaque variable.
-
-- On obtient des variables centrées-réduites, qui ont une moyenne nulle et une variance égale à 1.
-
+  
 ## Reprenons nos données {.smaller}
 
 ```{r, echo=TRUE, collapse=FALSE}
@@ -1689,25 +1746,62 @@ print(pca)
 - **cos2** : qualité de représentation d'un individu ou d'une variable
 - **contrib** : contribution d'un individu ou d'une variable au calcul de l'axe
 
+## Centrage et réduction
+
+- Les variables sont sonvent exprimées dans des unités différentes, les effets d'échelles les rendent difficile à comparer.
+
+- On les centre : on soustrait la moyenne de chaque variable à chaque observation.
+
+- On les réduit : on divise par l'écart-type de chaque variable.
+
+- On obtient des variables centrées-réduites, qui ont une moyenne nulle et une variance égale à 1.
+
+## Dimension des individus et des variables {.smaller}
+
+- Espace des individus (un individus caractérisé par X variables) : 
+```{r, echo=FALSE}
+# individus
+head(carhyce_stat, n=3)
+```
+
+- Espace des variables (une variable caractérisée par X individus) : 
+```{r, echo=FALSE}
+# transpose dataframe
+carhyce_stat_transposed <- as.data.frame(t(carhyce_stat[, -1]))
+head(carhyce_stat_transposed, n=3)
+```
 
 ## ACP - Analyse des valeurs propres
 
-- Quantité de variance expliquée par chaque axe (ou inertie).
+- Quantité de variance expliquée par chaque axe (ou inertie). Deux axes nous permettent de visualiser les données en 2D.
 
 ```{r, echo=TRUE, collapse=FALSE}
-pca$eig
+head(pca$eig)
 ```
-- Les trois premiers axes permettent d'expliquer 61% de la variance.
+<details>
+  <summary>Interprétation</summary>
+  [Le premier axe explique 30% de la variance. Les trois premiers axes permettent d'expliquer 61% de la variance. On va donc s'intéresser à ces trois axes pour représenter l'information. Un plan (2D) avec les deux premiers axes permet de représenter 47 % de l'information d'un jeu de données en 15 dimensions (15 variables quantitatives).]{style="font-size: 0.7em;"}
+</details>
 
 ## ACP - Analyse graphique des valeurs propres
 
-[Peut-on résumer l'essentiel de l'information avec un nombre réduit de dimensions (ou axes) ? => On cherche un "coude", un point d'inflexion.]{style="font-size: 0.7em;"}
+[Peut-on résumer l'essentiel de l'information avec un nombre réduit de dimensions (ou axes) ? => On cherche des "coude" ou points d'inflexion.]{style="font-size: 0.7em;"}
+
+::: columns
+::: {.column width="70%"}
 
 ```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
 # Scree plot
 fviz_eig(pca, addlabels = TRUE)
 ```
-[On trouve 2 points d'inflexion. Le premier axe est particulièrement intéressant avec 30% de l'inertie.]{style="font-size: 0.7em;"}
+:::
+::: {.column width="30%"}
+<details>
+  <summary>Interprétation</summary>
+  [On trouve 2 points d'inflexion, un après le premier axe et le second après le troisième axe. Le premier axe est particulièrement intéressant, il représente 30% de l'inertie.]{style="font-size: 0.7em;"}
+</details>
+:::
+:::
 
 ## ACP - Critère de Kaiser
 
@@ -1715,47 +1809,90 @@ fviz_eig(pca, addlabels = TRUE)
 
 ```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
 barplot(pca$eig[,1],xlab = "facteur", ylab = " Inertie (eigenvalue) ", col="blue")
+abline(h=1, col="red", lty=2) # add a line at 1
 ```
 
 ## ACP - Contribution au premier axe
 
-[Quelles sont les variables qui contribuent le plus à l'inertie du premier axe ? Ou quelles sont les contributions des modalités de l'axe ?]{style="font-size: 0.7em;"}
+[Un axe est composé des différentes variables dans des proportions variées. Quelles sont les variables qui contribuent le plus à l'inertie du premier axe ? Ou quelles sont les contributions des modalités de l'axe ?]{style="font-size: 0.7em;"}
+
+::: columns
+::: {.column width="70%"}
+
 
 ```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
 fviz_contrib(pca, choice = "var", axes = 1)
 ```
 
-[Le premier axe se composent principalement de variables de géométrie avec le débit]{style="font-size: 0.7em;"}
+:::
+::: {.column width="30%"}
+
+<details>
+  <summary>Interprétation</summary>
+  [Le premier axe se composent principalement de variables de géométrie avec le débit]{style="font-size: 0.7em;"}
+</details>
+
+:::
+:::
 
 ## ACP - Contribution au deuxième axe
+
+\
+
+::: columns
+::: {.column width="70%"}
 
 ```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
 fviz_contrib(pca, choice = "var", axes = 2)
 ```
 
+:::
+::: {.column width="30%"}
+
+<details>
+  <summary>Interprétation</summary>
+  [Le deuxième axe se compose essentiellement de variables décrivant la granulométrie et l'énergie du cours d'eau]{style="font-size: 0.7em;"}
+</details>
+
+:::
+:::
+
 ## ACP - Interprétation graphique
 
 ![](./img/pca.png){style="width: 100%"}
 
-::: aside
-Voir [le blog de Lise Vaudor, CNRS, 2021](http://perso.ens-lyon.fr/lise.vaudor/acp/)
-:::
-
 ## ACP - Modalités dans le plan factoriel
 
-[Le cercle des corrélations :]{style="font-size: 0.7em;"}
+::: panel-tabset
+
+### Cercle des corrélations
 
 ```{r, echo=TRUE, collapse=FALSE}
 fviz_pca_var(pca, col.var = "contrib", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE)
 ```
+
+### Interprétation
+
+[Les variables bien représentées sur les axes 1 et 2 sont celles des valeurs propres. Nous avons les géométries des cours d'eau qui sont aussi fortement corrélées positivement entre elles (profondeur, rayon, largeur, surface), les indicateurs de la granulométrie sont aussi fortement corrélés positivement entre eux. Nous n'observons pas de corrélation entre ces deux groupes. Les indicateurs d'énergie des cours d'eau sont moins bien représentés et sont plutôt proches des indicateurs de la granulométrie à l'exception de la cote de ligne d'énergie.]{style="font-size: 0.7em;"}
+
+:::
+
 ## ACP - Les individus dans le plan factoriel
 
-[Répartition des individus dans les deux premiers axes.]{style="font-size: 0.7em;"}
+::: panel-tabset
 
-```{r, echo=TRUE, collapse=FALSE}
+### Répartitions des individus
+
+```{r, echo=TRUE, collapse=FALSE, fig.height=4}
 fviz_pca_ind(pca, geom.ind = "point",
              alpha.ind = 0.3) # densité de points superposées
 ```
+
+### Interprétation
+
+Nous n'observons pas de groupes de stations bien identifiés sur les axes 1 et 2. Les stations sont réparties de manière homogène dans l'espace des individus.
+
+:::
 
 ## ACP Explor
 
@@ -1763,36 +1900,37 @@ Des variables et/ou individus supplémentaires, non pris en compte dans les calc
 
 ```{r, echo=TRUE, collapse=FALSE}
 pca <- PCA(carhyce_stat, 
-           quanti.sup = 1,
-           quali.sup = c(2,3,4,19),
+           quanti.sup = 1, # surface_bv_km2
+           quali.sup = c(2,3,4,19), # ripisyle gauche et droite, montagne/plaine
            ncp = Inf, # number of dimensions
            scale.unit = TRUE, # reduce
            graph = FALSE) # not display graph
 ```
-Visualisation avec explor : 
-```{r, echo=TRUE, collapse=FALSE}
+Visualisation avec explor (ouvre une application web) : 
+```{r, echo=TRUE, eval=FALSE}
 # package explor
 explor(pca)
 ```
-
-```{r, echo=TRUE, collapse=FALSE, results='hide'}
-res <- explor::prepare_results(pca)
-explor::PCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
-    ind_lab_min_contrib = 0, col_var = "montagne_plaine", labels_size = 9, point_opacity = 0.5,
-    opacity_var = NULL, point_size = 28, ellipses = TRUE, transitions = TRUE,
-    labels_positions = NULL, xlim = c(-6.59, 8.54), ylim = c(-7.28, 7.86))
-```
-
-
 ## ACP Explor - Graphique
 
-```{r, echo=FALSE, collapse=FALSE, fig.align='center', fig.height=8}
+::: panel-tabset
+
+### Individus
+
+```{r, echo=FALSE, collapse=FALSE, fig.align='center', fig.height=7}
 res <- explor::prepare_results(pca)
 explor::PCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
     ind_lab_min_contrib = 0, col_var = "montagne_plaine", labels_size = 9, point_opacity = 0.5,
     opacity_var = NULL, point_size = 28, ellipses = TRUE, transitions = TRUE,
     labels_positions = NULL, xlim = c(-6.59, 8.54), ylim = c(-7.28, 7.86))
 ```
+
+
+### Interprétation
+
+[L'ajout de la variable qualitative montagne_plaine permet d'identifier deux profils de stations. Au regard du cercle des corrélations, les stations de montagne on tendance à avoir une granulométrie plus grossière et probablement une énergie plus forte (vitesse, force tractrice, nombre de froude) que les stations de plaine. Les deux groupes ne sont cependant pas clairement distincts. Les variables de géométrie ou le débit ne permet pas clairement d'expliquer ces différences.]{style="font-size: 0.7em;"}
+
+:::
 
 # Classification
 
@@ -1802,7 +1940,7 @@ explor::PCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
   - Exemple : on a une image satellite et on cherche à identifier les zones urbaines sur la base des valeurs des pixels. On identifie des zones urbains et non urbaines pour entrainer le modèle. On se sert du modèle pour prédire les zones urbaines sur une nouvelle image.
   - Méthodes : régression logistique, SVM, Random Forest
 - **Non supervisée** : on ne connait pas les classes à l'avance, on cherche à regrouper les individus en fonction de leurs ressemblances.
-  - Exemple : à partir d'un image satellite, on cherche à regrouper les pixels en fonction de leurs valeurs et identifier des zones homogènes que l'on suppose correspondre à des occupations du sol différentes.
+  - Exemple : à partir d'une image satellite, on cherche à regrouper les pixels en fonction de leurs valeurs et identifier des zones homogènes que l'on suppose correspondre à des occupations du sol différentes.
   - Méthodes : K-means, CAH
 
 ## Classification ascendante hiérarchique (CAH) {.smaller}
@@ -1813,8 +1951,18 @@ explor::PCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
 - La CAH part des individus (ascendante) et les regroupe progressivement en classes de plus en plus grandes (hiérarchique) => dendrogramme.
 
 ::: aside
-Voir [le guide de Joseph Larmarange IRD, 2024](https://larmarange.github.io/analyse-R/classification-ascendante-hierarchique.html) ou [Analyse-R](https://larmarange.github.io/analyse-R/classification-ascendante-hierarchique.html)
+Voir [le guide de Joseph Larmarange IRD, 2024](https://larmarange.github.io/guide-R/analyses_avancees/classification-ascendante-hierarchique.html){target="_blank"} ou [Analyse-R](https://larmarange.github.io/analyse-R/classification-ascendante-hierarchique.html){target="_blank"}
 :::
+
+## Principes de la CAH
+
+::: {.r-stack}
+![](./img/cah_step1.png){.fragment}
+![](./img/cah_step2.png){.fragment}
+![](./img/cah_step3.png){.fragment}
+:::
+
+
 
 ## Reprenons nos données {.smaller}
 
@@ -1864,12 +2012,12 @@ carhyce_stat <- carhyce %>%
 
 - Homogénéisation des données pour éviter les effets d'échelle (unités différentes) et que les variables à forte variance soit prépondérante dans les résultats.
 
-Transformation de Milligan & Cooper
+Transformation de Milligan & Cooper (utilisée pour la suite, donne une meilleur découvertd de cluster)
 ```{r, echo=TRUE, collapse=FALSE}
 # Milligan & Cooper transformation function
 normalize_MC <- function(x) {
-                               return ((x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE)))
-                            }
+  return ((x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE)))
+}
 # normalize data
 carhyce_stat_mc<-as.data.frame(lapply(carhyce_stat, normalize_MC))
 ```
