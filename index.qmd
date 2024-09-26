@@ -39,7 +39,7 @@ L'ensemble des méthodes qui ont pour objet la collecte, le traitement et l'inte
 
 Sélection de tous les bruns de la salle, population ou échantillon ?
 
-![](./img/population_echantillon.png){fig-align="center"}
+![](./img/population_echantillon.webp){fig-align="center"}
 
 ## Le data mining
 
@@ -66,7 +66,7 @@ L'exploration et l'analyse de base de données pour le résumer, détecter des r
 :::
 
 ::: {.column width="50%"}
-![](./img/Rscary.png){width="100%"} [^1]
+![](./img/Rscary.webp){width="100%"} [^1]
 :::
 :::
 
@@ -170,13 +170,13 @@ print(str(carhyce_brute))
 
 ## Les données quantitatives
 
-![](./img/datatype_quantitative.png){width="60%" fig-align="center"} [^2]
+![](./img/datatype_quantitative.webp){width="60%" fig-align="center"} [^2]
 
 [^2]: Artwork by @allison_horst.
 
 ## Les données qualitatives
 
-![](./img/datatype_qualitative.png){width="80%" fig-align="center"} [^3]
+![](./img/datatype_qualitative.webp){width="80%" fig-align="center"} [^3]
 
 [^3]: Artwork by @allison_horst.
 
@@ -215,7 +215,7 @@ print(head(carhyce_stat))
 
 ## Synthèse analyses univariées
 
-![](./img/datatype_summary.png){width="100%" fig-align="center"}
+![](./img/datatype_summary.webp){width="100%" fig-align="center"}
 
 ## Paramètres de position et de dispersion
 
@@ -258,7 +258,7 @@ hist(carhyce_stat$surface_bv_km2,
 
 \
 
-![](./img/normality.png){width="100%" fig-align="center"}
+![](./img/normality.webp){width="100%" fig-align="center"}
 
 ```{r, echo=FALSE, eval=FALSE}
 # draw an histogram close to a normal distribution with fake data with the normal curve on top
@@ -308,7 +308,7 @@ points(1,mean(carhyce_stat$surface_bv_km2,na.rm=T),pch=16,col="red")
 ```
 :::
 ::: {.column width="40%"}
-![](./img/boxplot.png){width="100%" fig-align="center"}
+![](./img/boxplot.webp){width="100%" fig-align="center"}
 :::
 :::
 
@@ -524,7 +524,7 @@ Lors d'un test statistique, on peut faire deux types d'erreurs :
 
 Le risque $\beta$ est d'autant plus petit que l'échantillon est important. La puissance d'un test, $1 - \beta$, est la probabilité de rejeter $H_0$ alors qu'elle est fausse. Pour détecter une faible différence, il faux un test puissant, soit un échantillon suffisamment grand (voir la vidéos de [Tierry Ancelle](https://www.youtube.com/watch?v=qWxJkq7QFWY) pour une très bonne illustration).
 
-![](./img/test_rules.png){width="100%" fig-align="center"}
+![](./img/test_rules.webp){width="100%" fig-align="center"}
 
 ## Tests statistiques ? - ressources
 
@@ -1047,7 +1047,7 @@ plot(model_log, which = 1)
 
 \
 
-![](./img/homosedasticite.png)
+![](./img/homosedasticite.webp)
 
 ## Normalité des résidus {.smaller}
 
@@ -1301,7 +1301,7 @@ wilcox.test(carhyce_stat$largeur_mouillee_qb_m, conf.int = TRUE)
 
 ## Intervalle de confiance - synthèse
 
-![](./img/ic_summary.png){width="100%" fig-align="center"}
+![](./img/ic_summary.webp){width="100%" fig-align="center"}
 
 ## Test de comparaison des moyennes {.smaller}
 
@@ -1322,7 +1322,7 @@ Les tests ont des variantes selon l'indépendance des variables (échantillons a
 
 ## Choix du test de comparaison des moyennes
 
-![](./img/t-test-diagram.png){width="100%" fig-align="center"}
+![](./img/t-test-diagram.webp){width="100%" fig-align="center"}
 
 <!-- ## Conditions de comparaison des moyennes -->
 
@@ -1859,7 +1859,7 @@ fviz_contrib(pca, choice = "var", axes = 2)
 
 ## ACP - Interprétation graphique
 
-![](./img/pca.png){style="width: 100%"}
+![](./img/pca.webp){style="width: 100%"}
 
 ## ACP - Modalités dans le plan factoriel
 
@@ -1957,11 +1957,21 @@ Voir [le guide de Joseph Larmarange IRD, 2024](https://larmarange.github.io/guid
 ## Principes de la CAH
 
 ::: {.r-stack}
-![](./img/cah_step1.png){.fragment}
-![](./img/cah_step2.png){.fragment}
-![](./img/cah_step3.png){.fragment}
-:::
 
+- On commence par considérer chaque individu comme une classe à part entière.
+- On regroupe les deux individus les plus proches pour former une nouvelle classe.
+- On répète l'opération jusqu'à ce que tous les individus soient regroupés dans une seule classe.
+- On obtient un dendrogramme qui permet de visualiser les regroupements successifs.
+
+![](./img/cah_step1.webp){.fragment fragment-index="1" .fade-in-then-out style="position: absolute; top: 10%; left:0; width: 100%;"}
+![](./img/cah_step2.webp){.fragment fragment-index="2" .fade-in-then-out style="position: absolute; top: 10%; left: 0; width: 100%;"}
+![](./img/cah_step3.webp){.fragment fragment-index="3" .fade-in-then-out style="position: absolute; top: 10%; left: 0; width: 100%;"}
+![](./img/cah_step4.webp){.fragment fragment-index="4" .fade-in-then-out style="position: absolute; top: 10%; left: 0; width: 100%;"}
+![](./img/cah_step5.webp){.fragment fragment-index="5" .fade-in-then-out style="position: absolute; top: 10%; left: 0; width: 100%;"}
+![](./img/cah_step6.webp){.fragment fragment-index="6" .fade-in-then-out style="position: absolute; top: 10%; left: 0; width: 100%;"}
+![](./img/cah_step7.webp){.fragment fragment-index="7" .fade-in-then-out style="position: absolute; top: 10%; left: 0; width: 100%;"}
+![](./img/cah_step8.webp){.fragment fragment-index="8" .fade-in-then-out style="position: absolute; top: 10%; left: 0; width: 100%;"}
+:::
 
 
 ## Reprenons nos données {.smaller}
@@ -2032,6 +2042,8 @@ carhyce_stat_z <- scale(carhyce_stat, center = TRUE, scale = TRUE)
 
 ## La matrice de distance
 
+Calul de la distance entre chaque individu.
+
 - Plusieurs méthode de calcul de distance : 
   - **Variables quantitative** : euclidienne, manhattan, Gower, etc.
   - **Variables qualitative** : Gower, $\phi^2$, etc.
@@ -2040,6 +2052,20 @@ carhyce_stat_z <- scale(carhyce_stat, center = TRUE, scale = TRUE)
 # Euclidean distance
 dist_euclid <- dist(carhyce_stat_mc, method = "euclidean")
 ```
+
+## Méthode d'aggrégation {.smaller}
+
+Comment regrouper des classes entres elles ou calculer la distance entre deux classes ?
+
+- **Saut maximum (ou complete linkage)** : distance maximum entre deux individus de deux classes. Tend à créer des classes de diamètre équivalent, sensible aux individus hors normes.
+- **Saut minimum (ou single linkage)** : distance minimum entre deux individus de deux classes. Permet de traiter des formes allongées mais peut avoir des effets de chaîne et regrouper deux classes éloignées reliées par une chaîne d'individus.
+- **Distance moyenne (ou average linkage)** : moyenne des distances entre tous les individus de deux classes. Moins sensible aux bruits, tend à créer des classes de même variance.
+- **Distance des barycentre (ou centroid linkage)** : distance entre les barycentres des deux classes. Peu sensible au bruit mais moins précise.
+ - **Distance de Ward** : minimise l'inertie (ou  la variance) intra-classe ou  maximise l'intertie inter-classe (différences entre les classes). Une méthode très utilisée, peu sensible aux bruits et aux valeurs extrêmes, tend à créer des classes sphériques et de même effectifs.
+ 
+::: aside
+ Pour aller plus loin, voir Data Mining et Statistique décisionnelle (2017), Stéphane Tufféry, Editions Technip et l'article Hierarchical Clustering de Fatih Karabiber sur [https://www.learndatasci.com](https://www.learndatasci.com/glossary/hierarchical-clustering/){target="_blank"}
+:::
 
 ## Agrrégation et dendrogramme
   
