@@ -687,7 +687,7 @@ print(contingency_table$t)
 ::: panel-tabset
 ### total
 
-[Effectifs partiels sur effectif total (le total des fréquences = 1) : X% des individus appartiennent aux modalités truc et bidule **ou**  X % des cours d'eau ont une eau de bonne qualité et sont en Normandie]{style="font-size: 0.7em;"}
+[Effectifs partiels sur effectif total (le total des fréquences = 1) : X% des individus appartiennent aux modalités truc et bidule **ou**  X % des cours d'eau ont une eau de bonne qualité et sont en Normandie **ou** 3.9% des stations on une ripisylve espacée en rive gauche et continue en rive droite]{style="font-size: 0.7em;"}
 
 ```{r, echo=TRUE, collapse=FALSE}
 # x = rive gauche, y = rive droite
@@ -696,7 +696,7 @@ print(round(contingency_table$prop.tbl, 3)) # or prop.table(x, y)
 
 ### ligne
 
-[Effectifs partiels sur effectif marginal (fréquence conditionnelle, le total de chaque ligne = 1) : X% des cours d'eau Normands ont une eau de mauvaise qualité]{style="font-size: 0.7em;"}
+[Effectifs partiels sur effectif marginal (fréquence conditionnelle, le total de chaque ligne = 1) : X% des cours d'eau Normands ont une eau de mauvaise qualité **ou** 14.4% des stations avec une ripisylve espacée en rive gauche ont une ripisylve continue en rive droite]{style="font-size: 0.7em;"}
 
 ```{r, echo=TRUE, collapse=FALSE}
 # x = rive gauche, y = rive droite
@@ -705,7 +705,7 @@ print(round(contingency_table$prop.row, 3)) # or prop.table(x, y, margin = 1)
 
 ### colonne
 
-[Effectifs partiels sur effectif marginal (fréquence conditionnelle, le total de chaque colonne = 1) : X% des cours d'eau de bonne qualité sont Normands]{style="font-size: 0.7em;"}
+[Effectifs partiels sur effectif marginal (fréquence conditionnelle, le total de chaque colonne = 1) : X% des cours d'eau de bonne qualité sont Normands **ou** 8.8% des stations avec une absence de ripisylve en rive droite ont une ripisyle semi-continue en rive gauche]{style="font-size: 0.7em;"}
 
 ```{r, echo=TRUE, collapse=FALSE}
 # x = rive gauche, y = rive droite (ou fréquence conditionnelle)
@@ -718,12 +718,24 @@ print(round(contingency_table$prop.col, 3)) # or prop.table(x, y, margin = 2)
 ::: panel-tabset
 ### Groupé
 
+::: columns
+::: {.column width="70%"}
+
 ```{r, echo=TRUE, collapse=FALSE, fig.height=4}
 ggplot(carhyce_stat, aes(x=factor(continuite_ripisylve_rive_gauche), fill=factor(continuite_ripisylve_rive_droite))) +
   geom_bar(position = "dodge") +
   labs(x = "Ripisylve rive gauche", y = "Effectif", fill = "Ripisylve rive droite") +
   theme_minimal()
 ```
+:::
+::: {.column width="30%"}
+<details>
+<summary>Interprétation</summary>
+  [La continuité de la ripisyle des stations en rive droite est généralement identique en rive gauche.]{style="font-size: 0.7em;"}
+</details>
+
+:::
+:::
 
 ### Empilé
 
@@ -791,11 +803,11 @@ Le $\chi^2$ représente la différence des deux tables que l'on compare au $\chi
 ## Chi2 - interprétation
 
 ```{r, echo=TRUE, collapse=FALSE}
-print(chi2_ripisylve)
+chisq.test(table(carhyce_stat$continuite_ripisylve_rive_gauche, carhyce_stat$continuite_ripisylve_rive_droite))
 ```
 - La p-value représente la probabilité d'obtenir un résultat aussi extrême que celui observé, dans les conditions de $H_0$.
 
-- Cette situation est très improbable. On peut rejeter $H_0$ et valider $H_1$ avec une probabilité de se tromper de $2.2 \times 10^{-16} \times 100$%.
+- Cette situation est très improbable. On peut rejeter $H_0$ et accepter $H_1$ avec une probabilité de se tromper de 5%.
 
 ## Qualitatif VS Quantitatif - Discrétisation
 
@@ -886,7 +898,7 @@ plot + geom_smooth(method="lm", col="red", formula = y ~ log(x) + x)
 
 - Sa dimension est le produit des dimensions des variables (e.g. euros et années), elle est donc difficile à interpréter.
 
-- Davantage un outil qui permet d'effectuer d'autres calculs comme la corrélation de Person qu'un indicateur utilisé pour l'interprétation (c'est un peu comme la variance et l'écart type).
+- Davantage un outil qui permet d'effectuer d'autres calculs comme la corrélation de Pearson qu'un indicateur utilisé pour l'interprétation (c'est un peu comme la variance et l'écart type).
 
 ## Coefficient de corrélation linéaire de Pearson {.smaller}
 
@@ -920,10 +932,9 @@ $R^2$% des variations de Y s'expliquent par X.
 
 Par exemple si $R^2 = 0.35$, 35% des variations de la largeur mouillée s'expliquent par le débit.
 
-\
-
 **Attention :** 
 
+- Ne s'applique qu'aux modèles linéaires !
 - Corrélation $\neq$ causalité! [Quelques beaux exemples](https://tylervigen.com/spurious-scholar){target="_blank"}
 - Multicolinéarité, quand plusieurs variables explicatives ont des liens de corrélation entre elles!
 
@@ -953,6 +964,21 @@ Intérêt de calculer les deux coefficients :
 
 - r>$\rho$ : présence éventuelle de valeurs exceptionnelles.
 - r<$\rho$ : présence éventuelle d'une relation non linéaire.
+
+## Résidus
+
+Les résidus sont les différences entre les valeurs observées et les valeurs prédites par le modèle. Plus ils sont faibles plus le modèle arrive à correctement représenter les données. La dispersion des résidus autour de zéro est un indicateur de la qualité du modèle. 
+
+![](./img/residuals.webp){fig-align="center"}
+
+
+## Homosédasticité vs Hétérosédasticité
+
+![](./img/homosedasticite.webp)
+
+- **Homosédasticité** : la qualité du modèle est constante quelque soit la valeur de la variable explicative.
+- **Hétérosédasticité** : la qualité du modèle varie en fonction de la valeur de la variable explicative.
+
 
 ## Lire le résultat d'un modèle de régression linéaire {.smaller}
 
@@ -1043,13 +1069,7 @@ plot(model_log, which = 1)
 
 - Les résidus doivent être dispersés aléatoirement autour de zéro. La présence d’une tendance (linéaire ou non) indique des effets systématiques ignorés par le modèle.
 
-## Homosédasticité vs Hétérosédasticité
-
-\
-
-![](./img/homosedasticite.webp)
-
-## Normalité des résidus {.smaller}
+## Normalité des résidus (modèle linéaire) {.smaller}
 
 ```{r, echo=TRUE, collapse=FALSE, fig.height=3.2}
 par(mfrow=c(1,2))
@@ -1058,8 +1078,7 @@ hist(model_lineaire$residuals, breaks = 100, main = "Histogramme des résidus", 
 ```
 <details>
   <summary>Analyse de la normalité</summary>
-- Q-Q plot => détection des déviations systématiques de la normalité des résidus. La distribution des résidus présente une dissymétrie à droite.
-- Notre modèle a une surreprésentation d'écarts à la moyenne élevés.
+La distribution des résidus présente une sureprésentation des valeurs fortes par rapport à la normale, soit une dissymétrie à droite.
 </details>
 
 ## Régression linéaire multiple
