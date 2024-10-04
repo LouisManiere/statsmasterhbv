@@ -690,8 +690,9 @@ print(contingency_table$t)
 [Effectifs partiels sur effectif total (le total des fréquences = 1) : X% des individus appartiennent aux modalités truc et bidule **ou**  X % des cours d'eau ont une eau de bonne qualité et sont en Normandie **ou** 3.9% des stations on une ripisylve espacée en rive gauche et continue en rive droite]{style="font-size: 0.7em;"}
 
 ```{r, echo=TRUE, collapse=FALSE}
-# x = rive gauche, y = rive droite
-print(round(contingency_table$prop.tbl, 3)) # or prop.table(x, y)
+prop.table(table(carhyce_stat$continuite_ripisylve_rive_gauche, 
+                 carhyce_stat$continuite_ripisylve_rive_droite))*100
+# or print(round(contingency_table$prop.tbl, 3))
 ```
 
 ### ligne
@@ -699,8 +700,9 @@ print(round(contingency_table$prop.tbl, 3)) # or prop.table(x, y)
 [Effectifs partiels sur effectif marginal (fréquence conditionnelle, le total de chaque ligne = 1) : X% des cours d'eau Normands ont une eau de mauvaise qualité **ou** 14.4% des stations avec une ripisylve espacée en rive gauche ont une ripisylve continue en rive droite]{style="font-size: 0.7em;"}
 
 ```{r, echo=TRUE, collapse=FALSE}
-# x = rive gauche, y = rive droite
-print(round(contingency_table$prop.row, 3)) # or prop.table(x, y, margin = 1)
+prop.table(table(carhyce_stat$continuite_ripisylve_rive_gauche, 
+                 carhyce_stat$continuite_ripisylve_rive_droite), margin = 1)*100
+# or print(round(contingency_table$prop.row, 3))
 ```
 
 ### colonne
@@ -708,8 +710,9 @@ print(round(contingency_table$prop.row, 3)) # or prop.table(x, y, margin = 1)
 [Effectifs partiels sur effectif marginal (fréquence conditionnelle, le total de chaque colonne = 1) : X% des cours d'eau de bonne qualité sont Normands **ou** 8.8% des stations avec une absence de ripisylve en rive droite ont une ripisyle semi-continue en rive gauche]{style="font-size: 0.7em;"}
 
 ```{r, echo=TRUE, collapse=FALSE}
-# x = rive gauche, y = rive droite (ou fréquence conditionnelle)
-print(round(contingency_table$prop.col, 3)) # or prop.table(x, y, margin = 2)
+prop.table(table(carhyce_stat$continuite_ripisylve_rive_gauche, 
+                 carhyce_stat$continuite_ripisylve_rive_droite), margin = 2)*100
+# or print(round(contingency_table$prop.col, 3))
 ```
 :::
 
