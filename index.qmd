@@ -1233,7 +1233,7 @@ carhyce_stat <- carhyce %>%
 
 - Illustration dans le [Grimoire de Lise Vaudor](http://perso.ens-lyon.fr/lise.vaudor/grimoireStat/_book/decrire-une-variable.html#loi-normale){target="_blank"}
 
-- La moyenne d'un grand nombre d'échantillons (n>30) de distribution quelconque de taille n suit une distribution normale, soit $\bar{x} \sim N(\mu, \frac{\sigma}{\sqrt{n}})$
+- La moyenne d'un grand nombre d'échantillons (n>30) de distribution quelconque de taille $n$ s'approche d'une distribution normale $N$ de moyenne $\mu$ et d'écart-type $\sigma$, soit $\bar{x} \sim N(\mu, \frac{\sigma}{\sqrt{n}})$
 
 ::: aside
 
@@ -1241,13 +1241,13 @@ $\mu$ = moyenne de la population, $\sigma$ = écart-type de la population, $n$ =
 
 :::
 
-## Erreur standard {.smaller}
+## Erreur standard
 
-- L'écart type est un indicateur de la dispersion des valeurs d'un échantillon (ou d'une population) autour de la moyenne.
+- [L'écart type est un indicateur de la dispersion des valeurs d'un échantillon (ou d'une population) autour de la moyenne.]{style="font-size: 0.7em;"}
 
-- L'erreur standard est l'écart type d'un paramètre (moyenne, pourcentage, etc.). Notre moyenne de notre jeu de données (ou échantillon) n'est qu'une estimation de la moyenne de la population. Si on refaisait l'échantillonnage, on obtiendrait une autre moyenne à cause des fluctuations d'échantillonnage. L'erreur standard est l'écart type de ces moyennes.
+- [L'erreur standard est l'écart type d'un paramètre (moyenne, pourcentage, etc.). La moyenne de notre jeu de données (ou échantillon) n'est qu'une estimation de la moyenne de la population. Si on refaisait l'échantillonnage, on obtiendrait une autre moyenne à cause des fluctuations d'échantillonnage. L'erreur standard est l'écart type de ces moyennes.]{style="font-size: 0.7em;"}
 
-- L'erreur standard de la moyenne d'un échantillon peut être calculé : $\frac{\sigma}{\sqrt{n}}$. Il a donc la particularité de diminuer avec la racine carrée de la taille de l'échantillon, contrairement à l'écart type d'un échantillon.
+- [L'erreur standard de la moyenne d'un échantillon peut être calculé : $\frac{\sigma}{\sqrt{n}}$. Il a donc la particularité de diminuer avec la racine carrée de la taille de l'échantillon, contrairement à l'écart type d'un échantillon.]{style="font-size: 0.7em;"}
 
 ::: aside
 
@@ -1261,7 +1261,7 @@ Une explication complète et très pédagogique est dans l'annexe 3 des [Statist
 
 - Selon le théorème central limite, la moyenne calculé sur un grand échantillon $\bar x$ suit une loi approximativement normale de moyenne (de la population) $\mu$ et d'écart type (ou erreur standard) $\frac{\sigma}{\sqrt{n}}$.
 
-- Nous avons un grand échantillon, l'écart-type de l'échantillon est donc une bonne estimation de l'écart-type de la population. 
+- Nous avons un grand échantillon (n>30), l'écart-type de l'échantillon est donc une bonne estimation de l'écart-type de la population.
 
 - Dans une distribution normale, 95% des valeurs se trouvent dans l'intervalle $IC_{95\%} = [\bar x-1.96\frac{s}{\sqrt{n}},\bar x+1.96\frac{s}{\sqrt{n}}]$. La moyenne de l'échantillon a 95% de chance de se trouver dans cet intervalle. On peut remplacer 1.96 par une autre valeur critique de la loi normale avec son niveau de confiance associé ($IC_{99\%}$, la valeur critique est de 2.575).
 
@@ -1362,13 +1362,13 @@ Séparation des jeux de données.
 ```{r, echo=TRUE, collapse=FALSE}
 carhyce_stat_montagne <- carhyce_stat %>% filter(montagne_plaine == "montagne")
 carhyce_stat_montagne_mean = mean(carhyce_stat_montagne$d50_mm, na.rm = TRUE)
-print(paste0("Moyenne D50 station de montage = ", round(carhyce_stat_montagne_mean, 2)))
+print(paste0("Moyenne D50 station de montagne = ", round(carhyce_stat_montagne_mean, 2)))
 ```
 
 ```{r, echo=TRUE, collapse=FALSE}
 carhyce_stat_plaine <- carhyce_stat %>% filter(montagne_plaine == "plaine")
 carhyce_stat_plaine_mean = mean(carhyce_stat_plaine$d50_mm, na.rm = TRUE)
-print(paste0("Moyenne D50 station de montage = ", round(carhyce_stat_plaine_mean, 2)))
+print(paste0("Moyenne D50 station de plaine = ", round(carhyce_stat_plaine_mean, 2)))
 ```
 ## Vérification des distributions - code
 
@@ -1470,7 +1470,7 @@ Caractéristiques des données plaine et montagne :
 <details>
   <summary>Test de comparaison des moyennes</summary>
 
-=> Test de Welch non apparié pour comparer les moyennes de deux échantillons indépendants de variance égales. (le t.test de R réalise un test de variance automatique et réalise automatiquement un test de Welch si les variances sont égales) :
+=> Test de Welch non apparié pour comparer les moyennes de deux échantillons indépendants de variances différentes. (le t.test de R réalise toujours un test de variance et change pour le test de Welch si les variances sont différentes) :
 
 - $H_0$ : les moyennes des deux échantillons sont égales.
 
@@ -1564,7 +1564,7 @@ shapiro.test(carhyce_stat_plaine_collineen$d50_mm)
 ```
 <details>
   <summary>Interprétation</summary>
-  Les deux p-value des tests sont supérieur à 0.05, on peut accepter l'hypothèse nulle de normalité des distributions même si le peu d'individus rend l'interprétation des graphiques difficiles.
+  [Pour l'échantillon des Vosges, la p-value < 0.05, l'hypothèse nulle de normalité est rejetée. Pour l'échantillon de plaine/collinéen calcaire, la p-value > 0.05, on accepte l'hypothèse nulle de normalité même si le peu d'individus rend l'interprétation des graphiques difficiles.]{style="font-size: 0.7em;"}
 </details>
 
 ## Mes variances sont-elles égales?
@@ -1589,8 +1589,8 @@ Caractéristiques Vosges et stations de plaine/collinéen calcaire :
 
 - Deux sous-populations indédendantes (deux régions géographiques différentes).
 - Les variances sont égales.
-- Taille de Vosges > 30, taille de plaine/collinéen calcaire < 30.
-- Les distributions sont considérées comme normales.
+- Taille de Vosges > 30, distribution non normale.
+- Taille de plaine/collinéen calcaire < 30, distribution normale.
 
 Hypothèses : 
 
@@ -1621,7 +1621,7 @@ t.test(carhyce_stat_montagne_vosges$d50_mm, carhyce_stat_plaine_collineen$d50_mm
 
 Caractéristiques Vosges et stations de plaine/collinéen calcaire : 
 
-- Taille de Vosges > 30 : Théorème central limite $\sigma \approx s$.
+- Taille de Vosges > 30 : Théorème central limite $s \approx \sigma$.
 - Taille de plaine/collinéen calcaire < 30, distribution normale : $\sigma$ remplacé par $t$ de Student.
 
 ::: columns
