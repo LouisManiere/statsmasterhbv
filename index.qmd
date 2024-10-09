@@ -114,7 +114,8 @@ install.packages(c("ggplot2", "dplyr", "tidyr", "tibble",
                    "janitor", "skimr", "dataMaid", "plotly", 
                    "e1071", "gmodels", "ggpmisc", "nortest", 
                    "FactoMineR", "factoextra", "gtsummary", 
-                   "explor", "boot", "qqplotr", "corrplot"))
+                   "explor", "boot", "qqplotr", "corrplot",
+                   "readxl"))
 ```
 
 
@@ -140,6 +141,7 @@ library(explor) # Data exploration
 library(boot) # Bootstrap
 library(qqplotr) # QQ-plot
 library(corrplot) # Correlation plot
+library(readxl) # Excel files
 ```
 
 ## Explorons le jeu de données
