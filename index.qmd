@@ -99,12 +99,16 @@ Pour éviter R studio :
 - Statistiques multivariées ou  multimentionnelles
 - Classification
 
-## Données utilisées
+## Données utilisées {.smaller}
 
-- Données hydromorphologiques issus du protocole CARHYCE (Agence Française de la Biodiversité), disponible sur [IED CARHYCE](https://analytics.huma-num.fr/ied_carhyce/){target="_blank"}
-  - Mesure de morphologie du lit, de granulométrie, de débit et de ripisylve.
+\
+
+- Données hydromorphologiques issus du [protocole CARHYCE](https://professionnels.ofb.fr/fr/node/386) (Agence Française de la Biodiversité). Des données retravaillées et valorisées sont disponibles sur [IED CARHYCE (CNRS-AFB)](https://analytics.huma-num.fr/ied_carhyce/){target="_blank"}[^2]
+  - Mesures de morphologie du lit, de granulométrie, de débit et de ripisylve.
   - Des données enrichies par des estimations à plein bord et les surfaces des bassins versant.
   - Plus de 2000 stations de mesures.
+
+[^2]: Gob F., Thommeret N., Bilodeau C., Tamisier V., Duval E., Legentil C., Grancher D., Raufaste S., Baudoin J-M. et Kreutzenberger K., Interface d’exploitation des données Carhyce [en ligne], Laboratoire de Géographie Physique – OFB [https://analytics.huma-num.fr/ied_carhyce/](https://analytics.huma-num.fr/ied_carhyce/) Consultée le 03/08/2024.
 
 ## Installation des (nombreux?) packages
 
@@ -115,7 +119,7 @@ install.packages(c("ggplot2", "dplyr", "tidyr", "tibble",
                    "e1071", "gmodels", "ggpmisc", "nortest", 
                    "FactoMineR", "factoextra", "gtsummary", 
                    "explor", "boot", "qqplotr", "corrplot",
-                   "readxl"))
+                   "readxl", "sf", "tmap"))
 ```
 
 
@@ -142,6 +146,8 @@ library(boot) # Bootstrap
 library(qqplotr) # QQ-plot
 library(corrplot) # Correlation plot
 library(readxl) # Excel files
+library(sf) # Spatial data
+library(tmap) # Thematic maps
 ```
 
 ## Explorons le jeu de données
@@ -172,15 +178,15 @@ print(str(carhyce_brute))
 
 ## Les données quantitatives
 
-![](./img/datatype_quantitative.webp){width="60%" fig-align="center"} [^2]
+![](./img/datatype_quantitative.webp){width="60%" fig-align="center"} [^3]
 
-[^2]: Artwork by @allison_horst.
+[^3]: Artwork by @allison_horst.
 
 ## Les données qualitatives
 
-![](./img/datatype_qualitative.webp){width="80%" fig-align="center"} [^3]
+![](./img/datatype_qualitative.webp){width="80%" fig-align="center"} [^4]
 
-[^3]: Artwork by @allison_horst.
+[^4]: Artwork by @allison_horst.
 
 ## Nettoyage des colonnes
 
@@ -1933,7 +1939,7 @@ pca <- PCA(carhyce_stat,
 Visualisation avec explor (ouvre une application web) : 
 ```{r, echo=TRUE, eval=FALSE}
 # package explor
-explor(pca)
+# explor(pca)
 ```
 ## ACP Explor - Graphique
 
@@ -1962,7 +1968,7 @@ explor::PCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
 
 - **Supervisée** : on connait les classes à l'avance, on cherche à prédire la classe d'un nouvel individu à partir de différentes variables.
   - Exemple : on a une image satellite et on cherche à identifier les zones urbaines sur la base des valeurs des pixels. On identifie des zones urbains et non urbaines pour entrainer le modèle. On se sert du modèle pour prédire les zones urbaines sur une nouvelle image.
-  - Méthodes : régression logistique, SVM, Random Forest
+  - Méthodes : régression logistique, SVM, arbres de décision, random forest
 - **Non supervisée** : on ne connait pas les classes à l'avance, on cherche à regrouper les individus en fonction de leurs ressemblances.
   - Exemple : à partir d'une image satellite, on cherche à regrouper les pixels en fonction de leurs valeurs et identifier des zones homogènes que l'on suppose correspondre à des occupations du sol différentes.
   - Méthodes : K-means, CAH
@@ -2006,6 +2012,8 @@ carhyce_stat <- carhyce %>%
   group_by(code_station) %>% # group by station
   filter(date_realisation == max(date_realisation)) %>% # select the last date by group
   ungroup() %>%  # ungroup data
+  # remove duplicated code_station
+  filter(!duplicated(code_station)) %>% # remove duplicated code_station %>% 
   mutate(surface_bv_km2 = ifelse(surface_bv_km2 %in% boxplot.stats(surface_bv_km2)$out, NA, surface_bv_km2),
          score_ripisylve = ifelse(score_ripisylve %in% boxplot.stats(score_ripisylve)$out, NA, score_ripisylve),
          profondeur_moyenne_qb_m = ifelse(profondeur_moyenne_qb_m %in% boxplot.stats(profondeur_moyenne_qb_m)$out, NA, profondeur_moyenne_qb_m),
@@ -2036,7 +2044,9 @@ carhyce_stat <- carhyce %>%
          vitesse_moyenne_qb_m_s,
          cote_ligne_energie_qb,
          nombre_de_froude_qb,
-         force_tractrice_qb_n_m2) %>%  # select columns
+         force_tractrice_qb_n_m2, 
+         code_station) %>%  # select columns
+  column_to_rownames(var = "code_station") %>% # set code_station as rownames
   na.omit() # remove NA
 ```
 
@@ -2046,7 +2056,7 @@ carhyce_stat <- carhyce %>%
 
 - Homogénéisation des données pour éviter les effets d'échelle (unités différentes) et que les variables à forte variance soit prépondérante dans les résultats.
 
-Transformation de Milligan & Cooper (utilisée pour la suite, donne une meilleur découvertd de cluster)
+Transformation de Milligan & Cooper (utilisée pour la suite, donne une meilleur découverte de cluster)
 ```{r, echo=TRUE, collapse=FALSE}
 # Milligan & Cooper transformation function
 normalize_MC <- function(x) {
@@ -2091,7 +2101,7 @@ Comment regrouper des classes entres elles ou calculer la distance entre deux cl
  Pour aller plus loin, voir Data Mining et Statistique décisionnelle (2017), Stéphane Tufféry, Editions Technip et l'article Hierarchical Clustering de Fatih Karabiber sur [https://www.learndatasci.com](https://www.learndatasci.com/glossary/hierarchical-clustering/){target="_blank"}
 :::
 
-## Agrrégation et dendrogramme
+## Agrégation et dendrogramme
   
 ```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
 # Ward method
@@ -2099,10 +2109,16 @@ hc <- hclust(dist_euclid, method = "ward.D2")
 # Dendrogram
 plot(hc, hang = -1, cex = 0.6, main = "Dendrogramme CAH")
 ```
-## Nombre de classes
+## Nombre de classes {.smaller}
 
 - Evaluation graphique sur le dendrogramme.
 - Représentation des pertes d'inertie inter-classe (mesure la séparation entre chaque classe). Plus le saut est grand plus la distance entre les clusters fusionnés est grande.
+
+![](./img/inertie_classification.webp){width="70%" fig-align="center"}
+
+::: aside
+Illustration reprise de : Data Mining et Statistique décisionnelle (2017), Stéphane Tufféry, Editions Technip (p. 305)
+:::
 
 ## Nombre de classes - Inertie
 
@@ -2158,6 +2174,38 @@ carhyce_stat %>%
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
+
+## Répartition spatiale des classes - Code
+
+```{r, echo=TRUE, collapse=FALSE, warning=FALSE, message=FALSE, eval=FALSE}
+tmap_mode(mode = "view") # set tmap mode to interactive
+carhyce_stat_sf <- carhyce_stat %>% 
+  rownames_to_column(var = "code_station") %>% 
+  mutate(code_station = as.integer(code_station)) %>%
+  # add x and y columns from carhyce from code_station and rownames
+  left_join(carhyce %>% select(code_station, x, y), by = c("code_station" = "code_station")) %>% 
+  st_as_sf(coords = c("x", "y")) # convert to sf object
+st_crs(carhyce_stat_sf) <- 2154 # set projection
+tm_shape(carhyce_stat_sf) + # tmap object
+  tm_dots(col = "group", size = 0.1, palette = "Set1") + # plot points
+  tm_layout(legend.position = c("right", "top")) # legend position
+```
+## Répartition spatiale des classes - Code
+
+```{r, echo=FALSE, collapse=FALSE, fig.align='center', warning=FALSE, message=FALSE, fig.height=6, fig.width=12}
+tmap_mode(mode = "view") # set tmap mode to interactive
+carhyce_stat_sf <- carhyce_stat %>% 
+  rownames_to_column(var = "code_station") %>% 
+  mutate(code_station = as.integer(code_station)) %>%
+  # add x and y columns from carhyce from code_station and rownames
+  left_join(carhyce %>% select(code_station, x, y), by = c("code_station" = "code_station")) %>% 
+  st_as_sf(coords = c("x", "y")) # convert to sf object
+st_crs(carhyce_stat_sf) <- 2154 # set projection
+tm_shape(carhyce_stat_sf) + # tmap object
+  tm_dots(col = "group", size = 0.1, palette = "Set1") + # plot points
+  tm_layout(legend.position = c("right", "top")) # legend position
+```
+
 ## Interprétation CAH - boxplot classes
 
 ```{r, echo=TRUE, collapse=FALSE, fig.align='center', fig.width=15}
@@ -2188,7 +2236,7 @@ explor::PCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
     labels_positions = NULL, xlim = c(-6.76, 11.9), ylim = c(-8.72, 9.95))
 ```
 
-## Classification K
+
 
 
 
