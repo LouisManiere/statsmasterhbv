@@ -2079,8 +2079,8 @@ carhyce_stat_z <- scale(carhyce_stat, center = TRUE, scale = TRUE)
 Calul de la distance entre chaque individu.
 
 - Plusieurs méthode de calcul de distance : 
-  - **Variables quantitative** : euclidienne, manhattan, Gower, etc.
-  - **Variables qualitative** : Gower, $\phi^2$, etc.
+  - **Variables quantitative** : euclidienne, manhattan
+  - **Avec des variables qualitatives** : Gower, $\phi^2$ (utilisé dans les analyses de correspondance multiples ou ACM)
 
 ```{r, echo=TRUE, collapse=FALSE}
 # Euclidean distance
@@ -2107,7 +2107,7 @@ Comment regrouper des classes entres elles ou calculer la distance entre deux cl
 # Ward method
 hc <- hclust(dist_euclid, method = "ward.D2")
 # Dendrogram
-plot(hc, hang = -1, cex = 0.6, main = "Dendrogramme CAH")
+plot(hc, hang = -1, cex = 0.6, main = "Dendrogramme CAH", label=FALSE)
 ```
 ## Nombre de classes {.smaller}
 
@@ -2134,13 +2134,13 @@ axis(1, at = seq(1, 30, by = 1), las=2)
 ```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
 plot(hc, labels = FALSE, main = "Partition en 2, 5 ou 8 classes", xlab = "", ylab = "", sub = "", axes = FALSE, hang = -1)
 rect.hclust(hc, 2, border = "green3")
-rect.hclust(hc, 5, border = "red3")
-rect.hclust(hc, 8, border = "blue3")
+rect.hclust(hc, 4, border = "red3")
+rect.hclust(hc, 7, border = "blue3")
 ```
 
 ```{r, echo=TRUE, collapse=FALSE}
 # cut dendrograme in 5 classes
-hc_gp <- cutree(hc,k=5)
+hc_gp <- cutree(hc,k=4)
 ```
 
 ## Interprétation CAH
