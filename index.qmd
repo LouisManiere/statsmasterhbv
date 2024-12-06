@@ -2132,14 +2132,14 @@ axis(1, at = seq(1, 30, by = 1), las=2)
 ## Découper les classes
 
 ```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
-plot(hc, labels = FALSE, main = "Partition en 2, 5 ou 8 classes", xlab = "", ylab = "", sub = "", axes = FALSE, hang = -1)
+plot(hc, labels = FALSE, main = "Partition en 2, 5 ou 7 classes", xlab = "", ylab = "", sub = "", axes = FALSE, hang = -1)
 rect.hclust(hc, 2, border = "green3")
 rect.hclust(hc, 4, border = "red3")
 rect.hclust(hc, 7, border = "blue3")
 ```
 
 ```{r, echo=TRUE, collapse=FALSE}
-# cut dendrograme in 5 classes
+# cut dendrograme in 4 classes
 hc_gp <- cutree(hc,k=4)
 ```
 
