@@ -1,0 +1,126 @@
+unnamed-chunk-1	
+unnamed-chunk-2	.Random.seed
+unnamed-chunk-3	carhyce_brute
+unnamed-chunk-4	
+unnamed-chunk-5	
+unnamed-chunk-6	
+unnamed-chunk-7	carhyce
+unnamed-chunk-8	carhyce_stat
+unnamed-chunk-9	
+unnamed-chunk-10	
+unnamed-chunk-11	
+unnamed-chunk-12	
+unnamed-chunk-13	
+unnamed-chunk-14	
+unnamed-chunk-15	
+unnamed-chunk-16	
+unnamed-chunk-17	.index_cache/revealjs/unnamed-chunk-17_28135b887b0cba4306e6eb690510cc17_meta
+unnamed-chunk-18	carhyce_stat
+unnamed-chunk-19	h	xfit	yfit
+unnamed-chunk-20	
+unnamed-chunk-21	hx	hx2	hx3	x
+unnamed-chunk-22	
+unnamed-chunk-23	
+unnamed-chunk-24	
+unnamed-chunk-25	n	p	prob	x
+unnamed-chunk-26	
+unnamed-chunk-27	
+unnamed-chunk-28	
+unnamed-chunk-29	
+unnamed-chunk-30	freq_table
+unnamed-chunk-31	
+unnamed-chunk-32	
+unnamed-chunk-33	
+unnamed-chunk-34	carhyce_stat
+unnamed-chunk-35	tab	tab_mag
+unnamed-chunk-36	contingency_table
+unnamed-chunk-37	
+unnamed-chunk-38	
+unnamed-chunk-39	
+unnamed-chunk-40	
+unnamed-chunk-41	
+unnamed-chunk-42	
+unnamed-chunk-43	
+unnamed-chunk-44	
+unnamed-chunk-45	
+unnamed-chunk-46	chi2_ripisylve
+unnamed-chunk-47	
+unnamed-chunk-48	
+unnamed-chunk-49	carhyce_stat	largeurs_breaks	tab
+unnamed-chunk-50	summary_table
+unnamed-chunk-51	
+unnamed-chunk-52	plot
+unnamed-chunk-53	
+unnamed-chunk-54	
+unnamed-chunk-55	
+unnamed-chunk-56	
+unnamed-chunk-57	model_lineaire
+unnamed-chunk-58	model_lineaire
+unnamed-chunk-59	model_lineaire
+unnamed-chunk-60	model_poly
+unnamed-chunk-61	model_log
+unnamed-chunk-62	
+unnamed-chunk-63	
+unnamed-chunk-64	
+unnamed-chunk-65	
+unnamed-chunk-66	model_multiple
+unnamed-chunk-67	
+unnamed-chunk-68	
+unnamed-chunk-69	
+unnamed-chunk-70	
+unnamed-chunk-71	pearson
+unnamed-chunk-72	
+unnamed-chunk-73	carhyce_stat
+unnamed-chunk-74	
+unnamed-chunk-75	sample_largeur
+unnamed-chunk-76	bootstat	mean_ci_sample
+unnamed-chunk-77	bootstat	median_ci_sample
+unnamed-chunk-78	
+unnamed-chunk-79	carhyce_stat_montagne	carhyce_stat_montagne_mean
+unnamed-chunk-80	carhyce_stat_plaine	carhyce_stat_plaine_mean
+unnamed-chunk-81	
+unnamed-chunk-82	h	xfit	yfit
+unnamed-chunk-83	
+unnamed-chunk-84	montagne_t_test	plaine_t_test
+unnamed-chunk-85	
+unnamed-chunk-86	
+unnamed-chunk-87	
+unnamed-chunk-88	carhyce_stat_montagne_vosges
+unnamed-chunk-89	carhyce_stat_plaine_collineen
+unnamed-chunk-90	
+unnamed-chunk-91	h	xfit	yfit
+unnamed-chunk-92	
+unnamed-chunk-93	
+unnamed-chunk-94	
+unnamed-chunk-95	
+unnamed-chunk-96	
+unnamed-chunk-97	
+unnamed-chunk-98	carhyce_stat
+unnamed-chunk-99	pca
+unnamed-chunk-100	
+unnamed-chunk-101	carhyce_stat_transposed
+unnamed-chunk-102	
+unnamed-chunk-103	
+unnamed-chunk-104	
+unnamed-chunk-105	
+unnamed-chunk-106	
+unnamed-chunk-107	
+unnamed-chunk-108	
+unnamed-chunk-109	pca
+unnamed-chunk-110	
+unnamed-chunk-111	res	.index_cache/revealjs/unnamed-chunk-111_bc1d397002683206fcd613fca1574928_meta
+unnamed-chunk-112	carhyce_stat
+unnamed-chunk-113	carhyce_stat_mc	normalize_MC
+unnamed-chunk-114	carhyce_stat_z
+unnamed-chunk-115	dist_euclid
+unnamed-chunk-116	hc
+unnamed-chunk-117	v
+unnamed-chunk-118	
+unnamed-chunk-119	hc_gp
+unnamed-chunk-120	
+unnamed-chunk-121	carhyce_stat
+unnamed-chunk-122	
+unnamed-chunk-123	carhyce_stat_sf	.index_cache/revealjs/unnamed-chunk-123_8c167ae304ae89da6625414705870b73_meta
+unnamed-chunk-124	
+unnamed-chunk-125	pca
+unnamed-chunk-126	res	.index_cache/revealjs/unnamed-chunk-126_823649b7a60fe0363136002798196327_meta

@@ -1,0 +1,357 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Tutoriel de sauvegarde de ses données de recherche},
+  pdfauthor={Louis Manière - Université de Tours},
+  colorlinks=true,
+  linkcolor={Maroon},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={blue},
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Tutoriel de sauvegarde de ses données de recherche}
+\author{Louis Manière - Université de Tours}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Sauvegarder ses données --
+Tutoriel}\label{sauvegarder-ses-donnuxe9es-tutoriel}
+
+\subsection{Les disques réseaux de l'université
+💾}\label{les-disques-ruxe9seaux-de-luniversituxe9}
+
+Ces serveurs sont basés au Plat d'Etain avec une copie sur le campus de
+Grandmont. Deux espaces sont disponibles, l'espaces personnel (U: pour
+les utilisateurs de Windows) et l'espace laboratoire (T:). Il y a du
+versionnement sur ce stockage, on peut actuellement remonter jusqu'à une
+semaine en arrière. Pour l'instant il n'y a pas de limite d'espace
+disque mais ce n'est évidemment pas infinie. Ainsi, comme tout stockage
+de données, la directive est à la retenue (sélectionner ses dossiers à
+sauvegarder, éviter les doublons, éviter les nombreuses versions d'un
+même fichiers etc.).
+
+Pour les doctorants, sur l'espace du laboratoire (T:) vous trouverez un
+dossier \emph{Geosciences/Laboratoire GeHCO/Thèses} sur lequel vous
+pouvez créer un dossier à votre nom et y placer vos travaux finalisés
+(ou presque), soit vos données finalisées avec leur documentation, votre
+manuscrit de thèse, vos articles, protocoles, plans etc. Une bonne
+occasion de faire le ménage dans ses dossiers en fin de thèse\ldots{} et
+pourquoi pas en profiter pour valoriser ses données.
+
+On peut accéder à ces disques soit en étant branché en filaire à
+l'université ou bien en VPN.
+
+\begin{quote}
+\textbf{La minute VPN}
+
+\begin{itemize}
+\item
+  Pour les utilisateur de Windows : vous avez normalement déjà
+  l'application \textbf{OpenVPN} d'installée. Pour le démarrer, ça se
+  fait en 3 clicks, il y a un
+  \href{https://utmedia.univ-tours.fr/permalink/v12664e6412c0z39x92t/iframe/}{tutoriel
+  en ligne}.
+\item
+  Pour les utilisateurs MAC il faut utiliser l'application
+  \textbf{Tunnelblick}, demandez à la DSI pour le mettre en route.
+\end{itemize}
+\end{quote}
+
+\subsubsection{Utilisateurs de Windows
+🪟}\label{utilisateurs-de-windows}
+
+Vous trouvez ces disques dans l'explorateurs de fichiers classiques.
+
+\includegraphics{img/disque_reseaux_win.png}
+
+Le disque personnel (U:), si vous ne l'utilisez pas encore devrait être
+vide. Vous pouvez y mettre vos données de recherche, cours etc. comme
+vous un disque dur externe avec un simple copier/coller ou bien avec une
+méthode automatisée (vous trouverez la procédure ci-dessous 👇).
+
+\subsubsection{Utilisateurs MAC 🍎}\label{utilisateurs-mac}
+
+Il vous faut aller dans \emph{Aller/Se connecter au serveur} pour créer
+une nouvelle connexion. On va certainement vous demander votre mot de
+passe de l'ordinateur.
+
+\includegraphics{img/disque_reseaux_mac.png}
+
+\begin{itemize}
+\tightlist
+\item
+  Pour le disque personnel il faut mettre l'adresse avec son nom
+  utilisateur :
+  \href{smb://filerper.univ-tours.local/home/personnels/}{\emph{smb://filerper.univ-tours.local/home/personnels/}}\textbf{\emph{mon\_nom\_utilisateur}}
+  Une fois rentré, le serveur va certainement vous demander votre
+  identifiant et mot de passe de l'ENT cette fois.
+\item
+  Pour le disque laboratoire, il faut créer une nouvelle connexion avec
+  cette adresse :
+  \href{smb://filersciences.univ-tours.local/sciences$/Partage/Geosciences}{\emph{smb://filersciences.univ-tours.local/sciences\$/Partage/Geosciences}}
+\end{itemize}
+
+Vous devriez avoir accès à ces espaces directement avec la même démarche
+\emph{Aller/Se connecter au serveur}.
+
+\subsection{Automatiser ses sauvegardes
+🤖}\label{automatiser-ses-sauvegardes}
+
+Une solution simple pour mettre à jour sa sauvegarde quand on est à
+l'université ou en VPN sans avoir à y penser est d'installer un petit
+logiciel de sauvegarde comme
+\href{https://www.2brightsparks.com/download-syncbackfree.html}{\textbf{SyncBackFree}}
+pour Windows ou \href{https://freefilesync.org/}{\textbf{FreeFileSync}}
+pour Windows/MAC/Linux.
+
+La procédure est la même pour les deux logiciels. Vous désignez un
+dossier \emph{source}, votre dossier à sauvegarder, et un dossier de
+\emph{destination}, le dossier de sauvegarde sur votre disque réseau
+personnel (U:) par exemple. Puis il s'agit de créer un \emph{profil} et
+de paramétrer un mode de sauvegarde :
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Sauvegarder} : Un backup ``simple'', le logiciel scan votre
+  dossier \emph{source}, regarde les fichier modifiés ou manquants puis
+  met à jour ces fichiers dans la \emph{destination}. Cela équivaut à
+  prendre tout son dossier et faire un copier/coller en remplaçant les
+  fichiers existants. Il n'y a pas de suppression dans la
+  \emph{destination}, l'avantage est de conserver ses vieux fichiers
+  supprimés de son ordinateur, l'inconvénient est que l'on conserve ses
+  vieux fichiers supprimés de son ordinateurs\ldots{} 🤔.
+\item
+  \textbf{Synchroniser} : C'est le modèle des dossiers partagés et
+  modifiables dans UTbox. Si on modifie un fichier synchronisé sur son
+  poste, on modifie sa copie sur le disque réseau lors de la prochaine
+  synchronisation. Si on modifie le fichier sur le disque réseau, sa
+  version sur notre ordinateur sera modifié lors de la prochaine
+  synchronisation. L'objectif est de toujours avoir la version la plus à
+  jour sur son poste ou sur le serveur. C'est plus un outil de travail
+  partagé qu'un outil de backup.
+\item
+  \textbf{Miroir} : Un backup qui s'occupe de toujours avoir la copie
+  exacte entre la \emph{source} et la \emph{destination}. Le programme
+  met donc à jour les fichiers ajoutés et modifiés de la
+  \emph{destination} depuis la source mais supprime également ceux qui
+  ont été mis à la corbeille. Cela présente l'avantage de nettoyer la
+  sauvegarde en même temps que l'on nettoie son ordinateur des vieux
+  fichiers.
+\end{itemize}
+
+Il est tout à fait possible de faire plusieurs profils pour différents
+dossier avec des modes de sauvegarde différents.
+
+\subsubsection{Un exemple sur
+SyncBackFree}\label{un-exemple-sur-syncbackfree}
+
+Je crée un profil avec un nom
+
+\includegraphics{img/syncbackfree_profil.png}
+
+Je choisis le mode de sauvegarde (ici un miroir)
+
+\includegraphics{img/syncbackfree_miroir.png}
+
+Je désigne un le type de dossier à synchroniser entre la \emph{source}
+et la \emph{destination}, globalement vous pouvez laisser \emph{Unité
+interne/externe}. Si votre dossier de sauvegarde est juste là pour
+assurer la sécurité de vos données en cas de perte ou vol de votre
+ordinateur et que vous allez donc rarement chercher des fichiers dans
+votre sauvegarde, vous pouvez alors compresser la destination. Les
+informaticiens de la DSI et la planète vous remercierons 🤗.
+
+\includegraphics{img/syncbackfree_source_destination.png}
+
+Et maintenant on finalise la paramétrisation :
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{Source} : le chemin vers dossier à sauvegarder sur votre poste,
+  ici \emph{C:/Users/maniere/Documents/dossier\_important}
+\item
+  \emph{Destination} : le chemin vers dossier que vous avez créer sur
+  votre espace de sauvegarde qui va servir de copie, ici
+  \emph{U:/dossier\_important\_mirror.zip} vers mon disque réseau
+  personnel.
+\end{itemize}
+
+\begin{quote}
+\textbf{Info compression !}
+
+Si vous avez choisi de compresser votre dossier de \emph{destination} il
+faut bien penser un dossier compressé plutôt qu'un dossier normal. Pour
+cela, \emph{clic droit/nouveau/dossier compressé}.
+\end{quote}
+
+Vous pouvez mettre des filtres, des choix de sous-dossier etc., ici on
+reste simple et on valide avec \emph{OK}.
+
+Le programme vous diras certainement que ce n'est pas recommandé de
+mettre des chemins de dossier avec des lettres (comme U:) mais il faut
+utiliser le vrai chemin qui commence par
+\emph{\textbackslash fileper\ldots{}}, vous êtes tout à fait d'accord
+avec lui et répondez \emph{oui}!
+
+Si vous créé un miroir vous aurez un avertissement, les fichiers de
+\emph{destination} seront supprimés s'il ne sont pas sur \emph{source},
+vous répondez \emph{OK}, c'est même l'intéret de faire un miroir.
+
+\includegraphics{img/syncbackfree_chemin.png}
+
+Vous pouvez enfin lancer votre première simulation.
+
+\includegraphics{img/syncbackfree_first_scan.png}
+
+En vert on trouve mes deux fichiers à créer. Tout est normal, on peut
+\emph{Continuer la synchronisation}. On voit maintenant notre profil qui
+montre que notre simulation est correct, on sélectionne notre profil et
+on peut maintenant faire une \emph{Execution} pour effectuer les
+modifications.
+
+De cette façon on peut manuellement faire des mise à jour de notre
+sauvegarde avec \emph{Exécution} puis \emph{Continuer l'éxécution}.
+
+Mais on peut aussi :
+
+\subsubsection{Planifier ses sauvegardes
+📆}\label{planifier-ses-sauvegardes}
+
+Pour cela sélectionner votre profil puis lancer \emph{Planification de
+tâche}, vous aurez surement à entrer le mot de passe de votre ordinateur
+la première fois.
+
+Ici il s'agit de rentrer la fréquence de mise à jour de votre
+sauvegarde. Ici je mets à jour ma sauvegarde chaque jour à 11h.
+
+\includegraphics{img/syncbackfree_planificateur.png}
+
+Il est bon de faire également quelques ajustements supplémentaires dans
+l'onglet \emph{Paramètres} :
+
+\begin{itemize}
+\tightlist
+\item
+  J'éxecute uniquement la tâche si l'ordinateur est connecté.
+\item
+  Je choisis de ne pas réveiller l'ordinateur pour executer la backup,
+  il faut que je soit présent sur l'ordinateur et non en veille pour que
+  la sauvegarde s'effectue.
+\item
+  Je veux executer cette tâche dès que je peux si j'ai eu un échec, par
+  exemple si je ne suis pas en VPN je veux que la sauvegarde se lance
+  dès que je connecte au réseau de l'université ou au VPN.
+\item
+  J'arrête la sauvegarde si elle dure plus de 2h, cela doit se faire
+  rapidement sauf peut-être la première sauvegarde où il y a beaucoup de
+  chose à créer.
+\end{itemize}
+
+\includegraphics{img/syncbackfree_param_planification.png}
+
+Une fois la planification paramétrée vous pouvez vérifier en ouvrant le
+logiciel voir quand s'est effectuée la dernière sauvegarde et si cela
+s'est bien déroulé.
+
+\subsubsection{FreeFileSync pour les utilisateurs MAC et
+Linux}\label{freefilesync-pour-les-utilisateurs-mac-et-linux}
+
+Le principe reste le même que \textbf{SyncBackFree}, il y a juste
+l'interface qui change et la planification qui est possible mais pas
+aussi intégré au logiciel.
+
+Les vidéos tutoriel sont disponible
+\href{https://freefilesync.org/tutorials.php}{ici} pour faire un
+mirroir, une sauvegarde simple ou de la planification. La planification
+sur les différentes plateformes Windows, MAC ou Linux est également
+détaillée dans la
+\href{https://freefilesync.org/manual.php?topic=schedule-batch-jobs}{documentation}.
+
+\subsection{UTbox}\label{utbox}
+
+UTbox est un le cloud de l'université qui fonctionne en ligne via l'ENT
+mais vos dossiers ainsi que ceux qui vous ont été partagé peuvent être
+disponible sur votre ordinateur dans l'explorateur de fichier. Cela se
+passe sur l'application \textbf{Nextcloud} déjà présent sur vos poste de
+travail ou très facile à installer si ce n'est pas le cas.
+
+\begin{quote}
+\textbf{Le saviez-vous ?}
+
+Un tutoriel de l'application Nextcloud et d'UTbox se trouve déjà (et
+cela depuis le début!) sur votre espace UTbox. Rendez-vous sur
+\textbf{UTBOX\_pas\_à\_pas.pdf} dans votre dossier UTbox \emph{UTbox -
+Documentation utilisateur}
+\end{quote}
+
+Comme précisé dans le tutoriel de l'université, la synchronisation n'est
+pas adaptée à une sauvegarde. UTbox est davantage un outil de travail
+collaboratif que de sauvegarde des données.
+
+\end{document}

@@ -11,7 +11,7 @@ format:
     navigation-mode: vertical
     theme: custom.scss
     logo: "./img/universite-tours-logo.png"
-    footer: "Master 1 Hydrosystèmes et Bassins Versants 2024-2025"
+    footer: "Master 1 Hydrosystèmes et Bassins Versants 2025-2026"
     css: custom.css
     slide-number: true
     show-slide-number: all
@@ -126,9 +126,8 @@ install.packages(c("ggplot2", "dplyr", "tidyr", "tibble",
 ## Importons les pakages du cours
 
 ```{r, echo=TRUE, collapse=FALSE, results='hide'}
+library(rlang) # for the sym function
 library(ggplot2) # Graphics
-library(dplyr) # Data manipulation
-library(tidyr) # Data cleaning
 library(tibble) # Table visualisation
 library(janitor) # Column names cleaning
 library(skimr) # Data summary
@@ -148,6 +147,8 @@ library(corrplot) # Correlation plot
 library(readxl) # Excel files
 library(sf) # Spatial data
 library(tmap) # Thematic maps
+library(dplyr) # Data manipulation
+library(tidyr) # Data cleaning
 ```
 
 ## Explorons le jeu de données
@@ -424,7 +425,7 @@ lines(x, hx2, lwd=2, col="red")
 lines(x, hx3, lwd=2, col="blue")
 ```
 
-## Coefficient d'assymétrie de Fisher
+## Coefficient d'asymétrie de Fisher
 
 ```{r, echo=TRUE, collapse=FALSE}
 # skewness
@@ -528,9 +529,9 @@ On peut choisir un risque $\alpha$ plus faible selon notre confiance dans nos r�
 Lors d'un test statistique, on peut faire deux types d'erreurs :
 
 - **Erreur de type I** : Risque de rejeter $H_0$ alors qu'elle est vraie. Risque $\alpha$ => on affirme une différence alors qu'en réalité il n'y en a pas.
-- **Erreur de type II** : Risque de ne pas rejeter $H_0$ alors qu'elle est fausse. Risque $\beta$ => on affirme qu'il n'y a pas de différence alors qu'en réalité il y en a une. On se sait pas calculer ce risque, on ne peut donc pas affirmer $H_0$.
+- **Erreur de type II** : Risque de ne pas rejeter $H_0$ alors qu'elle est fausse. Risque $\beta$ => on accepte qu'il n'y a pas de différence alors qu'en réalité il y en a une. On se sait pas calculer ce risque, on ne peut donc pas affirmer $H_0$.
 
-Le risque $\beta$ est d'autant plus petit que l'échantillon est important. La puissance d'un test, $1 - \beta$, est la probabilité de rejeter $H_0$ alors qu'elle est fausse. Pour détecter une faible différence, il faux un test puissant, soit un échantillon suffisamment grand (voir la vidéos de [Tierry Ancelle](https://www.youtube.com/watch?v=qWxJkq7QFWY) pour une très bonne illustration).
+Le risque $\beta$ est d'autant plus petit que l'échantillon est important. La puissance d'un test, $1 - \beta$, est la probabilité de rejeter $H_0$ alors qu'elle est fausse. Pour détecter une faible différence, il faut un test puissant, soit un échantillon suffisamment grand (voir la vidéo de [Tierry Ancelle](https://www.youtube.com/watch?v=qWxJkq7QFWY){target="_blank"} pour une très bonne illustration).
 
 ![](./img/test_rules.webp){width="100%" fig-align="center"}
 
@@ -579,7 +580,7 @@ ks.test(carhyce_stat$surface_bv_km2, "pnorm", mean = mean(carhyce_stat$surface_b
 - $H_0$ : la variable suit une distribution normale.
 - $H_1$ : la variable ne suit pas une distribution normale.
 
-- p-value < 2.2e-16 < 0.05, On peut rejeter $H_0$ et valider $H_1$ avec une probabilité de se tromper de 5%.
+- p-value = 2.2e-16 < 0.05, on peut rejeter $H_0$ et valider $H_1$ avec une probabilité de se tromper de 5%.
 
 ## Distribution des classes de ripisylve
 
@@ -653,7 +654,7 @@ carhyce_stat <- carhyce %>%
 
 ## Qualitatif VS qualitatif - Tableau de contingence
 
-![](./img/contingency_table.png){width="100%" fig-align="center"}
+![](./img/contingency_table.webp){width="100%" fig-align="center"}
 
 [Distribution jointe de deux variables qualitatives (ou quantitatives discrétisées)]{style="font-size: 0.7em;"}
 
@@ -786,7 +787,7 @@ tab_mag
 
 - Les effectifs attendus suivent la distribution marginale des variables pour respecter les répartitions totales de chaque variable.
 
-- La formule est le produit des effectifs marginaux divisé par le total des effectifs.
+- La formule est le produit des effectifs marginaux divisés par le total des effectifs.
 
 ## Chi2 - calcul des effectifs attendus.
 
@@ -796,20 +797,44 @@ tab_mag
 ```
 Exemple : 
 
-- Le nombre de stations avec une ripisyle espacée en rive gauche doit resté de 492 (effectif marginal) mais peut être réparti différemment dans les modalités de la rive droite.
+- Le nombre de stations avec une ripisyle espacée en rive gauche doit rester de 492 (effectif marginal) mais peut être réparti différemment dans les modalités de la rive droite.
 
-- L'effectif joint attendu entre espacée en rive gauche et continue en rive droite : $\frac{492 \times 664}{1834} = 178$
+- L'effectif joint attendu entre espacée en rive gauche et continue en rive droite :  $\frac{492 \times 664}{1834} = 178$
+
+## Chi2 - Détails de calcul
+
+- Effectif attendu pour chaque case : 
+
+$E_{ij} = \frac{(Effectif\;ligne_i) \times (Effectif\;colonne_j)}{Effectif\;total}$
+
+- Calcul du $\chi^2$ : 
+
+$\chi^2 = \sum \frac{(O_{ij} - E_{ij})^2}{E_{ij}}$ avec $O_{ij}$ l'effectif observé et $E_{ij}$ l'effectif attendu.
+
+- Degré de liberté : 
+
+$ddl = (nombre\;de\;lignes - 1) \times (nombre\;de\;colonnes - 1)$
 
 ## Chi2 - effectif calculé sous $H_0$
 
-[Effectif calculé sous $H_0$]{style="font-size: 0.7em;"}
+::: panel-tabset
+
+### Effectif attendus
 
 ```{r, echo=TRUE, collapse=FALSE}
 # run chi2 test
 chi2_ripisylve <- chisq.test(table(carhyce_stat$continuite_ripisylve_rive_gauche, carhyce_stat$continuite_ripisylve_rive_droite))
 print(round(chi2_ripisylve$expected[,1:4], 0))
 ```
-Le $\chi^2$ représente la différence des deux tables que l'on compare au $\chi^2$ critique pour déterminer si on peut rejeter $H_0$ avec un une probabilité d'erreur définie (5% généralement). Voir [table de $\chi^2$ par Fabrice Larribe](http://fabricelarribe.uqam.ca/resources/Tables/Table-Chi2-Print.pdf){target="_blank"}
+### $\chi^2$ et dl
+
+```{r, echo=TRUE, collapse=FALSE}
+# chi2 value and ddl
+cat("Chi2 =", round(chi2_ripisylve$statistic, 2), "\n", "ddl =", chi2_ripisylve$parameter)
+```
+:::
+
+Le $\chi^2$ représente la différence des deux tables que l'on compare au $\chi^2$ critique pour déterminer si on peut rejeter $H_0$ pour un risque $\alpha$ donné. Si $\chi^2$ > $\chi^2 critique$, on rejette $H_0$. Voir [table de $\chi^2$ par Fabrice Larribe](http://fabricelarribe.uqam.ca/resources/Tables/Table-Chi2-Print.pdf){target="_blank"}
 
 ## Chi2 - interprétation
 
@@ -901,8 +926,8 @@ plot + geom_smooth(method="lm", col="red", formula = y ~ log(x) + x)
 
 **Evalue dans quelle mesure les variations de deux variables sont simultanées ou non.**
 
-- "+" : les écarts entre les valeurs et leur moyenne ont tendance a être de même signe.
-- "-" : les écarts entre les valeurs et leur moyenne ont tendance a être de signe opposé.
+- "+" : les écarts entre les valeurs et leur moyenne ont tendance à être de même signe.
+- "-" : les écarts entre les valeurs et leur moyenne ont tendance à être de signe opposé.
 - "0" : les écarts entre les $Xi$ et leur moyenne et les écarts entre les $Yi$ et leur moyenne n'ont aucun lien entre eux.
 
 **Attention** : 
@@ -928,6 +953,9 @@ plot + geom_smooth(method="lm", col="red", formula = y ~ log(x) + x)
 - Plus on s'éloigne de 0 plus les deux variables sont fortement corrélées linéairement. 
 - Le signe indique le sens de la relation.
 
+⚠️ Corrélation $\neq$ causalité! [Quelques beaux exemples](https://tylervigen.com/spurious-scholar){target="_blank"}
+⚠️ Multicolinéarité, quand plusieurs variables explicatives ont des liens de corrélation entre elles!
+
 ## Quelques exemples de corrélation
 
 ![](./img/pearson_corr_examples.png){width="100%" fig-align="center"}
@@ -935,7 +963,7 @@ plot + geom_smooth(method="lm", col="red", formula = y ~ log(x) + x)
 
 ## Coefficient de détermination
 
-**Le coeffient de corrélation de Pearson au carré. Il détermine le pourcentage de variation de Y imputable à X.**
+**Le coefficient de détermination détermine le pourcentage de variation de Y imputable à X.**
 
 \
 
@@ -943,11 +971,13 @@ $R^2$% des variations de Y s'expliquent par X.
 
 Par exemple si $R^2 = 0.35$, 35% des variations de la largeur mouillée s'expliquent par le débit.
 
-**Attention :** 
+\
 
-- Ne s'applique qu'aux modèles linéaires !
-- Corrélation $\neq$ causalité! [Quelques beaux exemples](https://tylervigen.com/spurious-scholar){target="_blank"}
-- Multicolinéarité, quand plusieurs variables explicatives ont des liens de corrélation entre elles!
+⚠️ Ne s'applique pas qu'aux modèles linéaires !
+
+\
+
+ℹ️ [Je vous recommande l'explication en vidéo de Tierry Ancelle sur le sujet](https://www.youtube.com/watch?v=XL3ZOuFxW4g){target="_blank"}
 
 ## Le Quartet d'Anscombe
 
@@ -1004,14 +1034,40 @@ summary(model_lineaire)
 
 :::
 ::: {.column width="50%"}
-- Résidus : différence entre les valeurs observées et les valeurs prédites par le modèle.
+- Résidus : différence entre les valeurs observées et les valeurs prédites.
 - Erreur standard des résidus : écart-type des résidus (ou la dispersion autour de la droite)
-- Coefficients avec erreur standard et test de significativité  :
+- Coefficients du modèle avec erreur standard et test de significativité  :
 
-  - Estimate (Intersept) : b ou l'ordonnée à l'origine
-  - Estimate (Variable) : a ou la pente
+  - Intersept : l'ordonnée à l'origine
+  - Variable : la pente
 
 - R-squared : coefficient de détermination
+- R-squared ajusted : R2 ajusté en fonction du nombre de variables explicatives
+- F-statistic (ou test de Fisher) : test global de significativité du modèle
+
+:::
+:::
+
+## Interprétation des résultats du modèle {.smaller}
+
+::: columns
+::: {.column width="50%"}
+
+```{r, echo=TRUE, collapse=FALSE}
+model_lineaire <- lm(largeur_mouillee_qb_m ~ debit_plein_bord_m3_s, 
+                     data = carhyce_stat)
+summary(model_lineaire)
+```
+
+:::
+::: {.column width="50%"}
+
+<details>
+  <summary>Interprétation</summary>
+La médiane des résidus est plutôt proche de 0, l'interval inter-quartile et l'erreur standard sont d'environ 5m. La majeure partie des valeurs observées sont donc proches du modèle. Les valeur minimum et maximum montrent cependant de très forts écarts.
+Le modèle  prend la forme de l'équation $largeur = 7.54+0.39*Débit$ Les coefficients ont de faibles dispersions et une forte significativité, de même que le test de Fisher. Il existe bien une relation linéaire de la largeur en fonction de du débit.
+Le coefficient de détermination est de 0.44, soit 44% des variations de la largeur s'expliquent par le débit. Ce modèle linéaire sur le débit permet donc d'expliquer une partie importante de la variation de largeur mais d'autres variables sont nécessaire pour expliquer le reste des variations.
+</details>
 
 :::
 :::
@@ -1133,8 +1189,7 @@ summary(model_multiple)
 ## Régression linéaire multiple - synthèse
 
 ```{r, echo=TRUE, collapse=FALSE}
-model_multiple %>%
-  tbl_regression(intercept = TRUE)
+  gtsummary::tbl_regression(model_multiple, intercept = TRUE)
 ```
 
 ## Régression linéaire multiple - graphique en forêt
@@ -1758,7 +1813,7 @@ carhyce_stat <- carhyce %>%
 
 **ACP sur tous les individus et toutes les variables :**
 
-```{r, echo=TRUE, collapse=FALSE}
+```{r, echo=TRUE, collapse=FALSE, warning=FALSE}
 # PCA
 pca <- PCA(carhyce_stat[, c("score_ripisylve", "profondeur_moyenne_qb_m", "largeur_mouillee_qb_m", "surface_mouillee_qb_m2", "rayon_hydraulique_qb", "d16_mm", "d50_mm", "d84_mm", "coefficient_de_sinuosite", "coefficient_rugosite", "debit_plein_bord_m3_s", "vitesse_moyenne_qb_m_s", "cote_ligne_energie_qb", "nombre_de_froude_qb", "force_tractrice_qb_n_m2")], 
             ncp = Inf, # number of dimensions
@@ -2235,10 +2290,48 @@ explor::PCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
     opacity_var = NULL, point_size = 64, ellipses = TRUE, transitions = TRUE,
     labels_positions = NULL, xlim = c(-6.76, 11.9), ylim = c(-8.72, 9.95))
 ```
+# Un peu de détails
 
+## Test de la pente d'une régression linéaire
 
+- Hypothèse nulle $H_0$ : la pente est égale à 0 (pas de relation linéaire entre les deux variables)
+- Hypothèse alternative $H_a$ : la pente est différente de 0 (relation linéaire entre les deux variables)
+- Test de Student :
+$t = \frac{b_1 - 0}{S(b_1)}$ où $b_1$ est la pente estimée et $S(b_1)$ son écart-type.
+- Le test suit une loi de Student à $n-2$ degrés de liberté.
 
+# Eléments de calcul
 
+## Paramètres de dispersion
 
+- **Variance** => la moyenne des carrés des écarts à cette moyenne :
+
+$s^2 = \frac{1}{n-1} \sum_{i=1}^{n} (x_i - \bar{x})^2$
+
+- **Ecart-type** => la racine carrée de la variance :
+
+$s = \sqrt{s^2}$
+
+- **Ecart moyen** => la moyenne des écarts absolus à la moyenne :
+
+$EM = \frac{1}{n} \sum_{i=1}^{n} |x_i - \bar{x}|$
+
+## Droite des moindres carrés
+
+Dans une relation linéaire simple, la droite de régression est celle qui minimise la somme des les carrées des distances.
+
+![](./img/droite_moindres_carres.webp)
+
+## Covariance et corrélation
+
+- **Covariance** => moyenne des produits des écarts à leur moyenne des deux variables :
+
+$Cov(X,Y) = \frac{1}{n-1} \sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y})$
+
+- **Coefficient de corrélation de Bravais-Pearson** => rapport entre la covariance et la racine carrée des produits des variances des deux variables :
+
+$r = \frac{Cov(X,Y)}{\sqrt{Var(X)Var(Y)}}$ ou
+
+$r = \frac{\sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum_{i=1}^{n} (x_i - \bar{x})^2 \sum_{i=1}^{n} (y_i - \bar{y})^2}}$
 
 
