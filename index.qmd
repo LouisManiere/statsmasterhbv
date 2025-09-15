@@ -954,6 +954,7 @@ plot + geom_smooth(method="lm", col="red", formula = y ~ log(x) + x)
 - Le signe indique le sens de la relation.
 
 ⚠️ Corrélation $\neq$ causalité! [Quelques beaux exemples](https://tylervigen.com/spurious-scholar){target="_blank"}
+
 ⚠️ Multicolinéarité, quand plusieurs variables explicatives ont des liens de corrélation entre elles!
 
 ## Quelques exemples de corrélation
