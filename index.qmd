@@ -521,7 +521,7 @@ plot_dist(light_tail, "Homogène (light tailed)")
 plot_dist(heavy_tail, "Concentrée (heavy tailed)")
 ```
 
-### bimodales
+### Bimodale
 
 ```{r, echo=TRUE, collapse=FALSE}
 plot_dist(bimodal, "Bimodale")
