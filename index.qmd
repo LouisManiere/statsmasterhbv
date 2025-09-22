@@ -666,6 +666,12 @@ ks.test(carhyce_stat$surface_bv_km2, "pnorm", mean = mean(carhyce_stat$surface_b
 
 - p-value = 2.2e-16 < 0.05, on peut rejeter $H_0$ et valider $H_1$ avec une probabilité de se tromper de 5%.
 
+## Distribution des classes  de ripisylve - Carhyce
+
+![](./img/classe_ripisylve.webp){width="70%" fig-align="center"}[^5]
+
+[^5]: [Gob F., Thommeret N., Bilodeau C., Tamisier V., Duval E., Legentil C., Grancher D., Raufaste S., Baudoin J-M. et Kreutzenberger K., Interface d’exploitation des données Carhyce [en ligne], Laboratoire de Géographie Physique – OFB [https://analytics.huma-num.fr/ied_carhyce/](https://analytics.huma-num.fr/ied_carhyce/) Consultée le 03/08/2024.]{style="font-size:0.7em;"}
+
 ## Distribution des classes de ripisylve
 
 ```{r, echo=TRUE, collapse=FALSE}
@@ -918,16 +924,18 @@ cat("Chi2 =", round(chi2_ripisylve$statistic, 2), "\n", "ddl =", chi2_ripisylve$
 ```
 :::
 
-Le $\chi^2$ représente la différence des deux tables que l'on compare au $\chi^2$ critique pour déterminer si on peut rejeter $H_0$ pour un risque $\alpha$ donné. Si $\chi^2$ > $\chi^2 critique$, on rejette $H_0$. Voir [table de $\chi^2$ par Fabrice Larribe](http://fabricelarribe.uqam.ca/resources/Tables/Table-Chi2-Print.pdf){target="_blank"}
+Le $\chi^2$ représente la différence des deux tables que l'on compare au $\chi^2$ critique pour déterminer si on peut rejeter $H_0$ pour un risque $\alpha$ donné. Si $\chi^2$ > $\chi^2_{95} critique$ (quantile à 95% par exemple), on rejette $H_0$. Voir [table de $\chi^2$ par Fabrice Larribe](http://fabricelarribe.uqam.ca/resources/Tables/Table-Chi2-Print.pdf){target="_blank"}
 
 ## Chi2 - interprétation
 
 ```{r, echo=TRUE, collapse=FALSE}
-chisq.test(table(carhyce_stat$continuite_ripisylve_rive_gauche, carhyce_stat$continuite_ripisylve_rive_droite))
+chisq.test(table(carhyce_stat$continuite_ripisylve_rive_gauche,
+                 carhyce_stat$continuite_ripisylve_rive_droite))
 ```
+
 - La p-value représente la probabilité d'obtenir un résultat aussi extrême que celui observé, dans les conditions de $H_0$.
 
-- Cette situation est très improbable. On peut rejeter $H_0$ et accepter $H_1$ avec une probabilité de se tromper de 5%.
+- Cette situation est très improbable, une probabilité de $2.2e-16$. Même avec un risque $\alpha = 1%$ l'hypothèse nulle aurait été rejetée.
 
 ## Qualitatif VS Quantitatif - Discrétisation
 
@@ -972,7 +980,7 @@ ggplot(carhyce_stat, aes(x = factor(continuite_ripisylve_rive_gauche), y = large
 
 ## Quantitatif VS quantitatif
 
-La représentation par nuage de point, avec en X plutôt la variable explicative et en Y la variable expliquée.
+La représentation par nuage de point. Où est la variable explicative et la variable expliquée ?
 
 ```{r, echo=TRUE, collapse=FALSE, fig.align='center', fig.height=4}
 plot <- ggplot(carhyce_stat, aes(x = debit_plein_bord_m3_s, y = largeur_mouillee_qb_m)) +
@@ -1026,16 +1034,13 @@ plot + geom_smooth(method="lm", col="red", formula = y ~ log(x) + x)
 
 **Intensité :**
 
-- Proche de 1 (ou -1) = forte dépendance des variables
-- Proche de 0 = indépendance des variables
+- $r$ proche de 1 (ou -1) = forte corrélation linéaire des variables
+- $r$ proche de 0 = indépendance des variables
 
-**Sens :**
+**Sens de la relation :**
 
-- ">0" = les variables évoluent dans le même sens
-- "<0" = les variables évoluent dans le sens opposé.
-
-- Plus on s'éloigne de 0 plus les deux variables sont fortement corrélées linéairement. 
-- Le signe indique le sens de la relation.
+- $r>0$ = les variables évoluent dans le même sens
+- $r<0$ = les variables évoluent dans le sens opposé.
 
 ⚠️ Corrélation $\neq$ causalité! [Quelques beaux exemples](https://tylervigen.com/spurious-scholar){target="_blank"}
 
@@ -1045,28 +1050,22 @@ plot + geom_smooth(method="lm", col="red", formula = y ~ log(x) + x)
 
 ![](./img/pearson_corr_examples.png){width="100%" fig-align="center"}
 
-
-## Coefficient de détermination
-
-**Le coefficient de détermination détermine le pourcentage de variation de Y imputable à X.**
-
-\
-
-$R^2$% des variations de Y s'expliquent par X.
-
-Par exemple si $R^2 = 0.35$, 35% des variations de la largeur mouillée s'expliquent par le débit.
-
-\
-
-⚠️ Ne s'applique pas qu'aux modèles linéaires !
-
-\
-
-ℹ️ [Je vous recommande l'explication en vidéo de Tierry Ancelle sur le sujet](https://www.youtube.com/watch?v=XL3ZOuFxW4g){target="_blank"}
-
 ## Le Quartet d'Anscombe
 
+::: columns
+::: {.column width="60%"}
+
 ![](./img/quartet_anscombe.png){width="100%" fig-align="center"}
+
+:::
+::: {.column width="40%"}
+
+[- ⚠️ La relation doit être de forme linéaire]{style="font-size:0.7em;"}
+
+[- ⚠️ Sensibilité aux valeurs extrêmes]{style="front-size:0.7em;"}
+
+:::
+:::
 
 - Moralité : toujours visualiser les données avant de les analyser ! 🧐
 
@@ -1090,6 +1089,24 @@ Intérêt de calculer les deux coefficients :
 
 - r>$\rho$ : présence éventuelle de valeurs exceptionnelles.
 - r<$\rho$ : présence éventuelle d'une relation non linéaire.
+
+## Coefficient de détermination
+
+**Le coefficient de détermination détermine le pourcentage de variation de Y imputable à X.**
+
+\
+
+$R^2$% des variations de Y s'expliquent par X.
+
+Par exemple si $R^2 = 0.35$, 35% des variations de la largeur mouillée s'expliquent par le débit.
+
+\
+
+⚠️ Ne s'applique pas qu'aux modèles linéaires !
+
+\
+
+ℹ️ [Je vous recommande l'explication en vidéo de Tierry Ancelle sur le sujet](https://www.youtube.com/watch?v=XL3ZOuFxW4g){target="_blank"}
 
 ## Résidus
 
@@ -1123,7 +1140,7 @@ summary(model_lineaire)
 - Erreur standard des résidus : écart-type des résidus (ou la dispersion autour de la droite)
 - Coefficients du modèle avec erreur standard et test de significativité  :
 
-  - Intersept : l'ordonnée à l'origine
+  - Intercept : l'ordonnée à l'origine
   - Variable : la pente
 
 - R-squared : coefficient de détermination
@@ -1149,9 +1166,11 @@ summary(model_lineaire)
 
 <details>
   <summary>Interprétation</summary>
-La médiane des résidus est plutôt proche de 0, l'interval inter-quartile et l'erreur standard sont d'environ 5m. La majeure partie des valeurs observées sont donc proches du modèle. Les valeur minimum et maximum montrent cependant de très forts écarts.
-Le modèle  prend la forme de l'équation $largeur = 7.54+0.39*Débit$ Les coefficients ont de faibles dispersions et une forte significativité, de même que le test de Fisher. Il existe bien une relation linéaire de la largeur en fonction de du débit.
-Le coefficient de détermination est de 0.44, soit 44% des variations de la largeur s'expliquent par le débit. Ce modèle linéaire sur le débit permet donc d'expliquer une partie importante de la variation de largeur mais d'autres variables sont nécessaire pour expliquer le reste des variations.
+[- La médiane des résidus est plutôt proche de 0 et les quartiles entre -3 et 2.Le modèle a tendance à sous-estimer légèrement les données observées, et 50% des valeurs observées sont relativement bien ajustée. L'erreur standard de 5m montre des écarts plus fort à la moyenne et donc de nombreuses observations moins bien prédites par le modèle.]{style="font-size: 0.7em;"}
+
+[- Le modèle  prend la forme de l'équation $largeur = 7.54+0.39*Débit$ Les coefficients ont de faibles dispersions et une forte significativité, de même que le test de Fisher. Il existe bien une relation linéaire significative de la largeur en fonction du débit.]{style="font-size: 0.7em;"}
+
+[- Le coefficient de détermination est de 0.44, soit 44% des variations de la largeur s'expliquent par le débit. Ce modèle linéaire sur le débit permet donc d'expliquer une partie importante de la variation de largeur mais d'autres variables sont nécessaire pour expliquer le reste des variations.]{style="font-size: 0.7em;"}
 </details>
 
 :::
@@ -1219,7 +1238,7 @@ plot(model_log, which = 1)
 
 :::
 
-- Les résidus doivent être dispersés aléatoirement autour de zéro. La présence d’une tendance (linéaire ou non) indique des effets systématiques ignorés par le modèle.
+Les résidus doivent être dispersés aléatoirement autour de zéro. La présence d’une tendance (linéaire ou non) indique des effets systématiques ignorés par le modèle. Le modèle est hétéroscédastique, sa qualité est moindre pour les valeurs les plus élevées. Le modèle a tendance à sous-estimer ces valeurs.
 
 ## Normalité des résidus (modèle linéaire) {.smaller}
 
@@ -1230,7 +1249,7 @@ hist(model_lineaire$residuals, breaks = 100, main = "Histogramme des résidus", 
 ```
 <details>
   <summary>Analyse de la normalité</summary>
-La distribution des résidus présente une sureprésentation des valeurs fortes par rapport à la normale, soit une dissymétrie à droite.
+La distribution des résidus présente une sureprésentation des valeurs fortes par rapport à une distribution normale, soit une dissymétrie à droite. Les valeurs les plus élevées sont moins bien ajustées par le modèle.
 </details>
 
 ## Régression linéaire multiple
@@ -1240,8 +1259,8 @@ Plusieurs variables explicatives pour une variable expliquée.
 ```{r, echo=TRUE, collapse=FALSE, out.height= 1}
 # multiple linear regression with two variables
 model_multiple <- lm(largeur_mouillee_qb_m ~ debit_plein_bord_m3_s + 
-                       vitesse_moyenne_qb_m_s + d50_mm + 
-                       nombre_transect, data = carhyce_stat)
+                       d50_mm + nombre_transect, 
+                     data = carhyce_stat)
 # equation
 print(paste0("y = ", round(coef(model_multiple)[1], 2), " + ", 
                 round(coef(model_multiple)[2], 2), "x1 + ", 
@@ -1263,9 +1282,9 @@ summary(model_multiple)
 
 <details>
   <summary>Interprétation</summary>
-- Le débit, la vitesse, la granulométrie et le nombre de transect expliquent 56% de la variation de la largeur mouillée.
-- Les variables explicatives ont toutes un effet légèrement positif sur la largeur mouillée à l'exception de la vitesse qui a un effet fortement négatif.
-- Les variables ont un effet significatif sur la largeur mouillée sauf le nombre de transect.
+- Les variables explicatives ont toutes un effet positif sur la largeur mouillée. L'ordonnée à l'origine et la coefficient directeur du nombre de transect ne sont pas significatif. Le nombre de transect est certainement à retirer de l'analyse dans ce contexte malgré le fait que la relation globale reste significative.
+- Le débit, la granulométrie et le nombre de transect expliquent 50% de la variation de la largeur mouillée. La granulométrie est certainement un facteur explicatif pertinent mais le débit reste le facteur prédominant entre ces variables.
+- Les résidus ont été faiblement réduits par rapport à la relation linéaire du débit seul.
 </details>
 
 :::
@@ -1287,17 +1306,17 @@ ggstats::ggcoef_model(model_multiple)
 ## Matrice de nuage de points
 
 ```{r, echo=TRUE, collapse=FALSE}
-pairs(carhyce_stat[, c("vitesse_moyenne_qb_m_s", "debit_plein_bord_m3_s", "largeur_mouillee_qb_m", "d50_mm")])
+pairs(carhyce_stat[, c("debit_plein_bord_m3_s", "largeur_mouillee_qb_m", "d50_mm")])
 ```
 
 ## Corrélations croisées
 
 ```{r, echo=TRUE, collapse=FALSE}
-pearson <- cor(carhyce_stat[, c("vitesse_moyenne_qb_m_s", "debit_plein_bord_m3_s", "largeur_mouillee_qb_m", "d50_mm")], method = "pearson")
+pearson <- cor(carhyce_stat[, c("debit_plein_bord_m3_s", "largeur_mouillee_qb_m", "d50_mm")], method = "pearson")
 pearson
 ```
 
-[- Les corrélations linéaire les plus fortes sont entre le débit et la largeur mouillée et entre la vitesse et le débit. Le D50 est peu corrélé avec les autres variables (un peu avec la largeur mouillée). ]{style="font-size: 0.7em;"}
+[- Les corrélations linéaire les plus fortes sont entre le débit et la largeur mouillée. Le D50 est peu corrélé avec les autres variables (un peu avec la largeur mouillée). ]{style="font-size: 0.7em;"}
 
 [- Si on prend la largeur mouillée comme variable expliquée, le débit et le D50 semblent être des variables explicatives intéressantes.]{style="font-size: 0.7em;"}
 
@@ -2379,11 +2398,21 @@ explor::PCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
 
 ## Test de la pente d'une régression linéaire
 
+::: columns
+::: {.column width=70%}
+
 - Hypothèse nulle $H_0$ : la pente est égale à 0 (pas de relation linéaire entre les deux variables)
-- Hypothèse alternative $H_a$ : la pente est différente de 0 (relation linéaire entre les deux variables)
+- Hypothèse alternative $H_1$ : la pente est différente de 0 (relation linéaire entre les deux variables)
 - Test de Student :
 $t = \frac{b_1 - 0}{S(b_1)}$ où $b_1$ est la pente estimée et $S(b_1)$ son écart-type.
 - Le test suit une loi de Student à $n-2$ degrés de liberté.
+
+:::
+::: {.column width=30%}
+
+![](./img/test_pente.webp){width="100%"}
+:::
+:::
 
 # Eléments de calcul
 
