@@ -1440,9 +1440,7 @@ $\mu$ = moyenne de la population, $\bar x$ = moyenne de l'échantillon, $\sigma$
 
 ## Intervalle de confiance de la moyenne (n<30, distribution normale) {.smaller}
 
-- La distribution est normale mais on ne peut plus remplacer l'écart-type de la population $\sigma$ par l'écart-type de l'échantillon $s$. L'écart-type de la population est alors remplacé par le $t$ de Student pour $n-1$ degrés de liberté (df ou degrees of freedom en anglais). 
-
-- Les degrées de liberté sont le nombre de valeurs susceptible de varier dans un calcul statistique. Les observations d'un échantillon peuvent variées d'un échantillon à l'autre, reflétant la variabilité inhérente des données dans la population. Les degrés de liberté sont un concept statistique qui quantifie combien de valeurs peuvent encore varier après que certaines restrictions ont été appliquées. Dans le cas de l'échantillon, si vous connaissez la moyenne $\bar x$, toutes les valeurs de l'échantillon doivent s'ajuster pour que la somme totale des écarts à la moyenne soit nulle. Cela signifie que si n est la taille de l'échantillon, seulement n-1 valeurs peuvent varier indépendamment, la dernière est déterminée par les autres.
+- La distribution est normale mais on ne peut plus remplacer l'écart-type de la population $\sigma$ par l'écart-type de l'échantillon $s$. L'écart-type de la population est alors remplacé par le $t$ de Student pour $n-1$ degrés de liberté (df ou degrees of freedom en anglais). William Sealy Gosset sous le nom de Student puis Ronald Fisher ont démontré que le rapport $t = \frac{\bar x - \mu}{s/\sqrt{n}}$ suit une loi de Student à $n-1$ degrés de liberté.
 
 - L'intervalle de confiance est alors pour $IC_{95\%} = [\bar x-t_{0.975}\frac{s}{\sqrt{n}},\bar x+t_{0.975}\frac{s}{\sqrt{n}}]$. On peut remplacer $t_{0.975}$ par n'importe quelle valeur critique de la loi de Student pour son niveau de confiance associé.
 
@@ -1456,7 +1454,13 @@ t.test(carhyce_stat$largeur_mouillee_qb_m,
 
 ## Intervalle de confiance de la moyenne (n<30, distribution non normale) {.smaller}
 
-- La méthode du bootstrap : on simule d'une manière itérative et inductive une multitude d'échantillons analogues à l'échantillon initial. On calcule la moyenne de chaque échantillon et on obtient la distribution des moyennes. L'intervalle de confiance est alors déterminé par les quantiles de cette distribution.
+- La méthode du bootstrap : on simule d'une manière itérative une multitude d'échantillons analogues à l'échantillon initial. On génère une multitude de pseudo-échantillons à partir de l'échantillon initial (avec remise).
+
+- Exemple : prenons un échantillon $x = [1,2,3,4,5,6,7,8,9]$. Un pseudo-échantillon pourrait être $x_1 = [2,3,3,5,6,7,7,8,9]$ (avec remise => plusieurs 3 et 7).
+
+- On calcule la moyenne de chaque échantillon et on obtient la distribution des moyennes. L'intervalle de confiance est alors déterminé par les quantiles de cette distribution.
+
+## Bootstrap sur une moyenne
 
 ```{r, echo=TRUE, collapse=FALSE}
 # sample 20 values from the population
@@ -1494,20 +1498,22 @@ wilcox.test(carhyce_stat$largeur_mouillee_qb_m, conf.int = TRUE)
 
 ## Test de comparaison des moyennes {.smaller}
 
-Des tests de comparaison de moyennes peuvent être effectués pour tester si les moyennes de deux échantillons sont significativement différentes : 
+Est-ce que les moyennes de deux échantillons sont significativement différentes : 
 
-- Tests paramétriques (distribution normale ou n>30) :
+- Tests paramétriques (distribution normale **ou** n>30) :
 
-  - Test de Student (t-test) : comparaison de moyennes de deux échantillons de variances égales.
-  - Test de Welch : comparaison de moyennes de deux échantillons de variances différentes.
+  - Test de Student (t-test) : deux échantillons de variances égales.
+  - Test de Welch : deux échantillons de variances différentes.
+  
+- Test non paramétrique (distribution non-normale **et** n<30) :
+
+  - Test de Wilcoxon-Mann-Whitney.
   
 Si la distribution est très dissymétrique malgrés un échantillon >30, un test non paramétrique est préférable.
 
-- Tests non paramétriques (distribution non-normale **et** n<30) : test de Wilcoxon-Mann-Whitney.
+Les tests ont des variantes selon l'indépendance des variables. Non-apparié => échantillons indépendants (e.g. comparaison de largeur de cours d'eau entre le bassin du Rhône et de la Loire), apparié => échantillons dépendants (e.g. comparaison de concentration en nitrates avant traitement et après traitement de l'eau au même moment).
 
-Les tests ont des variantes selon l'indépendance des variables (échantillons appariés ou non).
-
-"two.sided", "less", "greater" sont les options pour le test bilatéral, unilatéral inférieur ou unilatéral supérieur selon si l'on souhaite tester si les moyennes sont différentes, si une moyenne est inférieure ou si une moyenne est supérieure.
+*"two.sided", "less", "greater" sont les options pour le test bilatéral, unilatéral inférieur ou unilatéral supérieur selon si l'on souhaite tester si les moyennes sont différentes, si une moyenne est inférieure ou si une moyenne est supérieure.*
 
 ## Choix du test de comparaison des moyennes
 
@@ -1657,7 +1663,7 @@ t.test(carhyce_stat_montagne$d50_mm, carhyce_stat_plaine$d50_mm,
 ```
 <details>
   <summary>Interprétation</summary>
-  [La p-value est inférieure à 0.01, l'hypothèse nulle est rejetée, les moyennes des granulométries des rivières de montagne et de plaine sont significativement différentes avec un risque de se tromper de 1%.]{style="font-size: 0.7em;"}
+  [La p-value est inférieure à 0.01, l'hypothèse nulle est rejetée, les moyennes des granulométries des rivières de montagne et de plaine sont significativement différentes avec (risque $\alpha = 1$%)]{style="font-size: 0.7em;"}
 </details>
 
 ## Petits échantillons ou distributions non normales
@@ -1937,7 +1943,7 @@ print(pca)
 
 ## Centrage et réduction
 
-- Les variables sont sonvent exprimées dans des unités différentes, les effets d'échelles les rendent difficile à comparer.
+- Les variables sont souvent exprimées dans des unités différentes, les effets d'échelles les rendent difficile à comparer.
 
 - On les centre : on soustrait la moyenne de chaque variable à chaque observation.
 
@@ -2413,6 +2419,14 @@ $t = \frac{b_1 - 0}{S(b_1)}$ où $b_1$ est la pente estimée et $S(b_1)$ son éc
 ![](./img/test_pente.webp){width="100%"}
 :::
 :::
+
+## Les degrés de liberté {.smaller}
+
+\
+
+Les degrées de liberté sont le nombre de valeurs susceptible de varier dans un calcul statistique. Les observations d'un échantillon peuvent variées d'un échantillon à l'autre, reflétant la variabilité inhérente des données dans la population. Les degrés de liberté sont un concept statistique qui quantifie combien de valeurs peuvent encore varier après que certaines restrictions ont été appliquées. Dans le cas de l'échantillon, si vous connaissez la moyenne $\bar x$, toutes les valeurs de l'échantillon doivent s'ajuster pour que la somme totale des écarts à la moyenne soit nulle. Cela signifie que si n est la taille de l'échantillon, seulement n-1 valeurs peuvent varier indépendamment, la dernière est déterminée par les autres.
+
+
 
 # Eléments de calcul
 
