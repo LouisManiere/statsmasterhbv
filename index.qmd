@@ -789,8 +789,8 @@ print(contingency_table$t)
 [Effectifs partiels sur effectif total (le total des fréquences = 1) : X% des individus appartiennent aux modalités truc et bidule **ou**  X % des cours d'eau ont une eau de bonne qualité et sont en Normandie **ou** 3.9% des stations on une ripisylve espacée en rive gauche et continue en rive droite]{style="font-size: 0.7em;"}
 
 ```{r, echo=TRUE, collapse=FALSE}
-prop.table(table(carhyce_stat$continuite_ripisylve_rive_gauche, 
-                 carhyce_stat$continuite_ripisylve_rive_droite))*100
+addmargins(prop.table(table(carhyce_stat$continuite_ripisylve_rive_gauche, 
+                 carhyce_stat$continuite_ripisylve_rive_droite))*100)
 # or print(round(contingency_table$prop.tbl, 3))
 ```
 
@@ -799,8 +799,9 @@ prop.table(table(carhyce_stat$continuite_ripisylve_rive_gauche,
 [Effectifs partiels sur effectif marginal (fréquence conditionnelle, le total de chaque ligne = 1) : X% des cours d'eau Normands ont une eau de mauvaise qualité **ou** 14.4% des stations avec une ripisylve espacée en rive gauche ont une ripisylve continue en rive droite]{style="font-size: 0.7em;"}
 
 ```{r, echo=TRUE, collapse=FALSE}
-prop.table(table(carhyce_stat$continuite_ripisylve_rive_gauche, 
-                 carhyce_stat$continuite_ripisylve_rive_droite), margin = 1)*100
+addmargins(prop.table(table(carhyce_stat$continuite_ripisylve_rive_gauche, 
+                 carhyce_stat$continuite_ripisylve_rive_droite), margin = 1)*100, 
+           margin = 2)
 # or print(round(contingency_table$prop.row, 3))
 ```
 
@@ -809,8 +810,9 @@ prop.table(table(carhyce_stat$continuite_ripisylve_rive_gauche,
 [Effectifs partiels sur effectif marginal (fréquence conditionnelle, le total de chaque colonne = 1) : X% des cours d'eau de bonne qualité sont Normands **ou** 8.8% des stations avec une absence de ripisylve en rive droite ont une ripisyle semi-continue en rive gauche]{style="font-size: 0.7em;"}
 
 ```{r, echo=TRUE, collapse=FALSE}
-prop.table(table(carhyce_stat$continuite_ripisylve_rive_gauche, 
-                 carhyce_stat$continuite_ripisylve_rive_droite), margin = 2)*100
+addmargins(prop.table(table(carhyce_stat$continuite_ripisylve_rive_gauche, 
+                 carhyce_stat$continuite_ripisylve_rive_droite), margin = 2)*100, 
+           margin = 1)
 # or print(round(contingency_table$prop.col, 3))
 ```
 :::
@@ -1511,7 +1513,7 @@ Est-ce que les moyennes de deux échantillons sont significativement différente
   
 Si la distribution est très dissymétrique malgrés un échantillon >30, un test non paramétrique est préférable.
 
-Les tests ont des variantes selon l'indépendance des variables. Non-apparié => échantillons indépendants (e.g. comparaison de largeur de cours d'eau entre le bassin du Rhône et de la Loire), apparié => échantillons dépendants (e.g. comparaison de concentration en nitrates avant traitement et après traitement de l'eau au même moment).
+Les tests ont des variantes selon l'indépendance des variables. Non-apparié => échantillons indépendants (e.g. comparaison de largeur de cours d'eau entre le bassin du Rhône et de la Loire), apparié => échantillons dépendants (e.g. comparaison de concentration en nitrates avant traitement et après traitement de l'eau au même moment, comparaison point par point).
 
 *"two.sided", "less", "greater" sont les options pour le test bilatéral, unilatéral inférieur ou unilatéral supérieur selon si l'on souhaite tester si les moyennes sont différentes, si une moyenne est inférieure ou si une moyenne est supérieure.*
 
