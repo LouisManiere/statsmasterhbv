@@ -1,5 +1,5 @@
 ---
-title: "Statistiques et data mining"
+title: "Statistique et data mining"
 subtitle: "Master Hydrosystèmes et Bassins Versants"
 author: "Louis Manière"
 institute: "Université de Tours"
@@ -25,7 +25,7 @@ editor: visual
 
 # Introduction
 
-## Les statistiques
+## La statistique
 
 L'ensemble des méthodes qui ont pour objet la collecte, le traitement et l'interprétation de données d'observation relatives à un groupe d'individus ou d'unités.
 
@@ -2133,11 +2133,11 @@ explor::PCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
 
 ## Classification supervisée vs non supervisée {.smaller}
 
-- **Supervisée** : on connait les classes à l'avance, on cherche à prédire la classe d'un nouvel individu à partir de différentes variables.
-  - Exemple : on a une image satellite et on cherche à identifier les zones urbaines sur la base des valeurs des pixels. On identifie des zones urbains et non urbaines pour entrainer le modèle. On se sert du modèle pour prédire les zones urbaines sur une nouvelle image.
+- **Supervisée** : on connait les classes à l'avance, on cherche à prédire la classe d'un nouvel individu à partir de différentes variables => classification ou catégorisation.
+  - Exemple : on a une image satellite et on cherche à identifier les zones urbaines sur la base des valeurs des pixels. On identifie des zones urbaines et non urbaines pour entrainer le modèle. On se sert du modèle pour prédire les zones urbaines sur une nouvelle image.
   - Méthodes : régression logistique, SVM, arbres de décision, random forest
-- **Non supervisée** : on ne connait pas les classes à l'avance, on cherche à regrouper les individus en fonction de leurs ressemblances.
-  - Exemple : à partir d'une image satellite, on cherche à regrouper les pixels en fonction de leurs valeurs et identifier des zones homogènes que l'on suppose correspondre à des occupations du sol différentes.
+- **Non supervisée** : on ne connait pas les classes à l'avance, on cherche à regrouper les individus en fonction de leurs ressemblances => regroupement ou clustering.
+  - Exemple : à partir d'une image satellite, on cherche à regrouper les pixels en fonction de leurs valeurs et identifier des zones homogènes que l'on suppose correspondre à de même occupation du sol.
   - Méthodes : K-means, CAH
 
 ## Classification ascendante hiérarchique (CAH) {.smaller}
@@ -2217,15 +2217,13 @@ carhyce_stat <- carhyce %>%
   na.omit() # remove NA
 ```
 
-## Normalisation des données {.smaller}
-
-- Toujours avoir une étape de description des données (distribution, qualité, graph de corrélation, etc.).
+## Normalisation des données
 
 - Homogénéisation des données pour éviter les effets d'échelle (unités différentes) et que les variables à forte variance soit prépondérante dans les résultats.
 
-Transformation de Milligan & Cooper (utilisée pour la suite, donne une meilleur découverte de cluster)
+Transformation par l'étendue (cf. diapo standardisation)
+
 ```{r, echo=TRUE, collapse=FALSE}
-# Milligan & Cooper transformation function
 normalize_MC <- function(x) {
   return ((x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE)))
 }
@@ -2243,11 +2241,12 @@ carhyce_stat_z <- scale(carhyce_stat, center = TRUE, scale = TRUE)
 
 ## La matrice de distance
 
-Calul de la distance entre chaque individu.
-
-- Plusieurs méthode de calcul de distance : 
-  - **Variables quantitative** : euclidienne, manhattan
-  - **Avec des variables qualitatives** : Gower, $\phi^2$ (utilisé dans les analyses de correspondance multiples ou ACM)
+- Plusieurs méthode de calcul de distance entre les individus : 
+  - **Variables quantitatives** :
+    - Euclidienne : adaptée aux données continues, sensible aux valeurs extrêmes, cluster "sphérique".
+    - Manhattan : adaptée aux données discrètes, moins sensible aux valeurs extrêmes, cluster "rectangulaire".  
+  - **Variables qualitatives** : $\phi^2$
+  - **Variables quantitatives et qualitatives** : distance de Gower
 
 ```{r, echo=TRUE, collapse=FALSE}
 # Euclidean distance
@@ -2291,15 +2290,16 @@ Illustration reprise de : Data Mining et Statistique décisionnelle (2017), Sté
 
 ```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
 v <- sort(hc$height,decreasing=T)
-plot(1:length(v),v,type = "s", xlab = "Nombre de classes", ylab = "Inertie", xlim = c(0, 30),
-     xaxt = "n")
+plot(1:length(v),v,type = "s", xlab = "Nombre de classes", ylab = "Inertie", 
+     xlim = c(0, 30), xaxt = "n")
 axis(1, at = seq(1, 30, by = 1), las=2)
 ```
 
 ## Découper les classes
 
 ```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
-plot(hc, labels = FALSE, main = "Partition en 2, 5 ou 7 classes", xlab = "", ylab = "", sub = "", axes = FALSE, hang = -1)
+plot(hc, labels = FALSE, main = "Partition en 2, 5 ou 7 classes", xlab = "", ylab = "", 
+     sub = "", axes = FALSE, hang = -1)
 rect.hclust(hc, 2, border = "green3")
 rect.hclust(hc, 4, border = "red3")
 rect.hclust(hc, 7, border = "blue3")
@@ -2354,7 +2354,7 @@ carhyce_stat_sf <- carhyce_stat %>%
   st_as_sf(coords = c("x", "y")) # convert to sf object
 st_crs(carhyce_stat_sf) <- 2154 # set projection
 tm_shape(carhyce_stat_sf) + # tmap object
-  tm_dots(col = "group", size = 0.1, palette = "Set1") + # plot points
+  tm_dots(col = "group", size = 2, palette = "Set1") + # plot points
   tm_layout(legend.position = c("right", "top")) # legend position
 ```
 ## Répartition spatiale des classes - Code
@@ -2402,6 +2402,7 @@ explor::PCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
     opacity_var = NULL, point_size = 64, ellipses = TRUE, transitions = TRUE,
     labels_positions = NULL, xlim = c(-6.76, 11.9), ylim = c(-8.72, 9.95))
 ```
+
 # Un peu de détails
 
 ## Test de la pente d'une régression linéaire
@@ -2428,6 +2429,206 @@ $t = \frac{b_1 - 0}{S(b_1)}$ où $b_1$ est la pente estimée et $S(b_1)$ son éc
 
 Les degrées de liberté sont le nombre de valeurs susceptible de varier dans un calcul statistique. Les observations d'un échantillon peuvent variées d'un échantillon à l'autre, reflétant la variabilité inhérente des données dans la population. Les degrés de liberté sont un concept statistique qui quantifie combien de valeurs peuvent encore varier après que certaines restrictions ont été appliquées. Dans le cas de l'échantillon, si vous connaissez la moyenne $\bar x$, toutes les valeurs de l'échantillon doivent s'ajuster pour que la somme totale des écarts à la moyenne soit nulle. Cela signifie que si n est la taille de l'échantillon, seulement n-1 valeurs peuvent varier indépendamment, la dernière est déterminée par les autres.
 
+## La standardisation z-score {.smaller}
+
+\
+
+- La standardisation z-score est une technique de transformation des données qui consiste à centrer et réduire les variables $x' = \frac{x - \bar{x}}{s}$ :
+  - Centrage : soustraire la moyenne de chaque variable à chaque observation.
+  - Réduction : diviser par l'écart-type de chaque variable.
+
+- On obtient des variables centrées-réduites, qui ont une moyenne nulle et une variance égale à 1.
+
+- La standardisation est particulièrement utile lorsque les variables sont mesurées sur des échelles différentes ou ont des unités différentes. Elle permet de comparer les variables entre elles et d'éviter que les variables à forte variance ne dominent les résultats des analyses statistiques.
+
+## La standardisation z-score - Exemple {.smaller}
+
+- J'ai des choux dont le poids moyen est de 500g avec un écart-type de 100g et des carottes dont lea taille moyenne est de 30cm avec un écart-type de 5cm.
+
+- Je prends un choux de 600g et une carotte de 40cm. Je veux les comparer... est-ce que c'est plus improbable d'avoir un choux de 600g ou une carotte de 40cm ? 🤔
+
+- Je centre mes choux et mes carottes : mon choux est plus lourd de 100g que la moyenne des choux, ma carottes est plus grande de 10cm que la moyenne des carottes.
+Si je réduis en divisant par leur écart-type. L'écart-type devient mon unité de référence, une valeur de 1,7 signifie que ma valeur a 1,7 écart-type (mais sans unité). 
+
+- Mon choux a alors une valeur de 1 écart-type et ma carotte une valeur de 2 écart-types. Ma carotte de 40cm est alors bien plus improbable (<5% de probabilité) à avoir que mon choux de 600g. Nous avons donc pu comparer une variable de poids et une variable de distance malgré la différence d'unité et d'ordre de grandeur.
+
+::: aside
+ℹ️ Cette analogie a été inspirée d'un cours de Jérôme Pagès (Math Agrocampus Ouest), [disponible en ligne et à visionner pour une explication plus détaillée](https://www.youtube.com/watch?v=JNHwdqwgXkc){target="_blank"}
+:::
+
+## Autres méthodes de standardisation {.smaller}
+
+\
+
+- Les autres méthodes de standardisation ont toutes pour objectifs de pourvoir comparer des variables différentes en évitant les effets d'échelle.
+- Comme autre méthodes, on peut citer :
+  - La division des valeurs par la valeur maximale de la variable, $x' = \frac{x}{\text{max}(x)}$.
+  - La division des valeurs par la somme des observations, $x' = \frac{x}{\sum x}$.
+  - La standardisation par l'étendue avec $x' = \frac{x - \text{min}(x)}{\text{max}(x) - \text{min}(x)}$ ou $x' = \frac{x}{\text{max}(x) - \text{min}(x)}$
+  
+Milligan & Cooper[^5] dans le contexte de classification hiérarchique mettent en avant les standardisations par l'étendue dans la séparation de cluster, meilleure que le z-score.
+
+[^5]: Milligan, G.W., Cooper, M.C. A study of standardization of variables in cluster analysis. Journal of Classification 5, 181–204 (1988). [https://doi.org/10.1007/BF01897163](https://doi.org/10.1007/BF01897163)
+
+## Distance euclidienne vs distance de Manhattan {.smaller}
+
+::: columns
+::: {.column width=60%}
+
+- **Distance euclidienne** : la distance "à vol d'oiseau" entre deux points dans un espace multidimensionnel. C'est la racine carrée de la somme des carrés des différences entre les coordonnées des deux points.
+  - Formule : $d(p, q) = \sqrt{\sum_{i=1}^{n} (p_i - q_i)^2}$
+- **Distance de Manhattan** : la distance totale parcourue pour aller d'un point à un autre en suivant un chemin en forme de grille (comme les rues d'une ville). C'est la somme des valeurs absolues des différences entre les coordonnées des deux points.
+  - Formule : $d(p, q) = \sum_{i=1}^{n} |p_i - q_i|$
+  
+:::
+::: {.column width=40%}
+
+\
+
+![](./img/distance.webp){width="70%" fig-align="center"}
+
+:::
+:::
+
+## Distance de Gower {.smaller}
+
+- Utilisée pour des données mixtes (quantitatives, qualitatives et binaires).
+- La distance de Gower varie entre 0 (individus identiques) et 1 (totalement différents).  Il se calcul à partir de l'indice de similarité de Gower[^6] $S_g$ : $D_g=1-S_g$ avec $S_g(i,j)=\frac{\sum_{k=1}^{p} w_k \, \delta_{ij}^{(k)} \, s_{ij}^{(k)}}{\sum_{k=1}^{p} w_k \, \delta_{ij}^{(k)}}$ où :
+
+  - $p$ : le nombre total de variables,
+  - $w_k$ : le poids attribué à la variable k (souvent égal à 1),
+  - $\delta_{ij}^{(k)}$ : un indicateur de validité qui vaut 1 si les deux individus i et j ont des valeurs non manquantes pour la variable k, sinon  0,
+  - $s_{ij}^{(k)}$ est la mesure de similarité pour la variable k entre les individus i et j
+
+- En version simplifiée sans $w_k$ et $\delta_{ij}^{(k)}$ : $D_g(i,j)=1-(\frac{\sum_{k=1}^{p}s_{ij}^{k}}{p})$
+
+[^6]: Gower, J. C. (1971). A general coefficient of similarity and some of its properties. Biometrics, 27(4), 857-871. [https://doi.org/10.2307/2528823](https://doi.org/10.2307/2528823)
+  
+## Indice de similarité de Gower 
+
+- La mesure de similarité $s_{ij}^{(k)}$ dépend donc du type de variable :
+    - Pour une variable quantitative : $s_{ij}^{(k)} = 1 - \frac{|x_{ik} - x_{jk}|}{\text{max}_k - \text{min}_k}$
+    - Pour une variable qualitative : $s_{ij}^{(k)} = 1$ si $x_{ik} = x_{jk}$, sinon $s_{ij}^{(k)} = 0$
+    - Pour une variable binaire (e.g. TRUE/FALSE), la variable peut être traitée comme symétrique et la similarité est calculée comme une variable qualitative, elle peut être traitée comme une variable assymétrique et la modalité jointe absence/absence (ou FALSE/FALSE) du calcul est ignorée.
+
+## Distance de Gower - Exemple {.smaller}
+
+::: columns
+::: {.column width=50%}
+
+```{r, echo=TRUE, collapse=FALSE}
+df <- data.frame(
+  Taille = c(160, 170, 165),
+  Couleur = as.factor(c("Rouge", "Bleu", "Rouge")),
+  Plumes = as.factor(c(FALSE, TRUE, FALSE)) # binary variable to symetric variable
+)
+df
+```
+
+:::
+::: {.column width=50%}
+
+```{r, echo=TRUE, collapse=FALSE}
+# Gower distance
+gower_dist <- cluster::daisy(df, metric = "gower")
+print(gower_dist)
+# distance matrix
+as.matrix(gower_dist)
+```
+
+:::
+:::
+
+- $D_g(1,2) = 1$ : Dissimilarité totale entre l'individu 1 et 2
+- $D_g(1,3) = 0.17$ : Forte similarité entre l'individu 1 et 3
+- $D_g(2,3) = 0.83$ : Forte dissimilarité entre l'individu 2 et 3
+
+## Distance du Chi² - Les tontons {.smaller}
+
+- Comment mesurer la dissimilarité entre plusieurs individus décrits par des variables qualitatives (catégorielles) ?
+
+```{r, echo=TRUE, collapse=FALSE}
+df <- data.frame(Sexe = c("H", "H", "H", "H", "H"),
+                 Age = c("Âgé", "Jeune", "Âgé", "Âgé", "Jeune"),
+                 Profession = c("Truand", "Étudiant", "Truand", "Truand", "Truand"),
+                 row.names = c("Fernand", "Antoine", "Raoul", "Folace", "Jean"))
+df[] <- lapply(df, factor) # convert to factor
+df
+```
+
+## Distance du Chi² - Tableau disjonctif {.smaller}
+
+- On code les variables qualitatives en indicatrices binaires (0/1) pour chaque modalité de chaque variable sous la forme d'un tableau disjonctif complet. Une forme de tableau de contingence binaire.
+
+```{r, echo=TRUE, collapse=FALSE}
+x <- FactoMineR::tab.disjonctif(df)
+data.frame(x)
+```
+
+## Distance du Chi² - Les fréquences totales des modalités {.smaller}
+
+::: columns
+::: {.column width=60%}
+
+- On souhaite mesurer la "distance", ou le degré de dissimilarité, entre Fernand et Antoine.
+
+- La distance euclidienne n'est pas adaptée car elle ne prend pas en compte la fréquence des modalités dans l'ensemble des individus. En effet, plus un évènement est rare plus une petite différence est importante. Ce qui distingue surtout Antoine des autres tontons est qu'il est étudiant. Le $\chi^2$ pondère ainsi la distance par la fréquence des modalités.
+
+- Nous avons 5 individus et 3 variables, donc 15 réponses au total. Avec le tableau précédent, on peut calculer la fréquence de chaque modalité sur la totalité des réponses. Exemple : 3 individus sont agés sur les 15 réponse, $3/15 = 0.2$. Les étudiants sont très rare avec 6.7% des réponses.
+
+:::
+::: {.column width=40%}
+
+```{r, echo=TRUE, collapse=FALSE}
+data.frame(freq = round(colSums(x)/15, 3))
+```
+
+:::
+:::
+
+## Distance du Chi² - Les fréquences partielles en lignes
+
+- Il faut établir les profils de Fernand et Antoine, c'est-à-dire la proportion de chaque modalité dans l'ensemble des réponses pour chaque individu ou la fréquence partielle en ligne du tableau disjonctif complet (le total égal 1).
+
+```{r, echo=TRUE, collapse=FALSE}
+data.frame(
+  rbind(round(x["Fernand", ] / 3, 3), round(x["Antoine", ] / 3, 3)),
+  row.names = c("Fernand", "Antoine"))
+```
+## Distance du Chi² - Calcul {.smaller}
+
+- La formule de la distance du Chi² entre deux individus i et j est définie comme :
+$D^2_{\chi^2}(i,j) = \sum_{k=1}^{p} \frac{(x_{ik} - x_{jk})^2}{f_k}$ où :
+  - $p$ : le nombre total de variables qualitatives,
+  - $x_{ik}$ et $x_{jk}$ : proportion des individus i et j pour la modalité k,
+  - $f_k$ : la fréquence total de la modalité k dans l'ensemble des individus.
+
+- Pour Fernand et Antoine, nous avons :
+$D^2_{\chi^2}(Fernand, Antoine) = \frac{(0.333 - 0.333)^2}{0.333} + \frac{(0.333 - 0)^2}{0.20} + \frac{(0 - 0.333)^2}{0.133} + \frac{(0 - 0.333)^2}{0.067} + \frac{(0.333 - 0)^2}{0.267}$
+
+```{r, echo=TRUE, collapse=FALSE}
+D2_chi2 <- ((0.333 - 0.333)^2 / 0.333) + ((0.333 - 0)^2 / 0.2) + 
+  ((0 - 0.333)^2 / 0.133) + ((0 - 0.333)^2 / 0.067) + ((0.333 - 0)^2 / 0.267)
+data.frame(D2_chi2 = round(D2_chi2, 2),
+           D_chi2 = sqrt(D2_chi2),
+           row.names = "Fernand vs Antoine")
+```
+
+## Distance du Chi² - Calcul R avec FactoMineR
+
+```{r, echo=TRUE, collapse=FALSE}
+library(FactoMineR)
+res.ca <- CA(x, graph = FALSE)
+coords <- res.ca$row$coord
+D_ca <- as.matrix(dist(coords))
+data.frame(round(D_ca, 3))
+```
+
+## Distance du Φ²
+
+- La distance du Φ² reprend la distance du $\chi^2$ que l'on divise par le nombre d'individus. Ainsi $D_{\phi^2} = D_{\chi^2}/n$.
+
+- Le $\chi^2$ est une quantité totale d'écart entre deux distribution, plus il y a d'observations plus il y a de potentiel d'écarts cumulés. Le Φ² normalise ou met à l'échelle permettant de comparer plusieurs tableaux ou sous-population comme pour des méthodes de classification (cf. CAH) pour ne pas donner plus de poids aux groupes plus grands. La distance du $\chi^2$ est privilégiée dans les analyses de correspondances (AFC, ACM).
 
 
 # Eléments de calcul
