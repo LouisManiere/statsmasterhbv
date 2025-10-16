@@ -1,5 +1,5 @@
 ---
-title: "Statistique et data mining"
+title: "Statistiques et data mining"
 subtitle: "Master Hydrosystèmes et Bassins Versants"
 author: "Louis Manière"
 institute: "Université de Tours"
@@ -2354,9 +2354,10 @@ carhyce_stat_sf <- carhyce_stat %>%
   st_as_sf(coords = c("x", "y")) # convert to sf object
 st_crs(carhyce_stat_sf) <- 2154 # set projection
 tm_shape(carhyce_stat_sf) + # tmap object
-  tm_dots(col = "group", size = 2, palette = "Set1") + # plot points
+  tm_dots(col = "group", size = 1, palette = "Set1") + # plot points
   tm_layout(legend.position = c("right", "top")) # legend position
 ```
+
 ## Répartition spatiale des classes - Code
 
 ```{r, echo=FALSE, collapse=FALSE, fig.align='center', warning=FALSE, message=FALSE, fig.height=6, fig.width=12}
@@ -2369,7 +2370,7 @@ carhyce_stat_sf <- carhyce_stat %>%
   st_as_sf(coords = c("x", "y")) # convert to sf object
 st_crs(carhyce_stat_sf) <- 2154 # set projection
 tm_shape(carhyce_stat_sf) + # tmap object
-  tm_dots(col = "group", size = 0.1, palette = "Set1") + # plot points
+  tm_dots(col = "group", size = 1, palette = "Set1") + # plot points
   tm_layout(legend.position = c("right", "top")) # legend position
 ```
 
@@ -2423,6 +2424,33 @@ $t = \frac{b_1 - 0}{S(b_1)}$ où $b_1$ est la pente estimée et $S(b_1)$ son éc
 :::
 :::
 
+## Les degrés de liberté - tableau de contingence {.smaller}
+
+::: columns
+::: {.column width=50%}
+
+- Lors d'une test du Khi2 sur un tableau de contingence nous cherchons les effectifs arrendus si les deux variables qualitatives sont indépendantes mais en respectant les effectifs marginaux en lignes en colonnes.
+
+- Le nombre de degrés de liberté est le nombre de valeurs qui peuvent varier librement dans le calcul des effectifs attendus. Des valeurs peuvent variées puis le reste des effectifs est sous contrainte des totaux, comme une grille de Sudoku.
+
+:::
+::: {.column width=50%}
+
+```{r, echo=FALSE, collapse=FALSE}
+tab <- data.frame(
+  A = c(NA, NA, NA, 12),
+  B = c(NA, NA, NA, 85),
+  Totaux = c(52, 23, 22, 97)
+)
+rownames(tab) <- c("X", "Y", "Z", "Totaux")
+tab
+
+```
+
+:::
+:::
+
+
 ## Les degrés de liberté {.smaller}
 
 \
@@ -2466,9 +2494,9 @@ Si je réduis en divisant par leur écart-type. L'écart-type devient mon unité
   - La division des valeurs par la somme des observations, $x' = \frac{x}{\sum x}$.
   - La standardisation par l'étendue avec $x' = \frac{x - \text{min}(x)}{\text{max}(x) - \text{min}(x)}$ ou $x' = \frac{x}{\text{max}(x) - \text{min}(x)}$
   
-Milligan & Cooper[^5] dans le contexte de classification hiérarchique mettent en avant les standardisations par l'étendue dans la séparation de cluster, meilleure que le z-score.
+Milligan & Cooper[^6] dans le contexte de classification hiérarchique mettent en avant les standardisations par l'étendue dans la séparation de cluster, meilleure que le z-score.
 
-[^5]: Milligan, G.W., Cooper, M.C. A study of standardization of variables in cluster analysis. Journal of Classification 5, 181–204 (1988). [https://doi.org/10.1007/BF01897163](https://doi.org/10.1007/BF01897163)
+[^6]: Milligan, G.W., Cooper, M.C. A study of standardization of variables in cluster analysis. Journal of Classification 5, 181–204 (1988). [https://doi.org/10.1007/BF01897163](https://doi.org/10.1007/BF01897163)
 
 ## Distance euclidienne vs distance de Manhattan {.smaller}
 
@@ -2493,7 +2521,7 @@ Milligan & Cooper[^5] dans le contexte de classification hiérarchique mettent e
 ## Distance de Gower {.smaller}
 
 - Utilisée pour des données mixtes (quantitatives, qualitatives et binaires).
-- La distance de Gower varie entre 0 (individus identiques) et 1 (totalement différents).  Il se calcul à partir de l'indice de similarité de Gower[^6] $S_g$ : $D_g=1-S_g$ avec $S_g(i,j)=\frac{\sum_{k=1}^{p} w_k \, \delta_{ij}^{(k)} \, s_{ij}^{(k)}}{\sum_{k=1}^{p} w_k \, \delta_{ij}^{(k)}}$ où :
+- La distance de Gower varie entre 0 (individus identiques) et 1 (totalement différents).  Il se calcul à partir de l'indice de similarité de Gower[^7] $S_g$ : $D_g=1-S_g$ avec $S_g(i,j)=\frac{\sum_{k=1}^{p} w_k \, \delta_{ij}^{(k)} \, s_{ij}^{(k)}}{\sum_{k=1}^{p} w_k \, \delta_{ij}^{(k)}}$ où :
 
   - $p$ : le nombre total de variables,
   - $w_k$ : le poids attribué à la variable k (souvent égal à 1),
@@ -2502,7 +2530,7 @@ Milligan & Cooper[^5] dans le contexte de classification hiérarchique mettent e
 
 - En version simplifiée sans $w_k$ et $\delta_{ij}^{(k)}$ : $D_g(i,j)=1-(\frac{\sum_{k=1}^{p}s_{ij}^{k}}{p})$
 
-[^6]: Gower, J. C. (1971). A general coefficient of similarity and some of its properties. Biometrics, 27(4), 857-871. [https://doi.org/10.2307/2528823](https://doi.org/10.2307/2528823)
+[^7]: Gower, J. C. (1971). A general coefficient of similarity and some of its properties. Biometrics, 27(4), 857-871. [https://doi.org/10.2307/2528823](https://doi.org/10.2307/2528823)
   
 ## Indice de similarité de Gower 
 
