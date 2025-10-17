@@ -2143,12 +2143,25 @@ explor::PCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
 ## Classification ascendante hiérarchique (CAH) {.smaller}
 
 - Une méthode non supervisée qui permet de regrouper des individus en fonction de leurs ressemblances.
-- On cherche à ce que les individus regroupés au sein d’une même classe (homogénéité intra-classe) soient le plus semblables possibles tandis que les classes soient le plus dissemblables (hétérogénéité inter-classe).
-- La ressemblance ou la dissemblance entre les individus est mesurée à l'aide d'une matrice distances entre chaque individus pris deux à deux. Plus la distance est faible, plus les individus sont semblables.
+- On cherche à ce que les individus regroupés au sein d’une même classe (inertie intra-classe) soient le plus semblables possibles tandis que les classes soient le plus dissemblables (inertie inter-classe) => on souhaite à minimiser la variance intra-classe et maximiser la variance inter-classe.
+- La ressemblance ou la dissemblance entre les individus est mesurée à l'aide d'une matrice de distances entre chaque individu pris deux à deux. Plus la distance est faible, plus les individus sont semblables.
 - La CAH part des individus (ascendante) et les regroupe progressivement en classes de plus en plus grandes (hiérarchique) => dendrogramme.
 
 ::: aside
 Voir [le guide de Joseph Larmarange IRD, 2024](https://larmarange.github.io/guide-R/analyses_avancees/classification-ascendante-hierarchique.html){target="_blank"} ou [Analyse-R](https://larmarange.github.io/analyse-R/classification-ascendante-hierarchique.html){target="_blank"}
+:::
+
+## Inertie ? {.smaller}
+
+- Une mesure de la dispersion des individus dans un espace multidimensionnel :
+  - L'inertie intra-classe est la distance des individus d'une même classe par rapport à son centre de gravité (rapporté au nombre d'individus).
+  - L'inertie inter-classe est la distance entre les centres de gravité des différentes classes et le centre de gravité des classes (rapporté au nombre de classes).
+
+
+![](./img/inertie_classification.webp){width="60%" fig-align="center"}
+
+::: aside
+Illustration modifiée de : Data Mining et Statistique décisionnelle (2017), Stéphane Tufféry, Editions Technip (p. 305)
 :::
 
 ## Principes de la CAH
@@ -2168,6 +2181,12 @@ Voir [le guide de Joseph Larmarange IRD, 2024](https://larmarange.github.io/guid
 ![](./img/cah_step6.webp){.fragment fragment-index="6" .fade-in-then-out style="position: absolute; top: 10%; left: 0; width: 100%;"}
 ![](./img/cah_step7.webp){.fragment fragment-index="7" .fade-in-then-out style="position: absolute; top: 10%; left: 0; width: 100%;"}
 ![](./img/cah_step8.webp){.fragment fragment-index="8" .fade-in-then-out style="position: absolute; top: 10%; left: 0; width: 100%;"}
+![](./img/cah_step9.webp){.fragment fragment-index="9" .fade-in-then-out style="position: absolute; top: 10%; left: 0; width: 100%;"}
+![](./img/cah_step10.webp){.fragment fragment-index="10" .fade-in-then-out style="position: absolute; top: 10%; left: 0; width: 100%;"}
+![](./img/cah_step11.webp){.fragment fragment-index="11" .fade-in-then-out style="position: absolute; top: 10%; left: 0; width: 100%;"}
+![](./img/cah_step12.webp){.fragment fragment-index="12" .fade-in-then-out style="position: absolute; top: 10%; left: 0; width: 100%;"}
+![](./img/cah_step13.webp){.fragment fragment-index="13" .fade-in-then-out style="position: absolute; top: 10%; left: 0; width: 100%;"}
+
 :::
 
 
@@ -2217,7 +2236,7 @@ carhyce_stat <- carhyce %>%
   na.omit() # remove NA
 ```
 
-## Normalisation des données
+## Standardisation des données
 
 - Homogénéisation des données pour éviter les effets d'échelle (unités différentes) et que les variables à forte variance soit prépondérante dans les résultats.
 
@@ -2253,15 +2272,60 @@ carhyce_stat_z <- scale(carhyce_stat, center = TRUE, scale = TRUE)
 dist_euclid <- dist(carhyce_stat_mc, method = "euclidean")
 ```
 
-## Méthode d'aggrégation {.smaller}
+## Méthode d'agrégation {.smaller}
+
+::: columns
+::: {.column width="50%"}
 
 Comment regrouper des classes entres elles ou calculer la distance entre deux classes ?
 
 - **Saut maximum (ou complete linkage)** : distance maximum entre deux individus de deux classes. Tend à créer des classes de diamètre équivalent, sensible aux individus hors normes.
+
+![](./img/ag_min.webp){width="100%"}
+
+::: 
+::: {.column width="50%"}
+
+![](./img/ag_max.webp){width="100%"}
+
 - **Saut minimum (ou single linkage)** : distance minimum entre deux individus de deux classes. Permet de traiter des formes allongées mais peut avoir des effets de chaîne et regrouper deux classes éloignées reliées par une chaîne d'individus.
+
+:::
+:::
+
+## Méthode d'agrégation (suite) {.smaller}
+
+::: columns
+::: {.column width="50%"}
+
 - **Distance moyenne (ou average linkage)** : moyenne des distances entre tous les individus de deux classes. Moins sensible aux bruits, tend à créer des classes de même variance.
+
+![](./img/ag_bary.webp){width="100%"}
+
+:::
+::: {.column width="50%"}
+
+![](./img/ag_moyenne.webp){width="100%"}
+
 - **Distance des barycentre (ou centroid linkage)** : distance entre les barycentres des deux classes. Peu sensible au bruit mais moins précise.
- - **Distance de Ward** : minimise l'inertie (ou  la variance) intra-classe ou  maximise l'intertie inter-classe (différences entre les classes). Une méthode très utilisée, peu sensible aux bruits et aux valeurs extrêmes, tend à créer des classes sphériques et de même effectifs.
+
+:::
+:::
+
+## Méthode d'agrégation (suite et fin) {.smaller}
+
+::: columns
+::: {.column width="50%"}
+
+ - **Distance de Ward** : minimise l'inertie intra-classe ou  maximise l'intertie inter-classe. Une méthode généralement la meilleure pour des données quantitatives continues, peu sensible aux bruits et aux valeurs extrêmes, tend à créer des classes sphériques et de même effectifs.
+
+:::
+::: {.column width="50%"}
+
+![](./img/ag_ward.webp){width="100%"}
+
+:::
+:::
  
 ::: aside
  Pour aller plus loin, voir Data Mining et Statistique décisionnelle (2017), Stéphane Tufféry, Editions Technip et l'article Hierarchical Clustering de Fatih Karabiber sur [https://www.learndatasci.com](https://www.learndatasci.com/glossary/hierarchical-clustering/){target="_blank"}
@@ -2272,21 +2336,15 @@ Comment regrouper des classes entres elles ou calculer la distance entre deux cl
 ```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
 # Ward method
 hc <- hclust(dist_euclid, method = "ward.D2")
+
 # Dendrogram
 plot(hc, hang = -1, cex = 0.6, main = "Dendrogramme CAH", label=FALSE)
 ```
-## Nombre de classes {.smaller}
 
-- Evaluation graphique sur le dendrogramme.
-- Représentation des pertes d'inertie inter-classe (mesure la séparation entre chaque classe). Plus le saut est grand plus la distance entre les clusters fusionnés est grande.
-
-![](./img/inertie_classification.webp){width="70%" fig-align="center"}
-
-::: aside
-Illustration reprise de : Data Mining et Statistique décisionnelle (2017), Stéphane Tufféry, Editions Technip (p. 305)
-:::
 
 ## Nombre de classes - Inertie
+
+Intertie => intertie intra-classe (dispersion des individus au sein d'une même classe)
 
 ```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
 v <- sort(hc$height,decreasing=T)
@@ -2471,7 +2529,7 @@ Les degrées de liberté sont le nombre de valeurs susceptible de varier dans un
 
 ## La standardisation z-score - Exemple {.smaller}
 
-- J'ai des choux dont le poids moyen est de 500g avec un écart-type de 100g et des carottes dont lea taille moyenne est de 30cm avec un écart-type de 5cm.
+- J'ai des choux dont le poids moyen est de 500g avec un écart-type de 100g et des carottes dont la taille moyenne est de 30cm avec un écart-type de 5cm.
 
 - Je prends un choux de 600g et une carotte de 40cm. Je veux les comparer... est-ce que c'est plus improbable d'avoir un choux de 600g ou une carotte de 40cm ? 🤔
 
@@ -2657,6 +2715,10 @@ data.frame(round(D_ca, 3))
 - La distance du Φ² reprend la distance du $\chi^2$ que l'on divise par le nombre d'individus. Ainsi $D_{\phi^2} = D_{\chi^2}/n$.
 
 - Le $\chi^2$ est une quantité totale d'écart entre deux distribution, plus il y a d'observations plus il y a de potentiel d'écarts cumulés. Le Φ² normalise ou met à l'échelle permettant de comparer plusieurs tableaux ou sous-population comme pour des méthodes de classification (cf. CAH) pour ne pas donner plus de poids aux groupes plus grands. La distance du $\chi^2$ est privilégiée dans les analyses de correspondances (AFC, ACM).
+
+## Test d'aggrégation CAH
+
+
 
 
 # Eléments de calcul
