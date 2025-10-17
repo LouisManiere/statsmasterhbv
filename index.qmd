@@ -2482,6 +2482,35 @@ $t = \frac{b_1 - 0}{S(b_1)}$ où $b_1$ est la pente estimée et $S(b_1)$ son éc
 :::
 :::
 
+## Les degrés de liberté {.smaller}
+
+- Les degrées de liberté sont le nombre de valeurs susceptible de varier dans un calcul statistique. Les observations d'un échantillon peuvent variées d'un échantillon à l'autre, reflétant la variabilité inhérente des données dans la population. 
+
+- Pour une série de 5 valeurs de moyenne 10 les 4 premières valeurs sont libres mais la cinquième devra systématiquement le nombre qui fera en sorte que la moyenne soit 10.
+
+```{r}
+df <- data.frame(
+  x1 = 3,
+  x2 = 7,
+  x3 = 14,
+  x4 = 12,
+  x5 = NA,
+  moyenne = 10,
+  row.names = "Valeurs"
+)
+df
+```
+
+\
+
+- La dernière valeur ne peut être que 14 pour avoir notre moyenne de 10. 
+
+- Nous avons 4 degrés de liberté.
+
+::: aside
+Je vous conseille le visionnage de la [vidéo de Thierry Ancelle sur le sujet](https://www.youtube.com/watch?v=2n3L4yPrn2Q&t=389s) dont j'ai repris cette explication et la suivante sur les tableaux de contingence
+:::
+
 ## Les degrés de liberté - tableau de contingence {.smaller}
 
 ::: columns
@@ -2493,6 +2522,12 @@ $t = \frac{b_1 - 0}{S(b_1)}$ où $b_1$ est la pente estimée et $S(b_1)$ son éc
 
 :::
 ::: {.column width=50%}
+
+\
+
+<div class="overlay">
+
+::: {.fragment .fade-out}
 
 ```{r, echo=FALSE, collapse=FALSE}
 tab <- data.frame(
@@ -2506,14 +2541,59 @@ tab
 ```
 
 :::
+
+::: {.fragment .fade-in-then-out}
+
+```{r, echo=FALSE, collapse=FALSE}
+tab <- data.frame(
+  A = c(6, NA, NA, 12),
+  B = c(NA, NA, NA, 85),
+  Totaux = c(52, 23, 22, 97)
+)
+rownames(tab) <- c("X", "Y", "Z", "Totaux")
+tab
+
+```
+
 :::
 
+::: {.fragment .fade-in-then-out}
 
-## Les degrés de liberté {.smaller}
+```{r, echo=FALSE, collapse=FALSE}
+tab <- data.frame(
+  A = c(6, NA, NA, 12),
+  B = c(NA, NA, 20, 85),
+  Totaux = c(52, 23, 22, 97)
+)
+rownames(tab) <- c("X", "Y", "Z", "Totaux")
+tab
 
-\
+```
 
-Les degrées de liberté sont le nombre de valeurs susceptible de varier dans un calcul statistique. Les observations d'un échantillon peuvent variées d'un échantillon à l'autre, reflétant la variabilité inhérente des données dans la population. Les degrés de liberté sont un concept statistique qui quantifie combien de valeurs peuvent encore varier après que certaines restrictions ont été appliquées. Dans le cas de l'échantillon, si vous connaissez la moyenne $\bar x$, toutes les valeurs de l'échantillon doivent s'ajuster pour que la somme totale des écarts à la moyenne soit nulle. Cela signifie que si n est la taille de l'échantillon, seulement n-1 valeurs peuvent varier indépendamment, la dernière est déterminée par les autres.
+:::
+
+::: {.fragment}
+
+```{r, echo=FALSE, collapse=FALSE}
+tab <- data.frame(
+  A = c(6, 4, 2, 12),
+  B = c(46, 19, 20, 85),
+  Totaux = c(52, 23, 22, 97)
+)
+rownames(tab) <- c("X", "Y", "Z", "Totaux")
+tab
+
+```
+
+- Seulement deux cases peuvent varier librement, les autres sont sous contraintes. Nous avons donc 2 degrés de liberté.
+
+:::
+
+</div>
+
+:::
+:::
+
 
 ## La standardisation z-score {.smaller}
 
@@ -2715,11 +2795,6 @@ data.frame(round(D_ca, 3))
 - La distance du Φ² reprend la distance du $\chi^2$ que l'on divise par le nombre d'individus. Ainsi $D_{\phi^2} = D_{\chi^2}/n$.
 
 - Le $\chi^2$ est une quantité totale d'écart entre deux distribution, plus il y a d'observations plus il y a de potentiel d'écarts cumulés. Le Φ² normalise ou met à l'échelle permettant de comparer plusieurs tableaux ou sous-population comme pour des méthodes de classification (cf. CAH) pour ne pas donner plus de poids aux groupes plus grands. La distance du $\chi^2$ est privilégiée dans les analyses de correspondances (AFC, ACM).
-
-## Test d'aggrégation CAH
-
-
-
 
 # Eléments de calcul
 

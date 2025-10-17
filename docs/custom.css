@@ -22,3 +22,14 @@
   background-size: 25% !important;
   background-repeat: no-repeat !important;
 }
+.overlay {
+  position: relative;
+  height: 300px; /* ajuste selon la taille du tableau */
+}
+
+.overlay > .fragment {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
