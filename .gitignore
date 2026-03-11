@@ -6,3 +6,5 @@
 /.quarto/
 corr/
 data/
+
+**/*.quarto_ipynb

@@ -980,9 +980,22 @@ ggplot(carhyce_stat, aes(x = factor(continuite_ripisylve_rive_gauche), y = large
 ```
 :::
 
-## Quantitatif VS quantitatif
+## Quantitatif VS quantitatif {.smaller}
 
 La représentation par nuage de point. Où est la variable explicative et la variable expliquée ?
+
+::: panel-tabset
+### Avec plot
+
+```{r, echo=TRUE, collapse=FALSE, fig.align='center', fig.height=4}
+plot(carhyce_stat$debit_plein_bord_m3_s, carhyce_stat$largeur_mouillee_qb_m, 
+     xlab = "Débit de plein bord (m3/s)", ylab = "Largeur mouillée plein bord (m)", 
+     pch = 16, col = "black", cex=0.8)
+# abline(lm(carhyce_stat$largeur_mouillee_qb_m ~ carhyce_stat$debit_plein_bord_m3_s), 
+#        col = "red") # décommenter ces deux lignes pour ajouter la régression linéaire
+```
+
+### Avec ggplot
 
 ```{r, echo=TRUE, collapse=FALSE, fig.align='center', fig.height=4}
 plot <- ggplot(carhyce_stat, aes(x = debit_plein_bord_m3_s, y = largeur_mouillee_qb_m)) +
@@ -992,6 +1005,8 @@ plot <- ggplot(carhyce_stat, aes(x = debit_plein_bord_m3_s, y = largeur_mouillee
   # + geom_smooth(method="lm", col="red") # décommenter cette ligne pour ajouter la régression linéaire
 plot
 ```
+
+:::
 
 ## Régression ?
 
@@ -1509,7 +1524,7 @@ Est-ce que les moyennes de deux échantillons sont significativement différente
   
 - Test non paramétrique (distribution non-normale **et** n<30) :
 
-  - Test de Wilcoxon-Mann-Whitney.
+  - Test de Wilcoxon (apparié) Mann-Whitney (non apparié).
   
 Si la distribution est très dissymétrique malgrés un échantillon >30, un test non paramétrique est préférable.
 
