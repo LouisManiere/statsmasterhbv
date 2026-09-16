@@ -11,7 +11,7 @@ format:
     navigation-mode: vertical
     theme: custom.scss
     logo: "./img/universite-tours-logo.png"
-    footer: "Master 1 Hydrosystèmes et Bassins Versants 2025-2026"
+    footer: "Master 1 Hydrosystèmes et Bassins Versants 2026-2027"
     css: custom.css
     slide-number: true
     show-slide-number: all
@@ -29,8 +29,8 @@ editor: visual
 
 L'ensemble des méthodes qui ont pour objet la collecte, le traitement et l'interprétation de données d'observation relatives à un groupe d'individus ou d'unités.
 
-- Statistique descriptive : Décrire, résumer, visualiser des données.
-- Statistique inférentielle (Inférence statistique) : induire des caractéristiques sur une population à partir d'un échantillon (relation, distribution).
+- Statistiques descriptives : décrire, résumer, visualiser des données.
+- Statistiques inférentielles (inférence statistique) : induire des caractéristiques sur une population à partir d'un échantillon (relation, distribution).
 
 ## Population ou échantillon ?
 
@@ -53,7 +53,7 @@ L'exploration et l'analyse de base de données pour le résumer, détecter des r
 
 - Acquérir des outils de manipulation, description et d'analyse de données.
 
-- Avoir une démarche critique sur les données, les outils statistiques et les résultats obtenus.
+- Avoir une démarche critique sur les données, les outils statistiques utilisés et les résultats obtenus.
 
 ## R et RStudio
 
@@ -229,7 +229,7 @@ print(head(carhyce_stat))
 
 ## Paramètres de position et de dispersion
 
-Calcul des paramètres pour les surfaces de bassins versants des stations CARHYCE.
+Calcul rapide de paramètres pour les surfaces de bassins versants des stations CARHYCE.
 
 ```{r, echo=TRUE, collapse=FALSE}
 summary(carhyce_stat$surface_bv_km2)
@@ -532,9 +532,6 @@ plot_dist(bimodal, "Bimodale")
 
 ## QQ-plot - exemple
 
-::: columns
-::: {.column width="70%"}
-
 ```{r, echo=TRUE, collapse=FALSE}
 # QQ-plot
 ggplot(data = carhyce_stat, mapping = aes(sample = surface_bv_km2)) +
@@ -544,14 +541,6 @@ ggplot(data = carhyce_stat, mapping = aes(sample = surface_bv_km2)) +
   labs(title = "QQ-plot de la surface des bassins versants", x = "Quantiles théoriques", y = "Quantiles observés")
 ```
 
-:::
-::: {.column width="30%"}
-<details>
-<summary>Interprétation</summary>
-  [La courbe montre beaucoup de faibles valeurs (pente faible de -200 à 100) puis peu de valeurs élevées (forte augmentation de la pente de 100 à 400). La distribution montre ainsi une forte dissymétrie à droite]{style="font-size: 0.7em;"}
-</details>
-:::
-:::
 
 ## Tests statistiques ? - Principe {.smaller}
 
@@ -715,6 +704,13 @@ print(skim(carhyce_stat$surface_bv_km2))
 - Utiliser les bons outils selon la nature des variables à comparer.
 - Evaluer le type, l'intensité et le sens d'une relation entre deux variables quantitatives.
 
+## Un peu de vocabulaire
+
+- La **relation** de **dépendance** vs **indépendance** : deux variables sont dépendantes si les variations de l'une influence les variations de l'autre ou que les deux variables varient symétriquement.
+- Deux variables dépendantes : 
+  - Variables qualitatives => **association**
+  - Variables quantitative => **corrélation** => **forme** (linaire, exponentielle...), **sens** (+ ou -), **intensité** 
+
 ## Reprenons nos données
 
 ```{r, echo=TRUE, collapse=FALSE}
@@ -763,7 +759,8 @@ carhyce_stat <- carhyce %>%
 
 ```{r, echo=TRUE, collapse=FALSE}
 # Rbase method contingency table
-tab <- table(carhyce_stat$continuite_ripisylve_rive_gauche, carhyce_stat$continuite_ripisylve_rive_droite)
+tab <- table(carhyce_stat$continuite_ripisylve_rive_gauche, carhyce_stat$continuite_ripisylve_rive_droite,
+             dnn = c("Ripisylve RG", "Ripisylve RD"))
 tab_mag <- addmargins(tab) # margins (effectifs marginaux)
 print(tab_mag)
 ```
@@ -772,8 +769,9 @@ print(tab_mag)
 
 ```{r, echo=TRUE, collapse=FALSE, results='hide'}
 contingency_table <- CrossTable(carhyce_stat$continuite_ripisylve_rive_gauche, 
-                                 carhyce_stat$continuite_ripisylve_rive_droite, 
-                                 prop.chisq = FALSE, prop.t = TRUE, prop.r = TRUE, prop.c = TRUE)
+                                carhyce_stat$continuite_ripisylve_rive_droite,
+                                dnn = c("Ripisylve RG", "Ripisylve RD"),
+                                prop.chisq = FALSE, prop.t = TRUE, prop.r = TRUE, prop.c = TRUE)
 ```
 
 ```{r, echo=TRUE, collapse=FALSE}
@@ -790,7 +788,8 @@ print(contingency_table$t)
 
 ```{r, echo=TRUE, collapse=FALSE}
 addmargins(prop.table(table(carhyce_stat$continuite_ripisylve_rive_gauche, 
-                 carhyce_stat$continuite_ripisylve_rive_droite))*100)
+                 carhyce_stat$continuite_ripisylve_rive_droite,
+                 dnn = c("Ripisylve RG", "Ripisylve RD")))*100)
 # or print(round(contingency_table$prop.tbl, 3))
 ```
 
@@ -800,7 +799,8 @@ addmargins(prop.table(table(carhyce_stat$continuite_ripisylve_rive_gauche,
 
 ```{r, echo=TRUE, collapse=FALSE}
 addmargins(prop.table(table(carhyce_stat$continuite_ripisylve_rive_gauche, 
-                 carhyce_stat$continuite_ripisylve_rive_droite), margin = 1)*100, 
+                 carhyce_stat$continuite_ripisylve_rive_droite,
+                 dnn = c("Ripisylve RG", "Ripisylve RD")), margin = 1)*100, 
            margin = 2)
 # or print(round(contingency_table$prop.row, 3))
 ```
@@ -811,7 +811,8 @@ addmargins(prop.table(table(carhyce_stat$continuite_ripisylve_rive_gauche,
 
 ```{r, echo=TRUE, collapse=FALSE}
 addmargins(prop.table(table(carhyce_stat$continuite_ripisylve_rive_gauche, 
-                 carhyce_stat$continuite_ripisylve_rive_droite), margin = 2)*100, 
+                 carhyce_stat$continuite_ripisylve_rive_droite,
+                 dnn = c("Ripisylve RG", "Ripisylve RD")), margin = 2)*100, 
            margin = 1)
 # or print(round(contingency_table$prop.col, 3))
 ```
@@ -877,9 +878,7 @@ tab_mag
 ```
 - Quelles sont les effectifs joints attendus si les deux variables sont indépendantes ?
 
-- Les effectifs attendus suivent la distribution marginale des variables pour respecter les répartitions totales de chaque variable.
-
-- La formule est le produit des effectifs marginaux divisés par le total des effectifs.
+- Les effectifs attendus suivent la distribution marginale des variables pour respecter les répartitions totales de chaque variable => la formule est le produit des effectifs marginaux divisés par le total des effectifs.
 
 ## Chi2 - calcul des effectifs attendus.
 
@@ -914,8 +913,9 @@ $ddl = (nombre\;de\;lignes - 1) \times (nombre\;de\;colonnes - 1)$
 ### Effectif attendus
 
 ```{r, echo=TRUE, collapse=FALSE}
-# run chi2 test
-chi2_ripisylve <- chisq.test(table(carhyce_stat$continuite_ripisylve_rive_gauche, carhyce_stat$continuite_ripisylve_rive_droite))
+chi2_ripisylve <- chisq.test(table(carhyce_stat$continuite_ripisylve_rive_gauche, 
+                                   carhyce_stat$continuite_ripisylve_rive_droite,
+                                   dnn = c("Ripisylve RG", "Ripisylve RD")))
 print(round(chi2_ripisylve$expected[,1:4], 0))
 ```
 ### $\chi^2$ et dl
@@ -937,7 +937,7 @@ chisq.test(table(carhyce_stat$continuite_ripisylve_rive_gauche,
 
 - La p-value représente la probabilité d'obtenir un résultat aussi extrême que celui observé, dans les conditions de $H_0$.
 
-- Cette situation est très improbable, une probabilité de $2.2e-16$. Même avec un risque $\alpha = 1%$ l'hypothèse nulle aurait été rejetée.
+- Cette situation est très improbable, une probabilité de $2.2e-16$. Même avec un risque $\alpha = 1$% l'hypothèse nulle aurait été rejetée.
 
 ## Qualitatif VS Quantitatif - Discrétisation
 
@@ -950,7 +950,8 @@ carhyce_stat$largeur_mouillee_qb_m_breaks <- cut(carhyce_stat$largeur_mouillee_q
                                                   breaks = largeurs_breaks, 
                                                   include.lowest = TRUE, 
                                                   right = FALSE) # new column with breaks
-tab <- table(carhyce_stat$continuite_ripisylve_rive_gauche, carhyce_stat$largeur_mouillee_qb_m_breaks) # contingency table
+tab <- table(carhyce_stat$continuite_ripisylve_rive_gauche, carhyce_stat$largeur_mouillee_qb_m_breaks,
+             dnn = c("Ripisylve RG", "Largeur mouillée")) # contingency table
 addmargins(tab) # with margins (effectifs marginaux)
 ```
 
@@ -973,7 +974,9 @@ print(summary_table)
 ### Boxplot
 
 ```{r, echo=TRUE, collapse=FALSE, fig.height=3.5}
-ggplot(carhyce_stat, aes(x = factor(continuite_ripisylve_rive_gauche), y = largeur_mouillee_qb_m, fill = factor(continuite_ripisylve_rive_gauche))) +
+ggplot(carhyce_stat, aes(x = factor(continuite_ripisylve_rive_gauche), 
+                         y = largeur_mouillee_qb_m, 
+                         fill = factor(continuite_ripisylve_rive_gauche))) +
   geom_boxplot() +
   labs(x = "Ripisylve rive gauche", y = "Largeur mouillée (m)", fill = "Ripisylve rive gauche") +
   theme_minimal()
@@ -1031,6 +1034,13 @@ plot + geom_smooth(method="lm", col="red", formula = y ~ log(x) + x)
 ```
 :::
 
+## Résidus
+
+Les résidus ($\epsilon$) sont les différences entre les valeurs observées et les valeurs prédites par le modèle. Plus ils sont faibles plus le modèle arrive à correctement représenter les données. La dispersion des résidus autour de zéro est un indicateur de la qualité du modèle. 
+
+![](./img/residuals.webp){fig-align="center"}
+
+
 ## Covariance {.smaller}
 
 **Evalue dans quelle mesure les variations de deux variables sont simultanées ou non.**
@@ -1045,9 +1055,9 @@ plot + geom_smooth(method="lm", col="red", formula = y ~ log(x) + x)
 
 - Davantage un outil qui permet d'effectuer d'autres calculs comme la corrélation de Pearson qu'un indicateur utilisé pour l'interprétation (c'est un peu comme la variance et l'écart type).
 
-## Coefficient de corrélation linéaire de Pearson {.smaller}
+## Coefficient de corrélation linéaire (géométrique) de Pearson {.smaller}
 
-**Evalue le degré de dépendance linéaire entre deux variables quantitatives. Le résultat dépend de la qualité de l'ajustement affine obtenu par une régression linéaire.**
+**Evalue le degré de dépendance linéaire entre deux variables quantitatives ou si les points du nuage sont proches d'une droite. Le résultat dépend de la qualité de l'ajustement affine obtenu par une régression linéaire.**
 
 **Intensité :**
 
@@ -1069,20 +1079,72 @@ plot + geom_smooth(method="lm", col="red", formula = y ~ log(x) + x)
 
 ## Le Quartet d'Anscombe
 
-::: columns
-::: {.column width="60%"}
+```{r, echo=FALSE, fig.align='center'}
+# Données du quartet d'Anscombe
+data(anscombe)
 
-![](./img/quartet_anscombe.png){width="100%" fig-align="center"}
+# Passage au format long
+anscombe_long <- bind_rows(
+  data.frame(x = anscombe$x1, y = anscombe$y1, jeu = "I"),
+  data.frame(x = anscombe$x2, y = anscombe$y2, jeu = "II"),
+  data.frame(x = anscombe$x3, y = anscombe$y3, jeu = "III"),
+  data.frame(x = anscombe$x4, y = anscombe$y4, jeu = "IV")
+)
 
-:::
-::: {.column width="40%"}
+# Calcul des statistiques
+stats <- anscombe_long %>%
+  group_by(jeu) %>%
+  summarise(
+    r = cor(x, y, method = "pearson"),
+    intercept = coef(lm(y ~ x))[1],
+    pente = coef(lm(y ~ x))[2]
+  ) %>%
+  mutate(
+    texte = paste0(
+      "r = ", round(r, 3),
+      "\ny = ", round(intercept, 2),
+      ifelse(pente >= 0, " + ", " - "),
+      round(abs(pente), 2), "x"
+    )
+  )
 
-[- ⚠️ La relation doit être de forme linéaire]{style="font-size:0.7em;"}
+# Position des annotations
+annotations <- anscombe_long %>%
+  group_by(jeu) %>%
+  summarise(
+    x = min(x) + 0.5,
+    y = max(y)
+  ) %>%
+  left_join(stats, by = "jeu")
 
-[- ⚠️ Sensibilité aux valeurs extrêmes]{style="front-size:0.7em;"}
+# Graphique
+# Position fixe des annotations
+annotations <- stats %>%
+  mutate(
+    x = -Inf,
+    y = Inf
+  )
 
-:::
-:::
+ggplot(anscombe_long, aes(x, y)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  facet_wrap(~jeu, ncol = 2) +
+  geom_text(
+    data = annotations,
+    aes(x = x, y = y, label = texte),
+    hjust = -0.1,
+    vjust = 1.1,
+    size = 4,
+    inherit.aes = FALSE
+  ) +
+  theme_bw() +
+  labs(
+    x = "x",
+    y = "y"
+  )
+```
+
+- ⚠️ Sensibilité aux valeurs extrêmes
 
 - Moralité : toujours visualiser les données avant de les analyser ! 🧐
 
@@ -1090,7 +1152,7 @@ plot + geom_smooth(method="lm", col="red", formula = y ~ log(x) + x)
 
 - C'est le coefficient de Pearson appliqué aux rangs des variables.
 
-- Similaire au coefficient de Pearson mais ne suppose pas de relation linéaire entre les variables. Il évalue la relation monotone, qui ont tendance à se déplacer dans la même direction relative, entre deux variables indépendamment de la forme.
+- Similaire au coefficient de Pearson mais ne suppose pas de relation linéaire entre les variables. Il évalue si la relation monotone, qui ont tendance à se déplacer dans la même direction relative, entre deux variables indépendamment de la forme.
 
 - L'interprétation est similaire à celle du coefficient de Pearson.
 
@@ -1109,7 +1171,7 @@ Intérêt de calculer les deux coefficients :
 
 ## Coefficient de détermination
 
-**Le coefficient de détermination détermine le pourcentage de variation de Y imputable à X.**
+**Le coefficient de détermination détermine le pourcentage de variation de Y imputable à X par le modèle, ou bien, la part de la dispersion totale expliquée par le modèle.**
 
 \
 
@@ -1124,13 +1186,6 @@ Par exemple si $R^2 = 0.35$, 35% des variations de la largeur mouillée s'expliq
 \
 
 ℹ️ [Je vous recommande l'explication en vidéo de Tierry Ancelle sur le sujet](https://www.youtube.com/watch?v=XL3ZOuFxW4g){target="_blank"}
-
-## Résidus
-
-Les résidus sont les différences entre les valeurs observées et les valeurs prédites par le modèle. Plus ils sont faibles plus le modèle arrive à correctement représenter les données. La dispersion des résidus autour de zéro est un indicateur de la qualité du modèle. 
-
-![](./img/residuals.webp){fig-align="center"}
-
 
 ## Homosédasticité vs Hétérosédasticité
 
@@ -1153,12 +1208,12 @@ summary(model_lineaire)
 
 :::
 ::: {.column width="50%"}
-- Résidus : différence entre les valeurs observées et les valeurs prédites.
-- Erreur standard des résidus : écart-type des résidus (ou la dispersion autour de la droite)
+- Residuals : différence entre les valeurs observées et les valeurs prédites.
+- Residual standard error : écart-type des résidus (ou la dispersion autour de la droite)
 - Coefficients du modèle avec erreur standard et test de significativité  :
 
   - Intercept : l'ordonnée à l'origine
-  - Variable : la pente
+  - Nom de la variable : la pente
 
 - R-squared : coefficient de détermination
 - R-squared ajusted : R2 ajusté en fonction du nombre de variables explicatives
@@ -2111,7 +2166,7 @@ Nous n'observons pas de groupes de stations bien identifiés sur les axes 1 et 2
 Des variables et/ou individus supplémentaires, non pris en compte dans les calculs, peuvent être ajoutés pour l'interprétation.
 
 ```{r, echo=TRUE, collapse=FALSE}
-pca <- PCA(carhyce_stat, 
+pca <- PCA(as.data.frame(carhyce_stat), 
            quanti.sup = 1, # surface_bv_km2
            quali.sup = c(2,3,4,19), # ripisyle gauche et droite, montagne/plaine
            ncp = Inf, # number of dimensions
@@ -2121,7 +2176,7 @@ pca <- PCA(carhyce_stat,
 Visualisation avec explor (ouvre une application web) : 
 ```{r, echo=TRUE, eval=FALSE}
 # package explor
-# explor(pca)
+explor(pca)
 ```
 ## ACP Explor - Graphique
 
@@ -2479,7 +2534,21 @@ explor::PCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
 
 # Un peu de détails
 
-## Test de la pente d'une régression linéaire
+## Régression linaire géométrique vs mathématique {.smaller}
+
+- Une régression polynomiale n'est pas une droite mais reste une relation linéaire au sens mathématique.
+
+Equation d'une relation linéaire : $y=\beta_0+\beta_1x$. Le coefficient (pente) $\beta_1$ est linéaire, $\beta_1^2$ aurait été non linaire.
+
+\
+
+Equation polynomiale de degré 2 : $y=\beta_0+\beta_1x+\beta_2x2$. Les coefficients $\beta_1$ et $\beta_2$ sont aussi linéaire. La régression est donc mathématiquement linéaire même si ce n'est pas une droite.
+
+\
+
+Le constat est le même pour une régression logarithmique : $y=\beta_0+\beta_1ln(x)$. Mais pas pour une régression exponentielle : $y=\beta_0e^{\beta_1x}$ car $\beta_1$ est dans une exponentielle. 
+
+## Test de la pente d'une régression linéaire (graphique)
 
 ::: columns
 ::: {.column width=70%}
@@ -2487,7 +2556,7 @@ explor::PCA_ind_plot(res, xax = 1, yax = 2, ind_sup = FALSE, lab_var = NULL,
 - Hypothèse nulle $H_0$ : la pente est égale à 0 (pas de relation linéaire entre les deux variables)
 - Hypothèse alternative $H_1$ : la pente est différente de 0 (relation linéaire entre les deux variables)
 - Test de Student :
-$t = \frac{b_1 - 0}{S(b_1)}$ où $b_1$ est la pente estimée et $S(b_1)$ son écart-type.
+$t = \frac{\beta_1 - 0}{S(b_1)}$ où $b_1$ est la pente estimée et $S(\beta_1)$ son écart-type.
 - Le test suit une loi de Student à $n-2$ degrés de liberté.
 
 :::
@@ -2497,9 +2566,36 @@ $t = \frac{b_1 - 0}{S(b_1)}$ où $b_1$ est la pente estimée et $S(b_1)$ son éc
 :::
 :::
 
+## Explication du coefficient de détermination {.smaller}
+
+::: columns
+::: {.column width=50%}
+
+![](./img/explication_R2.webp){width="50%"}
+
+
+:::
+::: {.column width=50%}
+
+| Dispersion | Somme des carrés des écarts | Part de la dispersion |
+|------------|-----------------------------|-----------------------|
+| Régression | 40                          | 80% = $R^2$           |
+| Résiduelle | 10                          | 20%                   |
+| Total      | 50                          | 100%                  |
+
+
+Sur la dispersion total, 20% est celle des résidus de la régression, et donc 80% de la dispersion peut être expliquée par le modèle. $R^2$ représente la part de la dispersion totale expliqué par la régression ajustée.
+
+:::
+:::
+
+::: aside
+[Explication reprise de la vidéo de Tierry Ancelle](https://www.youtube.com/watch?v=XL3ZOuFxW4g){target="_blank"}
+:::
+
 ## Les degrés de liberté {.smaller}
 
-- Les degrées de liberté sont le nombre de valeurs susceptible de varier dans un calcul statistique. Les observations d'un échantillon peuvent variées d'un échantillon à l'autre, reflétant la variabilité inhérente des données dans la population. 
+- Les degrés de liberté sont le nombre de valeurs susceptible de varier dans un calcul statistique. Les observations d'un échantillon peuvent varier d'un échantillon à l'autre, reflétant la variabilité inhérente des données dans la population. 
 
 - Pour une série de 5 valeurs de moyenne 10 les 4 premières valeurs sont libres mais la cinquième devra systématiquement le nombre qui fera en sorte que la moyenne soit 10.
 
@@ -2531,7 +2627,7 @@ Je vous conseille le visionnage de la [vidéo de Thierry Ancelle sur le sujet](h
 ::: columns
 ::: {.column width=50%}
 
-- Lors d'une test du Khi2 sur un tableau de contingence nous cherchons les effectifs arrendus si les deux variables qualitatives sont indépendantes mais en respectant les effectifs marginaux en lignes en colonnes.
+- Lors d'une test du Khi2 sur un tableau de contingence nous cherchons les effectifs attendus si les deux variables qualitatives sont indépendantes mais en respectant les effectifs marginaux en lignes en colonnes.
 
 - Le nombre de degrés de liberté est le nombre de valeurs qui peuvent varier librement dans le calcul des effectifs attendus. Des valeurs peuvent variées puis le reste des effectifs est sous contrainte des totaux, comme une grille de Sudoku.
 
@@ -2822,6 +2918,10 @@ $s^2 = \frac{1}{n-1} \sum_{i=1}^{n} (x_i - \bar{x})^2$
 - **Ecart-type** => la racine carrée de la variance :
 
 $s = \sqrt{s^2}$
+
+- **Coefficient de variation** => l'écart type divisé par la moyenne :
+
+$CV = s/\bar{x}$
 
 - **Ecart moyen** => la moyenne des écarts absolus à la moyenne :
 

@@ -8,3 +8,4 @@ corr/
 data/
 
 **/*.quarto_ipynb
+.positai
