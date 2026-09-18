@@ -990,7 +990,7 @@ La représentation par nuage de point. Où est la variable explicative et la var
 ::: panel-tabset
 ### Avec plot
 
-```{r, echo=TRUE, collapse=FALSE, fig.align='center', fig.height=4}
+```{r, echo=TRUE, collapse=TRUE, fig.align='center', fig.height=4}
 plot(carhyce_stat$debit_plein_bord_m3_s, carhyce_stat$largeur_mouillee_qb_m, 
      xlab = "Débit de plein bord (m3/s)", ylab = "Largeur mouillée plein bord (m)", 
      pch = 16, col = "black", cex=0.8)
@@ -1000,7 +1000,7 @@ plot(carhyce_stat$debit_plein_bord_m3_s, carhyce_stat$largeur_mouillee_qb_m,
 
 ### Avec ggplot
 
-```{r, echo=TRUE, collapse=FALSE, fig.align='center', fig.height=4}
+```{r, echo=TRUE, collapse=TRUE, fig.align='center', fig.height=4}
 plot <- ggplot(carhyce_stat, aes(x = debit_plein_bord_m3_s, y = largeur_mouillee_qb_m)) +
   geom_point() +
   labs(x = "Débit de plein bord (m3/s)", y = "Largeur mouillée plein bord (m)") +
@@ -1171,7 +1171,7 @@ Intérêt de calculer les deux coefficients :
 
 ## Coefficient de détermination
 
-**Le coefficient de détermination détermine le pourcentage de variation de Y imputable à X par le modèle, ou bien, la part de la dispersion totale expliquée par le modèle.**
+**Le coefficient de détermination détermine le pourcentage de variabilité de Y imputable à X par le modèle, ou bien, la part de la dispersion totale expliquée par le modèle.**
 
 \
 
@@ -1222,6 +1222,68 @@ summary(model_lineaire)
 :::
 :::
 
+## Interprétation graphique
+
+```{r, echo=FALSE, collapse=TRUE, fig.align='center', fig.height=4}
+# Modèle linéaire
+mod <- lm(largeur_mouillee_qb_m ~ debit_plein_bord_m3_s,
+          data = carhyce_stat)
+
+# Coefficients
+intercept <- coef(mod)[1]
+pente <- coef(mod)[2]
+
+# Graphique
+plot(carhyce_stat$debit_plein_bord_m3_s,
+     carhyce_stat$largeur_mouillee_qb_m,
+     xlab = "Débit de plein bord (m3/s)",
+     ylab = "Largeur mouillée plein bord (m)",
+     pch = 16,
+     col = "black",
+     cex = 0.8)
+
+abline(mod, col = "red", lwd = 2)
+
+# Annotation de l'ordonnée à l'origine
+text( 
+  x = 0,
+  y = 1.1,
+  labels = paste0("Ordonnée à l'origine = ", round(intercept, 2)),
+  col = "red",
+  pos = 4
+)
+
+# Annotation de la pente (au milieu de la droite)
+x_mid <- mean(range(carhyce_stat$debit_plein_bord_m3_s, na.rm = TRUE))
+y_mid <- intercept + pente * x_mid
+
+text(
+  x = x_mid,
+  y = y_mid,
+  labels = paste0("Pente = ", round(pente, 3)),
+  col = "red",
+  pos = 3
+)
+
+# Équation en bas à droite
+usr <- par("usr")
+
+text(
+  x = usr[2],  # xmax
+  y = usr[3] + 0.05 * (usr[4] - usr[3]), # +5 % de la hauteur,  # ymin
+  labels = paste0(
+    "y = ",
+    round(intercept, 3),
+    ifelse(pente >= 0, " + ", " - "),
+    abs(round(pente, 3)),
+    "x"
+  ),
+  col = "red",
+  pos = 2
+)
+```
+
+
 ## Interprétation des résultats du modèle {.smaller}
 
 ::: columns
@@ -1238,11 +1300,11 @@ summary(model_lineaire)
 
 <details>
   <summary>Interprétation</summary>
-[- La médiane des résidus est plutôt proche de 0 et les quartiles entre -3 et 2.Le modèle a tendance à sous-estimer légèrement les données observées, et 50% des valeurs observées sont relativement bien ajustée. L'erreur standard de 5m montre des écarts plus fort à la moyenne et donc de nombreuses observations moins bien prédites par le modèle.]{style="font-size: 0.7em;"}
+[- La médiane des résidus est plutôt proche de 0 et les quartiles entre -3 et 2. Le modèle a tendance à surestimer légèrement les données observées. 50% des valeurs observées ont un écarts au modèle de 5m (Q3-Q1). L'erreur standard de +/- 5m montre cependant des écarts plus fort à la moyenne et donc de nombreuses observations moins bien prédites par le modèle.]{style="font-size: 0.7em;"}
 
-[- Le modèle  prend la forme de l'équation $largeur = 7.54+0.39*Débit$ Les coefficients ont de faibles dispersions et une forte significativité, de même que le test de Fisher. Il existe bien une relation linéaire significative de la largeur en fonction du débit.]{style="font-size: 0.7em;"}
+[- Les coefficients du modèle ont de faibles erreur standard et une forte significativité, de même que le test de Fisher. Il existe bien une relation linéaire significative entre ces deux variables.]{style="font-size: 0.7em;"}
 
-[- Le coefficient de détermination est de 0.44, soit 44% des variations de la largeur s'expliquent par le débit. Ce modèle linéaire sur le débit permet donc d'expliquer une partie importante de la variation de largeur mais d'autres variables sont nécessaire pour expliquer le reste des variations.]{style="font-size: 0.7em;"}
+[- Le coefficient de détermination est de 0.44, soit 44% de la variabilité de la largeur peut s'expliquer par le débit. Ce modèle linéaire permet donc d'expliquer une partie de la variation de largeur mais d'autres variables sont nécessaires pour expliquer ou prédire le reste des variations.]{style="font-size: 0.7em;"}
 </details>
 
 :::
@@ -1286,13 +1348,48 @@ print(paste0("S = ", round(summary(model_log)$sigma, 2)))
 ```
 :::
 
-## Analyse des résidus {.smaller}
+## Graphique des résidus en fonction des valeurs prédites {.smaller}
+
+::: columns
+::: {.column width="70%"}
+
+![](./img/residual_graph.webp){width="100%"}
+
+:::
+::: {.column width="30%"}
+
+- Une courbe de régression minimise la somme des écarts à elle-même sur l'ensemble des valeurs de la variable expliquée selon une forme/équation. Mais localement, la courbe peut être plus ou moins bien ajustée aux données.
+
+- L'ordonnée 0 est la courbe de régression. Si les résidus sont dispersés aléatoirement autour de 0 => modèle homoscédastique. 
+
+:::
+:::
+
+## Interprétation de la dispersion des résidus
+
+::: columns
+::: {.column width="70%"}
+
+![](./img/residual_interpretation.webp){width="70%"}
+
+:::
+::: {.column width="30%"}
+
+<details>
+  <summary>Analyse des résidus</summary>
+[Le modèle a tendance à surestimer les toutes petites largeurs mouillée, légèrement sous-restimer les largeurs entre ≈ 8 - 16 m puis surestimer les plus grandes largeurs. La relation ne semble pas parfaitement linéaire malgré la significativité de la relation. On observe également une légère hétéroscédasticité, les écarts semblent augmenter pour les plus grandes valeurs.]{style="font-size: 0.7em;"}
+</details>
+
+:::
+:::
+
+## Analyse des résidus des régressions {.smaller}
 
 ::: panel-tabset
 
 ### Linéaire
 
-```{r, echo=TRUE, collapse=FALSE, fig.width=15}
+```{r, echo=TRUE, collapse=FALSE, fig.width=15, fig.align='center'}
 plot(model_lineaire, which = 1)
 ```
 
@@ -1310,8 +1407,6 @@ plot(model_log, which = 1)
 
 :::
 
-Les résidus doivent être dispersés aléatoirement autour de zéro. La présence d’une tendance (linéaire ou non) indique des effets systématiques ignorés par le modèle. Le modèle est hétéroscédastique, sa qualité est moindre pour les valeurs les plus élevées. Le modèle a tendance à sous-estimer ces valeurs.
-
 ## Normalité des résidus (modèle linéaire) {.smaller}
 
 ```{r, echo=TRUE, collapse=FALSE, fig.height=3.2}
@@ -1319,9 +1414,10 @@ par(mfrow=c(1,2))
 plot(model_lineaire, which = 2)
 hist(model_lineaire$residuals, breaks = 100, main = "Histogramme des résidus", xlab = "Résidus")
 ```
+
 <details>
   <summary>Analyse de la normalité</summary>
-La distribution des résidus présente une sureprésentation des valeurs fortes par rapport à une distribution normale, soit une dissymétrie à droite. Les valeurs les plus élevées sont moins bien ajustées par le modèle.
+La distribution des résidus présente une sureprésentation des valeurs négatives par rapport à une distribution normale, soit une légère dissymétrie à droite. Les valeurs les plus élevées sont moins bien ajustées par le modèle.
 </details>
 
 ## Régression linéaire multiple
@@ -1329,7 +1425,7 @@ La distribution des résidus présente une sureprésentation des valeurs fortes 
 Plusieurs variables explicatives pour une variable expliquée.
 
 ```{r, echo=TRUE, collapse=FALSE, out.height= 1}
-# multiple linear regression with two variables
+# multiple linear regression with three variables
 model_multiple <- lm(largeur_mouillee_qb_m ~ debit_plein_bord_m3_s + 
                        d50_mm + nombre_transect, 
                      data = carhyce_stat)
@@ -1354,7 +1450,7 @@ summary(model_multiple)
 
 <details>
   <summary>Interprétation</summary>
-- Les variables explicatives ont toutes un effet positif sur la largeur mouillée. L'ordonnée à l'origine et la coefficient directeur du nombre de transect ne sont pas significatif. Le nombre de transect est certainement à retirer de l'analyse dans ce contexte malgré le fait que la relation globale reste significative.
+- Les variables explicatives ont toutes un effet positif sur la largeur mouillée. L'ordonnée à l'origine et le coefficient directeur du nombre de transect ne sont pas significatif. Le nombre de transect est certainement à retirer de l'analyse dans ce contexte malgré le fait que la relation globale reste significative.
 - Le débit, la granulométrie et le nombre de transect expliquent 50% de la variation de la largeur mouillée. La granulométrie est certainement un facteur explicatif pertinent mais le débit reste le facteur prédominant entre ces variables.
 - Les résidus ont été faiblement réduits par rapport à la relation linéaire du débit seul.
 </details>
@@ -2546,7 +2642,7 @@ Equation polynomiale de degré 2 : $y=\beta_0+\beta_1x+\beta_2x2$. Les coefficie
 
 \
 
-Le constat est le même pour une régression logarithmique : $y=\beta_0+\beta_1ln(x)$. Mais pas pour une régression exponentielle : $y=\beta_0e^{\beta_1x}$ car $\beta_1$ est dans une exponentielle. 
+Le constat est le même pour une régression logarithmique : $y=\beta_0+\beta_1ln(x)$. Mais pas pour une régression exponentielle : $y=\beta_0e^{\beta_1x}$ car $\beta_1$ est dans une exponentielle.
 
 ## Test de la pente d'une régression linéaire (graphique)
 
@@ -2556,7 +2652,7 @@ Le constat est le même pour une régression logarithmique : $y=\beta_0+\beta_1l
 - Hypothèse nulle $H_0$ : la pente est égale à 0 (pas de relation linéaire entre les deux variables)
 - Hypothèse alternative $H_1$ : la pente est différente de 0 (relation linéaire entre les deux variables)
 - Test de Student :
-$t = \frac{\beta_1 - 0}{S(b_1)}$ où $b_1$ est la pente estimée et $S(\beta_1)$ son écart-type.
+$t = \frac{\beta_1 - 0}{S(\beta_1)}$ où $\beta_1$ est la pente estimée et $S(\beta_1)$ son écart-type.
 - Le test suit une loi de Student à $n-2$ degrés de liberté.
 
 :::
@@ -2571,7 +2667,7 @@ $t = \frac{\beta_1 - 0}{S(b_1)}$ où $b_1$ est la pente estimée et $S(\beta_1)$
 ::: columns
 ::: {.column width=50%}
 
-![](./img/explication_R2.webp){width="50%"}
+![](./img/explication_R2.webp){width="75%"}
 
 
 :::
@@ -2583,6 +2679,7 @@ $t = \frac{\beta_1 - 0}{S(b_1)}$ où $b_1$ est la pente estimée et $S(\beta_1)$
 | Résiduelle | 10                          | 20%                   |
 | Total      | 50                          | 100%                  |
 
+\
 
 Sur la dispersion total, 20% est celle des résidus de la régression, et donc 80% de la dispersion peut être expliquée par le modèle. $R^2$ représente la part de la dispersion totale expliqué par la régression ajustée.
 
