@@ -1598,7 +1598,7 @@ Une explication complète et très pédagogique est dans l'annexe 3 des [Statist
 
 - Nous avons un grand échantillon (n>30), l'écart-type de l'échantillon est donc une bonne estimation de l'écart-type de la population.
 
-- Dans une distribution normale, 95% des valeurs se trouvent dans l'intervalle $IC_{95\%} = [\bar x-1.96\frac{s}{\sqrt{n}},\bar x+1.96\frac{s}{\sqrt{n}}]$. La moyenne de l'échantillon a 95% de chance de se trouver dans cet intervalle. On peut remplacer 1.96 par une autre valeur critique de la loi normale avec son niveau de confiance associé ($IC_{99\%}$, la valeur critique est de 2.575).
+- Dans une distribution normale, 95% des valeurs se trouvent dans l'intervalle $IC_{95\%} = [\bar x-1.96\frac{s}{\sqrt{n}},\bar x+1.96\frac{s}{\sqrt{n}}]$. La moyenne de l'échantillon a 95% de chance de se trouver dans cet intervalle ($IC_{99\%}$ = 2.575).
 
 ::: aside
 
@@ -1664,6 +1664,105 @@ wilcox.test(carhyce_stat$largeur_mouillee_qb_m, conf.int = TRUE)
 
 ![](./img/ic_summary.webp){width="100%" fig-align="center"}
 
+## Comparaison des stations de plaine et de montagne
+
+**Est-ce que les rivières de montagne ont une granulométrie plus grossière que les rivières de plaine?**
+
+\
+
+Séparation des jeux de données.
+
+```{r, echo=TRUE, collapse=FALSE}
+carhyce_stat_montagne <- carhyce_stat %>% filter(montagne_plaine == "montagne")
+carhyce_stat_montagne_mean = mean(carhyce_stat_montagne$d50_mm, na.rm = TRUE)
+print(paste0("Moyenne D50 station de montagne = ", round(carhyce_stat_montagne_mean, 2)))
+```
+
+```{r, echo=TRUE, collapse=FALSE}
+carhyce_stat_plaine <- carhyce_stat %>% filter(montagne_plaine == "plaine")
+carhyce_stat_plaine_mean = mean(carhyce_stat_plaine$d50_mm, na.rm = TRUE)
+print(paste0("Moyenne D50 station de plaine = ", round(carhyce_stat_plaine_mean, 2)))
+```
+
+## Vérification des distributions - code
+
+```{r, echo=TRUE, eval=FALSE}
+# histogram with normal curve
+par(mfrow=c(1,2))
+h <- hist(carhyce_stat_montagne$d50_mm, col = "lightblue", main = "Montagne", 
+          xlab = "D50 (mm)", ylim = c(0, 20))
+xfit <- seq(min(carhyce_stat_montagne$d50_mm),
+            max(carhyce_stat_montagne$d50_mm), length = 40) 
+yfit <- dnorm(xfit, mean = mean(carhyce_stat_montagne$d50_mm), sd = sd(carhyce_stat_montagne$d50_mm)) 
+yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat_montagne$d50_mm) 
+lines(xfit, yfit, col = "red", lwd = 2)
+abline(v=carhyce_stat_montagne_mean, col="orange", lwd = 3)
+h <- hist(carhyce_stat_plaine$d50_mm, col = "lightgreen", main = "Plaine", 
+          xlab = "D50 (mm)")
+xfit <- seq(min(carhyce_stat_plaine$d50_mm),
+            max(carhyce_stat_plaine$d50_mm), length = 40)
+yfit <- dnorm(xfit, mean = mean(carhyce_stat_plaine$d50_mm), sd = sd(carhyce_stat_plaine$d50_mm))
+yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat_plaine$d50_mm)
+lines(xfit, yfit, col = "red", lwd = 2)
+abline(v=carhyce_stat_plaine_mean, col="orange", lwd = 3)
+```
+
+## Vérification des distributions
+
+```{r, echo=FALSE, fig.align='center'}
+# histogram with normal curve
+par(mfrow=c(1,2))
+h <- hist(carhyce_stat_montagne$d50_mm, col = "lightblue", main = "Montagne", 
+          xlab = "D50 (mm)", ylim = c(0, 20))
+xfit <- seq(min(carhyce_stat_montagne$d50_mm),
+            max(carhyce_stat_montagne$d50_mm), length = 40) 
+yfit <- dnorm(xfit, mean = mean(carhyce_stat_montagne$d50_mm), sd = sd(carhyce_stat_montagne$d50_mm)) 
+yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat_montagne$d50_mm) 
+lines(xfit, yfit, col = "red", lwd = 2)
+abline(v=carhyce_stat_montagne_mean, col="orange", lwd = 3)
+h <- hist(carhyce_stat_plaine$d50_mm, col = "lightgreen", main = "Plaine", 
+          xlab = "D50 (mm)")
+xfit <- seq(min(carhyce_stat_plaine$d50_mm),
+            max(carhyce_stat_plaine$d50_mm), length = 40)
+yfit <- dnorm(xfit, mean = mean(carhyce_stat_plaine$d50_mm), sd = sd(carhyce_stat_plaine$d50_mm))
+yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat_plaine$d50_mm)
+lines(xfit, yfit, col = "red", lwd = 2)
+abline(v=carhyce_stat_plaine_mean, col="orange", lwd = 3)
+```
+
+
+## Comparaison de moyennes - IC95%
+
+```{r, echo=TRUE, collapse=FALSE}
+print(paste0("Taille de l'échantillon montagne : ", nrow(carhyce_stat_montagne)))
+print(paste0("Taille de l'échantillon plaine : ", nrow(carhyce_stat_plaine)))
+```
+\
+
+[Condition n>30, distribution quelconque]{style="font-size: 0.7em;"}
+
+```{r, echo=TRUE, collapse=FALSE}
+# mean confidence interval with 95% confidence level
+montagne_t_test <- t.test(carhyce_stat_montagne$d50_mm, conf.level = 0.95)
+print(paste0("Montagne mean ", round(carhyce_stat_montagne_mean, 2), " IC95% = ", "[", round(montagne_t_test$conf.int[1], 2), " - ", round(montagne_t_test$conf.int[2], 2), "]"))
+plaine_t_test <- t.test(carhyce_stat_plaine$d50_mm, conf.level = 0.95)
+print(paste0("Plaine mean ", round(carhyce_stat_plaine_mean, 2), " IC95% = ", "[", round(plaine_t_test$conf.int[1], 2), " - ", round(plaine_t_test$conf.int[2], 2), "]"))
+```
+
+## Comparaison de moyennes - IC boxplot
+
+```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
+# boxplot with mean, confidence interval and their values
+boxplot(carhyce_stat$d50_mm ~ carhyce_stat$montagne_plaine, main = "Granulométrie d50", xlab = "", ylab = "Granulométrie d50 (mm)", col = c("lightblue", "lightgreen"))
+points(1, carhyce_stat_montagne_mean, pch = 19, col = "red")
+segments(1, montagne_t_test$conf.int[1], 1, montagne_t_test$conf.int[2], col = "red")
+points(2, carhyce_stat_plaine_mean, pch = 19, col = "red")
+segments(2, plaine_t_test$conf.int[1], 2, plaine_t_test$conf.int[2], col = "red")
+text(1, montagne_t_test$conf.int[2], paste0(round(carhyce_stat_montagne_mean, 2), " [", round(montagne_t_test$conf.int[1], 2), " - ", round(montagne_t_test$conf.int[2], 2), "]"), pos = 3) # 
+text(2, plaine_t_test$conf.int[2], paste0(round(carhyce_stat_plaine_mean, 2), " [", round(plaine_t_test$conf.int[1], 2), " - ", round(plaine_t_test$conf.int[2], 2), "]"), pos = 3) # add values of means and confidence intervals
+abline(h = 35, col = "red") # add horizontal line at 35 mm
+```
+
 ## Test de comparaison des moyennes {.smaller}
 
 Est-ce que les moyennes de deux échantillons sont significativement différentes : 
@@ -1691,99 +1790,6 @@ Les tests ont des variantes selon l'indépendance des variables. Non-apparié =>
 
 [*Si la distribution est très dissymétrique malgrés un échantillon >30 => test non paramétrique.]{style="font-size: 0.7em;"}
 
-
-## Comparaison des stations de plaine et de montagne
-
-**Est-ce que les rivières de montagne ont une granulométrie plus grossière que les rivières de plaine?**
-
-\
-
-Séparation des jeux de données.
-
-```{r, echo=TRUE, collapse=FALSE}
-carhyce_stat_montagne <- carhyce_stat %>% filter(montagne_plaine == "montagne")
-carhyce_stat_montagne_mean = mean(carhyce_stat_montagne$d50_mm, na.rm = TRUE)
-print(paste0("Moyenne D50 station de montagne = ", round(carhyce_stat_montagne_mean, 2)))
-```
-
-```{r, echo=TRUE, collapse=FALSE}
-carhyce_stat_plaine <- carhyce_stat %>% filter(montagne_plaine == "plaine")
-carhyce_stat_plaine_mean = mean(carhyce_stat_plaine$d50_mm, na.rm = TRUE)
-print(paste0("Moyenne D50 station de plaine = ", round(carhyce_stat_plaine_mean, 2)))
-```
-## Vérification des distributions - code
-
-```{r, echo=TRUE, eval=FALSE}
-# histogram with normal curve
-par(mfrow=c(1,2))
-h <- hist(carhyce_stat_montagne$d50_mm, col = "lightblue", main = "Montagne", 
-          xlab = "D50 (mm)", ylim = c(0, 20))
-xfit <- seq(min(carhyce_stat_montagne$d50_mm),
-            max(carhyce_stat_montagne$d50_mm), length = 40) 
-yfit <- dnorm(xfit, mean = mean(carhyce_stat_montagne$d50_mm), sd = sd(carhyce_stat_montagne$d50_mm)) 
-yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat_montagne$d50_mm) 
-lines(xfit, yfit, col = "red", lwd = 2)
-h <- hist(carhyce_stat_plaine$d50_mm, col = "lightgreen", main = "Plaine", 
-          xlab = "D50 (mm)")
-xfit <- seq(min(carhyce_stat_plaine$d50_mm),
-            max(carhyce_stat_plaine$d50_mm), length = 40)
-yfit <- dnorm(xfit, mean = mean(carhyce_stat_plaine$d50_mm), sd = sd(carhyce_stat_plaine$d50_mm))
-yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat_plaine$d50_mm)
-lines(xfit, yfit, col = "red", lwd = 2)
-```
-
-## Vérification des distributions
-
-```{r, echo=FALSE, fig.align='center'}
-# histogram with normal curve
-par(mfrow=c(1,2))
-h <- hist(carhyce_stat_montagne$d50_mm, col = "lightblue", main = "Montagne", 
-          xlab = "D50 (mm)", ylim = c(0, 20))
-xfit <- seq(min(carhyce_stat_montagne$d50_mm),
-            max(carhyce_stat_montagne$d50_mm), length = 40) 
-yfit <- dnorm(xfit, mean = mean(carhyce_stat_montagne$d50_mm), sd = sd(carhyce_stat_montagne$d50_mm)) 
-yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat_montagne$d50_mm) 
-lines(xfit, yfit, col = "red", lwd = 2)
-h <- hist(carhyce_stat_plaine$d50_mm, col = "lightgreen", main = "Plaine", 
-          xlab = "D50 (mm)")
-xfit <- seq(min(carhyce_stat_plaine$d50_mm),
-            max(carhyce_stat_plaine$d50_mm), length = 40)
-yfit <- dnorm(xfit, mean = mean(carhyce_stat_plaine$d50_mm), sd = sd(carhyce_stat_plaine$d50_mm))
-yfit <- yfit * diff(h$mids[1:2]) * length(carhyce_stat_plaine$d50_mm)
-lines(xfit, yfit, col = "red", lwd = 2)
-```
-
-
-## Comparaison de moyennes - IC95%
-
-```{r, echo=TRUE, collapse=FALSE}
-print(paste0("Taille de l'échantillon montagne : ", nrow(carhyce_stat_montagne)))
-print(paste0("Taille de l'échantillon plaine : ", nrow(carhyce_stat_plaine)))
-```
-\
-
-[Condition n>30, distribution quelconque]{style="font-size: 0.7em;"}
-
-```{r, echo=TRUE, collapse=FALSE}
-# mean confidence interval with 95% confidence level
-montagne_t_test <- t.test(carhyce_stat_montagne$d50_mm, conf.level = 0.95)
-print(paste0("Montagne mean ", round(carhyce_stat_montagne_mean, 2), " IC95% = ", "[", round(montagne_t_test$conf.int[1], 2), " - ", round(montagne_t_test$conf.int[2], 2), "]"))
-plaine_t_test <- t.test(carhyce_stat_plaine$d50_mm, conf.level = 0.95)
-print(paste0("Plaine mean ", round(carhyce_stat_plaine_mean, 2), " IC95% = ", "[", round(plaine_t_test$conf.int[1], 2), " - ", round(plaine_t_test$conf.int[2], 2), "]"))
-```
-## Comparaison de moyennes - IC boxplot
-
-```{r, echo=TRUE, collapse=FALSE, fig.align='center'}
-# boxplot with mean, confidence interval and their values
-boxplot(carhyce_stat$d50_mm ~ carhyce_stat$montagne_plaine, main = "Granulométrie d50", xlab = "", ylab = "Granulométrie d50 (mm)", col = c("lightblue", "lightgreen"))
-points(1, carhyce_stat_montagne_mean, pch = 19, col = "red")
-segments(1, montagne_t_test$conf.int[1], 1, montagne_t_test$conf.int[2], col = "red")
-points(2, carhyce_stat_plaine_mean, pch = 19, col = "red")
-segments(2, plaine_t_test$conf.int[1], 2, plaine_t_test$conf.int[2], col = "red")
-text(1, montagne_t_test$conf.int[2], paste0(round(carhyce_stat_montagne_mean, 2), " [", round(montagne_t_test$conf.int[1], 2), " - ", round(montagne_t_test$conf.int[2], 2), "]"), pos = 3) # 
-text(2, plaine_t_test$conf.int[2], paste0(round(carhyce_stat_plaine_mean, 2), " [", round(plaine_t_test$conf.int[1], 2), " - ", round(plaine_t_test$conf.int[2], 2), "]"), pos = 3) # add values of means and confidence intervals
-abline(h = 35, col = "red") # add horizontal line at 35 mm
-```
 ## Test de comparaison des variances - F-test {.smaller}
 
 F-test pour comparer les variances :
@@ -1946,9 +1952,8 @@ Hypothèses :
 ## Comparaison des moyennes - test de Student
 
 ```{r, echo=TRUE, collapse=FALSE}
-# t test
 t.test(carhyce_stat_montagne_vosges$d50_mm, carhyce_stat_plaine_collineen$d50_mm,
-       var.equal = TRUE, # equal variance
+       var.equal = TRUE, # equal variance = t test
        alternative = "two.sided", # test difference of means
        paired = FALSE, # independant samples
        conf.level = 0.95) # 95% confidence level
@@ -2638,7 +2643,7 @@ Equation d'une relation linéaire : $y=\beta_0+\beta_1x$. Le coefficient (pente)
 
 \
 
-Equation polynomiale de degré 2 : $y=\beta_0+\beta_1x+\beta_2x2$. Les coefficients $\beta_1$ et $\beta_2$ sont aussi linéaire. La régression est donc mathématiquement linéaire même si ce n'est pas une droite.
+Equation polynomiale de degré 2 : $y=\beta_0+\beta_1x+\beta_2x^2$. Les coefficients $\beta_1$ et $\beta_2$ sont aussi linéaire. La régression est donc mathématiquement linéaire même si ce n'est pas une droite.
 
 \
 
